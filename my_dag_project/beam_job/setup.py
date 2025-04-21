@@ -1,12 +1,12 @@
+#!/bin/bash
 
-from setuptools import setup
+# Install Python packages using PIP
+sudo apt-get update
+sudo apt-get install -y python3-pip
 
-setup(
-    name='beam_to_bigtable',
-    version='0.0.1',
-    install_requires=[
-        'google-cloud-bigtable',
-        'apache-beam[gcp]',
-        'pyarrow'
-    ]
-)
+# Optional: Upgrade pip
+sudo python3 -m pip install --upgrade pip
+
+# Install required packages passed via metadata
+PACKAGES=$(curl "http://metadata.google.internal/computeMetadata/v1/instance/attributes/PIP_PACKAGES" -H "Metadata-Flavor: Google")
+sudo python3 -m pip install ${PACKAGES}
