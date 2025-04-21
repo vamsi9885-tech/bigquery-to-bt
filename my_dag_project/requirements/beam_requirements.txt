@@ -1,0 +1,4 @@
+
+apache-beam[gcp]
+google-cloud-bigtable
+pyarrow
