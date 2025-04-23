@@ -1,0 +1,81 @@
+Traceback (most recent call last):
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/utils/subprocess_server.py", line 376, in local_jar
+    url_read = FileSystems.open(url)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/io/filesystems.py", line 243, in open
+    filesystem = FileSystems.get_filesystem(path)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/io/filesystems.py", line 103, in get_filesystem
+    raise ValueError(
+ValueError: Unable to get filesystem from specified path, please use the correct path or ensure the required dependency is installed, e.g., pip install apache-beam[gcp]. Path specified: https://repo.maven.apache.org/maven2/org/apache/beam/beam-runners-spark-3-job-server/2.54.0/beam-runners-spark-3-job-server-2.54.0.jar
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/conda/default/lib/python3.10/urllib/request.py", line 1348, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+  File "/opt/conda/default/lib/python3.10/http/client.py", line 1282, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "/opt/conda/default/lib/python3.10/http/client.py", line 1328, in _send_request
+    self.endheaders(body, encode_chunked=encode_chunked)
+  File "/opt/conda/default/lib/python3.10/http/client.py", line 1277, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/opt/conda/default/lib/python3.10/http/client.py", line 1037, in _send_output
+    self.send(msg)
+  File "/opt/conda/default/lib/python3.10/http/client.py", line 975, in send
+    self.connect()
+  File "/opt/conda/default/lib/python3.10/http/client.py", line 1447, in connect
+    super().connect()
+  File "/opt/conda/default/lib/python3.10/http/client.py", line 941, in connect
+    self.sock = self._create_connection(
+  File "/opt/conda/default/lib/python3.10/socket.py", line 845, in create_connection
+    raise err
+  File "/opt/conda/default/lib/python3.10/socket.py", line 833, in create_connection
+    sock.connect(sa)
+OSError: [Errno 101] Network is unreachable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/utils/subprocess_server.py", line 378, in local_jar
+    url_read = urlopen(url)
+  File "/opt/conda/default/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/opt/conda/default/lib/python3.10/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+  File "/opt/conda/default/lib/python3.10/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+  File "/opt/conda/default/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/opt/conda/default/lib/python3.10/urllib/request.py", line 1391, in https_open
+    return self.do_open(http.client.HTTPSConnection, req,
+  File "/opt/conda/default/lib/python3.10/urllib/request.py", line 1351, in do_open
+    raise URLError(err)
+urllib.error.URLError: <urlopen error [Errno 101] Network is unreachable>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/tmp/lumiadmingearbqtobt-1745412091-c2710077/beam.py", line 47, in <module>
+    run()
+  File "/tmp/lumiadmingearbqtobt-1745412091-c2710077/beam.py", line 39, in run
+    with beam.Pipeline(options=options) as p:
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/pipeline.py", line 612, in __exit__
+    self.result = self.run()
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/pipeline.py", line 586, in run
+    return self.runner.run_pipeline(self, self._options)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/runner.py", line 192, in run_pipeline
+    return self.run_portable_pipeline(
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/portability/portable_runner.py", line 381, in run_portable_pipeline
+    job_service_handle = self.create_job_service(options)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/portability/portable_runner.py", line 296, in create_job_service
+    return self.create_job_service_handle(server.start(), options)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/portability/job_server.py", line 81, in start
+    self._endpoint = self._job_server.start()
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/portability/job_server.py", line 106, in start
+    cmd, endpoint = self.subprocess_cmd_and_endpoint()
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/portability/job_server.py", line 150, in subprocess_cmd_and_endpoint
+    jar_path = self.local_jar(self.path_to_jar())
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/portability/job_server.py", line 147, in local_jar
+    return subprocess_server.JavaJarServer.local_jar(url)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/utils/subprocess_server.py", line 383, in local_jar
+    raise RuntimeError(
+RuntimeError: Unable to fetch remote job server jar at https://repo.maven.apache.org/maven2/org/apache/beam/beam-runners-spark-3-job-server/2.54.0/beam-runners-spark-3-job-server-2.54.0.jar: <urlopen error [Errno 101] Network is unreachable>
