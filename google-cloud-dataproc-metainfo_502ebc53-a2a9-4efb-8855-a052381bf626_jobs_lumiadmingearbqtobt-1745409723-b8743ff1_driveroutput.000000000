@@ -1,0 +1,39 @@
+WARNING:apache_beam.options.pipeline_options:Unknown pipeline options received: --gear_project_id=prj-d-gbl-gar-epgear,--bt_project_name=prj-d-lumi-bt,--instance_id=lumiplfeng-decppgusbt241030202635,--bt_table_name=gear_cars_test1,--bq_table_name=cars_logs,--dataset_id=temp,--json_file=gear_hist_finapi/sample_testing/bq2bt_otl_mapping/cars_log.json,--row_key=Request_ID. Ignore if flags are used for internal purposes.
+WARNING:apache_beam.options.pipeline_options:Unknown pipeline options received: --gear_project_id=prj-d-gbl-gar-epgear,--bt_project_name=prj-d-lumi-bt,--instance_id=lumiplfeng-decppgusbt241030202635,--bt_table_name=gear_cars_test1,--bq_table_name=cars_logs,--dataset_id=temp,--json_file=gear_hist_finapi/sample_testing/bq2bt_otl_mapping/cars_log.json,--row_key=Request_ID. Ignore if flags are used for internal purposes.
+Traceback (most recent call last):
+  File "/tmp/lumiadmingearbqtobt-1745409723-b8743ff1/beam.py", line 47, in <module>
+    run()
+  File "/tmp/lumiadmingearbqtobt-1745409723-b8743ff1/beam.py", line 39, in run
+    with beam.Pipeline(options=options) as p:
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/pipeline.py", line 612, in __exit__
+    self.result = self.run()
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/pipeline.py", line 562, in run
+    self._options).run(False)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/pipeline.py", line 586, in run
+    return self.runner.run_pipeline(self, self._options)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/dataflow/dataflow_runner.py", line 485, in run_pipeline
+    self.dataflow_client.create_job(self.job), self)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/utils/retry.py", line 298, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/dataflow/internal/apiclient.py", line 735, in create_job
+    return self.submit_job_description(job)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/utils/retry.py", line 298, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/dataflow/internal/apiclient.py", line 835, in submit_job_description
+    response = self._client.projects_locations_jobs.Create(request)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/dataflow/internal/clients/dataflow/dataflow_v1b3_client.py", line 722, in Create
+    return self._RunMethod(config, request, global_params=global_params)
+  File "/opt/conda/default/lib/python3.10/site-packages/apitools/base/py/base_api.py", line 731, in _RunMethod
+    return self.ProcessHttpResponse(method_config, http_response, request)
+  File "/opt/conda/default/lib/python3.10/site-packages/apitools/base/py/base_api.py", line 737, in ProcessHttpResponse
+    self.__ProcessHttpResponse(method_config, http_response, request))
+  File "/opt/conda/default/lib/python3.10/site-packages/apitools/base/py/base_api.py", line 603, in __ProcessHttpResponse
+    raise exceptions.HttpError.FromResponse(
+apitools.base.py.exceptions.HttpForbiddenError: HttpError accessing <https://dataflow.googleapis.com/v1b3/projects/prj-d-gbl-gar-epgear/locations/us-central1/jobs?alt=json>: response: <{'vary': 'Origin, X-Origin, Referer', 'content-type': 'application/json; charset=UTF-8', 'date': 'Wed, 23 Apr 2025 12:02:35 GMT', 'server': 'ESF', 'x-xss-protection': '0', 'x-frame-options': 'SAMEORIGIN', 'x-content-type-options': 'nosniff', 'transfer-encoding': 'chunked', 'status': '403', 'content-length': '1076', '-content-encoding': 'gzip'}>, content <{
+  "error": {
+    "code": 403,
+    "message": "(a07b53dcd1bd71a0): Current user cannot act as service account 445331546424-compute@developer.gserviceaccount.com. Enforced by Org Policy constraint constraints/dataflow.enforceComputeDefaultServiceAccountCheck. https://cloud.google.com/iam/docs/service-accounts-actas Causes: (a07b53dcd1bd7308): Current user  cannot act as service account 445331546424-compute@developer.gserviceaccount.com. If the service account belongs to the current project, please grant your user account one of [Owner, Editor, Service Account User] roles, or any other role that includes the iam.serviceAccounts.actAs permission. See https://cloud.google.com/iam/docs/service-accounts-actas for additional details. If the service account belongs to another project, please disable the iam.disableCrossProjectServiceAccountUsage org-policy constraint on the project the service account belongs to. See https://cloud.google.com/iam/docs/attach-service-accounts#attaching-different-project for additional details.",
+    "status": "PERMISSION_DENIED"
+  }
+}
+>
