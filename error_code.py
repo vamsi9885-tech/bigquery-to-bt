@@ -1,45 +1,42 @@
+WARNING:apache_beam.options.pipeline_options:Unknown pipeline options received: --gear_project_id=prj-d-gbl-gar-epgear,--bt_project_name=prj-d-lumi-bt,--instance_id=lumiplfeng-decppgusbt241030202635,--bt_table_name=gear_cars_test1,--bq_table_name=cars_logs,--dataset_id=temp,--json_file=gear_hist_finapi/sample_testing/bq2bt_otl_mapping/cars_log.json,--row_key=Request_ID. Ignore if flags are used for internal purposes.
+WARNING:apache_beam.options.pipeline_options:Unknown pipeline options received: --gear_project_id=prj-d-gbl-gar-epgear,--bt_project_name=prj-d-lumi-bt,--instance_id=lumiplfeng-decppgusbt241030202635,--bt_table_name=gear_cars_test1,--bq_table_name=cars_logs,--dataset_id=temp,--json_file=gear_hist_finapi/sample_testing/bq2bt_otl_mapping/cars_log.json,--row_key=Request_ID. Ignore if flags are used for internal purposes.
 Traceback (most recent call last):
-  File "/tmp/lumiadmingearbqtobt-1745335447-a06a6665/beam.py", line 5, in <module>
-    from apache_beam.io.gcp.bigtableio import WriteToBigTable
-  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/io/gcp/bigtableio.py", line 60, in <module>
-    from google.cloud.bigtable import Client
-  File "/opt/conda/default/lib/python3.10/site-packages/google/cloud/bigtable/__init__.py", line 17, in <module>
-    from google.cloud.bigtable.client import Client
-  File "/opt/conda/default/lib/python3.10/site-packages/google/cloud/bigtable/client.py", line 38, in <module>
-    from google.cloud import bigtable_admin_v2
-  File "/opt/conda/default/lib/python3.10/site-packages/google/cloud/bigtable_admin_v2/__init__.py", line 21, in <module>
-    from .services.bigtable_instance_admin import BigtableInstanceAdminClient
-  File "/opt/conda/default/lib/python3.10/site-packages/google/cloud/bigtable_admin_v2/services/bigtable_instance_admin/__init__.py", line 16, in <module>
-    from .client import BigtableInstanceAdminClient
-  File "/opt/conda/default/lib/python3.10/site-packages/google/cloud/bigtable_admin_v2/services/bigtable_instance_admin/client.py", line 74, in <module>
-    from .transports.base import BigtableInstanceAdminTransport, DEFAULT_CLIENT_INFO
-  File "/opt/conda/default/lib/python3.10/site-packages/google/cloud/bigtable_admin_v2/services/bigtable_instance_admin/transports/__init__.py", line 19, in <module>
-    from .base import BigtableInstanceAdminTransport
-  File "/opt/conda/default/lib/python3.10/site-packages/google/cloud/bigtable_admin_v2/services/bigtable_instance_admin/transports/base.py", line 26, in <module>
-    from google.api_core import operations_v1
-  File "/opt/conda/default/lib/python3.10/site-packages/google/api_core/operations_v1/__init__.py", line 17, in <module>
-    from google.api_core.operations_v1.abstract_operations_client import AbstractOperationsClient
-  File "/opt/conda/default/lib/python3.10/site-packages/google/api_core/operations_v1/abstract_operations_client.py", line 22, in <module>
-    from google.api_core.operations_v1.transports.base import (
-  File "/opt/conda/default/lib/python3.10/site-packages/google/api_core/operations_v1/transports/__init__.py", line 29, in <module>
-    from .rest_asyncio import AsyncOperationsRestTransport
-  File "/opt/conda/default/lib/python3.10/site-packages/google/api_core/operations_v1/transports/rest_asyncio.py", line 23, in <module>
-    from google.auth.aio.transport.sessions import AsyncAuthorizedSession  # type: ignore
-  File "/opt/conda/default/lib/python3.10/site-packages/google/auth/aio/transport/sessions.py", line 27, in <module>
-    from google.auth.aio.transport.aiohttp import Request as AiohttpRequest
-  File "/opt/conda/default/lib/python3.10/site-packages/google/auth/aio/transport/aiohttp.py", line 22, in <module>
-    import aiohttp  # type: ignore
-  File "/opt/conda/default/lib/python3.10/site-packages/aiohttp/__init__.py", line 6, in <module>
-    from .client import (
-  File "/opt/conda/default/lib/python3.10/site-packages/aiohttp/client.py", line 35, in <module>
-    from . import hdrs, http, payload
-  File "/opt/conda/default/lib/python3.10/site-packages/aiohttp/http.py", line 7, in <module>
-    from .http_parser import (
-  File "/opt/conda/default/lib/python3.10/site-packages/aiohttp/http_parser.py", line 15, in <module>
-    from .helpers import NO_EXTENSIONS, BaseTimerContext
-  File "/opt/conda/default/lib/python3.10/site-packages/aiohttp/helpers.py", line 667, in <module>
-    class CeilTimeout(async_timeout.timeout):
-TypeError: function() argument 'code' must be code, not str
+  File "/tmp/lumiadmingearbqtobt-1745381060-f67be432/beam.py", line 47, in <module>
+    run()
+  File "/tmp/lumiadmingearbqtobt-1745381060-f67be432/beam.py", line 39, in run
+    with beam.Pipeline(options=options) as p:
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/pipeline.py", line 612, in __exit__
+    self.result = self.run()
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/pipeline.py", line 562, in run
+    self._options).run(False)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/pipeline.py", line 586, in run
+    return self.runner.run_pipeline(self, self._options)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/dataflow/dataflow_runner.py", line 485, in run_pipeline
+    self.dataflow_client.create_job(self.job), self)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/utils/retry.py", line 298, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/dataflow/internal/apiclient.py", line 735, in create_job
+    return self.submit_job_description(job)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/utils/retry.py", line 298, in wrapper
+    return fun(*args, **kwargs)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/dataflow/internal/apiclient.py", line 835, in submit_job_description
+    response = self._client.projects_locations_jobs.Create(request)
+  File "/opt/conda/default/lib/python3.10/site-packages/apache_beam/runners/dataflow/internal/clients/dataflow/dataflow_v1b3_client.py", line 722, in Create
+    return self._RunMethod(config, request, global_params=global_params)
+  File "/opt/conda/default/lib/python3.10/site-packages/apitools/base/py/base_api.py", line 731, in _RunMethod
+    return self.ProcessHttpResponse(method_config, http_response, request)
+  File "/opt/conda/default/lib/python3.10/site-packages/apitools/base/py/base_api.py", line 737, in ProcessHttpResponse
+    self.__ProcessHttpResponse(method_config, http_response, request))
+  File "/opt/conda/default/lib/python3.10/site-packages/apitools/base/py/base_api.py", line 603, in __ProcessHttpResponse
+    raise exceptions.HttpError.FromResponse(
+apitools.base.py.exceptions.HttpBadRequestError: HttpError accessing <https://dataflow.googleapis.com/v1b3/projects/prj-d-gbl-gar-epgear/locations/US/jobs?alt=json>: response: <{'vary': 'Origin, X-Origin, Referer', 'content-type': 'application/json; charset=UTF-8', 'date': 'Wed, 23 Apr 2025 04:04:39 GMT', 'server': 'ESF', 'x-xss-protection': '0', 'x-frame-options': 'SAMEORIGIN', 'x-content-type-options': 'nosniff', 'transfer-encoding': 'chunked', 'status': '400', 'content-length': '503', '-content-encoding': 'gzip'}>, content <{
+  "error": {
+    "code": 400,
+    "message": "(fada61b897668351): The workflow could not be created, since it was sent to an invalid regional endpoint (US) or the wrong API endpoint was used. Please resubmit to a valid Cloud Dataflow regional endpoint and ensure you are using dataflow.projects.locations.templates.launch API endpoint. The list of Cloud Dataflow regional endpoints is at https://cloud.google.com/dataflow/docs/concepts/regional-endpoints. ",
+    "status": "FAILED_PRECONDITION"
+  }
+}
+>
 
 
 
