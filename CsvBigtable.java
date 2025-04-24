@@ -1,3 +1,6 @@
+mvn archetype:generate -DgroupId=com.aexp.ngbd.testDataflow -DartifactId=CsvBigtableApp -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+
 package com.aexp.ngbd.testDataflow;
 
 // Importing required Libraries
