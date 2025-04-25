@@ -1,0 +1,5 @@
+[ERROR] Failed to execute goal on project CsvBigtable: Could not collect dependencies for project com.aexp.ngbd:CsvBigtable:jar:1.0.0
+[ERROR] Failed to read artifact descriptor for io.confluent:kafka-avro-serializer:jar:5.3.2
+[ERROR]         Caused by: The following artifacts could not be resolved: io.confluent:kafka-avro-serializer:pom:5.3.2 (absent): Could not transfer artifact io.confluent:kafka-avro-serializer:pom:5.3.2 from/to io.confluent (https://packages.confluent.io/maven/): PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
+[ERROR] Failed to read artifact descriptor for io.confluent:kafka-schema-registry-client:jar:5.3.2
+[ERROR]         Caused by: The following artifacts could not be resolved: io.confluent:kafka-schema-registry-client:pom:5.3.2 (absent): Could not transfer artifact io.confluent:kafka-schema-registry-client:pom:5.3.2 from/to io.confluent (https://packages.confluent.io/maven/): PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target
