@@ -1,0 +1,61 @@
+Request_ID,Request_type,Staging_file_type,Optional_Query_Filter,Log_output
+A034076,Basic Control Account Data ,CarsView1,Market Code,Succeeded
+A034077,Basic Control Account Data ,CarsView1,"Market Code,  Corp ID",Succeeded
+A034151,Basic Control Account Data ,view1(plst),Market Code,Succeeded
+A034231,Basic Control Account Data ,view1(plst),Market Code,Succeeded
+A034152,Basic Control Account Data ,view2(all three columns),"Market Code, Corp ID",Succeeded
+A034232,Basic Control Account Data ,view2(all three columns),"Market Code, Corp ID",Succeeded
+A034153,Basic Control Account Data ,view3(none),Market Code,Succeeded
+A034233,Basic Control Account Data ,view3(none),Market Code,Succeeded
+A033959,Basic Control Account Data (with extended output),Local,Market Code,Succeeded
+A033927,Basic Control Account Data (without extended output),Local,Market Code,Succeeded
+A033957,Basic Control Account Data (without extended output),Local,Market Code,Succeeded
+A033958,Basic Control Account Data (without extended output),Local,"Market Code, Corp ID",Succeeded
+A034078,Control Account Hierarchy Data ,CarsView1,Market Code,Succeeded
+A034079,Control Account Hierarchy Data ,CarsView1,"Market Code,  Corp ID",Succeeded
+A034154,Control Account Hierarchy Data ,view1(plst),Market Code,Succeeded
+A034234,Control Account Hierarchy Data ,view1(plst),Market Code,Succeeded
+A034155,Control Account Hierarchy Data ,view2(all three columns),"Market Code, Corp ID",Succeeded
+A034235,Control Account Hierarchy Data ,view2(all three columns),"Market Code, Corp ID",Succeeded
+A034236,Control Account Hierarchy Data ,view3(none),Market Code,Succeeded
+A033962,Control Account Hierarchy Data (with extended output),Local,Market Code,Succeeded
+A033928,Control Account Hierarchy Data (without extended output),Local,Market Code,Succeeded
+A033960,Control Account Hierarchy Data (without extended output),Local,Market Code,Succeeded
+A033961,Control Account Hierarchy Data (without extended output),Local,"Market Code, Corp ID",Succeeded
+A034074,with Card Member and Basic Control Account Data,CarsView1,Market Code,Succeeded
+A034075,with Card Member and Basic Control Account Data,CarsView1,"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A034082,with Card Member and Basic Control Account Data,CarsView1,"Market Code, SPA Type, Ops Seg, Corp ID",Succeeded
+A034085,with Card Member and Basic Control Account Data,view11,"Market Code, pan15, Cancel Reason",Succeeded
+A034147,with Card Member and Basic Control Account Data ,view1(plst),Market Code,Succeeded
+A034150,with Card Member and Basic Control Account Data ,view1(plst),"Market Code, Cancel Reason, Plastic Type",Succeeded
+A034228,with Card Member and Basic Control Account Data ,view1(plst),Market Code,Succeeded
+A034148,with Card Member and Basic Control Account Data ,view2(all three columns),"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A034229,with Card Member and Basic Control Account Data ,view2(all three columns),"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A034149,with Card Member and Basic Control Account Data ,view3(none),"Market Code,  Corp ID",Succeeded
+A034230,with Card Member and Basic Control Account Data ,view3(none),"Market Code, SPA Type, Corp ID",Succeeded
+A033956,with Card Member and Basic Control Account Data (with extended output),Local,Market Code,Succeeded
+A033926,with Card Member and Basic Control Account Data (without extended output),Local,Market Code,Succeeded
+A033953,with Card Member and Basic Control Account Data (without extended output),Local,Market Code,Succeeded
+A033954,with Card Member and Basic Control Account Data (without extended output),Local,"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A033955,with Card Member and Basic Control Account Data (without extended output),Local,"Market Code, Cancel Reason, Plastic Type, Ops Seg, Corp ID",Succeeded
+A034071,with cancel reason and account effective date ,CarsView1,Market Code,Succeeded
+A034073,with cancel reason and account effective date ,CarsView1,"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A034080,with cancel reason and account effective date ,CarsView1,"Market Code, pan15, Cancel Reason",Succeeded
+A034138,with cancel reason and account effective date ,View2(all three columns),Market Code,Succeeded
+A034137,with cancel reason and account effective date ,view1(plst),Market Code,Succeeded
+A034144,with cancel reason and account effective date ,view1(plst),Market Code,Succeeded
+A034225,with cancel reason and account effective date ,view1(plst),Market Code,Succeeded
+A034084,with cancel reason and account effective date ,view11,Market Code,Succeeded
+A034145,with cancel reason and account effective date ,view2(all three columns),"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A034226,with cancel reason and account effective date ,view2(all three columns),"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A034139,with cancel reason and account effective date ,view3(none),Market Code,Succeeded
+A034146,with cancel reason and account effective date ,view3(none),"Market Code, pan15",Succeeded
+A034227,with cancel reason and account effective date ,view3(none),"Market Code, Cancel Reason, Plastic Type",Succeeded
+ A033925,with cancel reason and address effective date (with extended output),Local,Market Code,Succeeded
+A033952,with cancel reason and address effective date (with extended output),Local,Market Code,Succeeded
+A033923,with cancel reason and address effective date (without extended output),Local,"Market Code, pan15",Succeeded
+A033924,with cancel reason and address effective date (without extended output),Local,"Market Code, Cancel Reason",Succeeded
+A033948,with cancel reason and address effective date (without extended output),Local,Market Code,Succeeded
+A033949,with cancel reason and address effective date (without extended output),Local,"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A033950,with cancel reason and address effective date (without extended output),Local,"Market Code, Corp ID, pan15",Succeeded
+A033951,with cancel reason and address effective date (without extended output),Local,"Market Code, Cancel Reason, Plastic Type",Succeeded
