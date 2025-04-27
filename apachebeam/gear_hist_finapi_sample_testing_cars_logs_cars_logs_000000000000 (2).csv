@@ -47,7 +47,7 @@ A034144,with cancel reason and account effective date ,view1(plst),Market Code,S
 A034225,with cancel reason and account effective date ,view1(plst),Market Code,Succeeded
 A034084,with cancel reason and account effective date ,view11,Market Code,Succeeded
 A034145,with cancel reason and account effective date ,view2(all three columns),"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
-A034226,with cancel reason and account effective date ,view2(all three columns),"Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
+A034226,with cancel reason and account effective date ,view2(all three columns),Market Code, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID, pan15, Cancel Reason, Plastic Type, SPA Type, Ops Seg, Corp ID",Succeeded
 A034139,with cancel reason and account effective date ,view3(none),Market Code,Succeeded
 A034146,with cancel reason and account effective date ,view3(none),"Market Code, pan15",Succeeded
 A034227,with cancel reason and account effective date ,view3(none),"Market Code, Cancel Reason, Plastic Type",Succeeded
