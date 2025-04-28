@@ -1,0 +1,18 @@
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <version>3.2.2</version>
+      <configuration>
+        <archive>
+          <manifest>
+            <addClasspath>true</addClasspath>
+            <classpathPrefix>libs/</classpathPrefix> <!-- Dependencies will be here -->
+            <mainClass>com.aexp.ngbd.testDataflow.CsvBigtable</mainClass> <!-- Your main class -->
+          </manifest>
+        </archive>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
