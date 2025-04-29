@@ -1,0 +1,11 @@
+{
+    "columnNames" : "Request_ID,Request_type,Staging_file_type,Optional_Query_Filter,Log_output",
+    "Rowkey" : "Request_ID",
+    "TableMapping" : {
+        "Request_ID" : "cf1",
+        "Request_type":"cf1",
+        "Staging_file_type":"cf1",
+        "Optional_Query_Filter":"cf1",
+        "Log_output":"cf1"
+    }
+}
