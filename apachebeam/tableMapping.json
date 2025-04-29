@@ -1,11 +1,15 @@
 {
     "columnNames" : "Request_ID,Request_type,Staging_file_type,Optional_Query_Filter,Log_output",
     "Rowkey" : "Request_ID",
-    "TableMapping" : {
-        "Request_ID" : "cf1",
-        "Request_type":"cf1",
-        "Staging_file_type":"cf1",
-        "Optional_Query_Filter":"cf1",
-        "Log_output":"cf1"
-    }
+    "tempPath" : "gear_hist_finapi/sample_testing/cars_logs/",
+    "gearProjectId" : "prj-d-gbl-gar-epgear",
+    "bqTableName" : "cars_logs",
+    "datasetId" : "temp",
+    "btColumnFamily" : "cf1",
+    "btTableName" : "gear_cars_logs_apachebeam",
+    "btInstanceId" : "lumiplfeng-decppgusbt241030202635",
+    "btProjectId" : "prj-d-lumi-bt",
+    "pysparkBqConnector" : "gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.27.0.jar",
+    "preDataFlowPyURI":"gs://prj-d-gbl-gar-epgear/gear_hist_finapi/sample_testing/testing_akbehe/post_dataflow.py",
+    "postDataFlowPyURI":"gs://prj-d-gbl-gar-epgear/gear_hist_finapi/sample_testing/testing_akbehe/post_dataflow.py"
 }
