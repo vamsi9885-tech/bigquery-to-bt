@@ -3,6 +3,8 @@ import logging
 import argparse
 from pyspark.sql import SparkSession
 
+logging.basicConfig(level=logging.INFO)
+
 def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--gear_project_id", help="Project ID")
@@ -10,10 +12,11 @@ def parse_arguments():
     return parser.parse_args()
 
 def delete_gcs_path(bucket_name ,gcs_path):
-    client = storage.client()
+    client = storage.Client()
     bucket = client.bucket(bucket_name)
     if gcs_path.startswith("gs://"):
         gcs_path = gcs_path.replace(f"gs://{bucket_name}/","")
+        gcs_path = gcs_path + "/*"
     if '*' in gcs_path:
         blobs = bucket.list_blobs(prefix = gcs_path)
         for blob in blobs:
