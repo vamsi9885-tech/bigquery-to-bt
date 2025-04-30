@@ -4,6 +4,8 @@ import logging
 import argparse
 from pyspark.sql import SparkSession
 
+logging.basicConfig(level=logging.INFO)
+
 def parse_arguments():
     parser = argparse.ArgumentParser()
     # parser.add_argument("--project_id", help="Project ID")
@@ -31,5 +33,5 @@ def fetch_bigquery_to_gcp(spark, gear_project_id, dataset_id, bq_table_name,temp
 if __name__ == "__main__":
     spark = SparkSession.builder.appName("BigQueryToBigTable").getOrCreate()
     args = parse_arguments()
-    fetch_bigquery_to_gcp(spark=spark , gear_project_id= args.gear_project_id , dataset_id=args.dataset_id , bq_table_name= args.bq_table_name , args.temp_path)
+    fetch_bigquery_to_gcp(spark=spark , gear_project_id= args.gear_project_id , dataset_id=args.dataset_id , bq_table_name= args.bq_table_name , temp_path=args.temp_path)
     logging.info("the data loaded from Bigtable to GCS")
