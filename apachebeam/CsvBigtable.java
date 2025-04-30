@@ -118,7 +118,6 @@ public class CsvBigtable {
 	    String InputFile = options.getInput();
 	    String TableColumns = options.getBigtableColumns();
 		String jsonContent = options.getJsonContent();
-		JSONObject mappingJson = new JSONObject(jsonContent);
 
 	    
 	    //Print input values for testing
@@ -170,27 +169,34 @@ public class CsvBigtable {
 						  LocalDate currentDate = LocalDate.now();
 						  DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
 						  String formattedDate = currentDate.format(formatter);
-
-						String rowKeyDynamic = input_rows[0] + "_" + formattedDate;
-		      	        Put row = new Put(Bytes.toBytes(rowKeyDynamic));
-		      	        
-		      	        
-		      	        for (int i = 0; i<input_rows.length; i++) {
-
-		      	        	//System.out.println("Input Row value: " + input_rows[i]);
-							String columnName = input_columns[i];
-							String columnValue = input_rows[i];
-							if(mappingJson.has(columnName)){
-								String columnFamily = mappingJson.getString(columnName);
-								row.addColumn(
-										Bytes.toBytes(columnFamily),
-										Bytes.toBytes(columnName),
-										timestamp,
-										Bytes.toBytes(columnValue)
-								);
+						int rowKeyIndex = -1;
+						for (int i =0 ; i < input_columns.length ; i++){
+							if (input_columns[i].trim().equals(RowKey)){
+								rowKeyIndex = i;
+								break;
 							}
+						}
+						String rowKeyDynamic = input_rows[rowKeyIndex] + "_" + formattedDate;
+		      	        Put row = new Put(Bytes.toBytes(rowKeyDynamic));
 
-		      	        }
+
+						  for (int i = 0; i<input_rows.length; i++) {
+
+							  //System.out.println("Input Row value: " + input_rows[i]);
+
+							  for(int j = 0; j<input_columns.length; j++){
+
+								  if (i==j)
+								  {
+									  //System.out.println("Table Column Name: " + input_columns[j]);
+									  row.addColumn(
+											  Bytes.toBytes(ColumnFamily),
+											  Bytes.toBytes(input_columns[j]),
+											  timestamp,
+											  Bytes.toBytes(input_rows[i]));
+								  }
+							  }
+						  }
 		                out.output(row);
 		      	      }
 		            }))
