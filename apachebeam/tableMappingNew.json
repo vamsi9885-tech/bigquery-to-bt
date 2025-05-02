@@ -1,0 +1,17 @@
+{
+    "columnNames" : { "column1": "cf1","column2": "cf1",
+        "column3": "cf2",
+        "column4": "cf2"
+    },
+    "Rowkey" : "column1,column2",
+    "tempPath" : "gear_hist_finapi/sample_testing/cars_logs/",
+    "gearProjectId" : "prj-d-gbl-gar-epgear",
+    "bqTableName" : "cars_logs",
+    "datasetId" : "temp",
+    "btTableName" : "gear_cars_logs_apachebeam",
+    "btInstanceId" : "lumiplfeng-decppgusbt241030202635",
+    "btProjectId" : "prj-d-lumi-bt",
+    "pysparkBqConnector" : "gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.27.0.jar",
+    "preDataFlowPyURI":"gs://prj-d-gbl-gar-epgear/gear_hist_finapi/sample_testing/testing_akbehe/post_dataflow.py",
+    "postDataFlowPyURI":"gs://prj-d-gbl-gar-epgear/gear_hist_finapi/sample_testing/testing_akbehe/post_dataflow.py"
+}
