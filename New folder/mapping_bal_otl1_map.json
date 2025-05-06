@@ -1,0 +1,1917 @@
+{
+  "table": {
+    "project": "axp-lumid",
+    "dataset": "dw",
+    "table_name": "triumph_balance"
+  },
+  "rowkey": "bq_rowkey",
+  "decrypt_cm13" : "`{project}.{dataset}`.decrypt_sde(`{project}.{dataset}`.get_sde_tag('cm13','triumph_balance'),cm13)",
+  "query_template": "SELECT ({decrypt_cm13} || '#' || hb9_date_stmt_yr || hb9_date_stmt_mo) AS bq_rowkey, {columns} FROM `{project}.{dataset}.{table_name}` WHERE hb9_date_stmt_yr=2024 and hb9_date_stmt_mo='02' LIMIT 10",
+  "column_mapping":{
+    "bq_rowkey" :{
+      "cf" :"rowkey",
+      "col" :"bq_rowkey",
+      "type" :"string"
+    },
+    "hb9_date_stmt_yr" :{
+      "cf" :"gen",
+      "col" :"aa",
+      "type" :"string"
+    },
+    "hb9_date_stmt_mo" :{
+      "cf" :"gen",
+      "col" :"ab",
+      "type" :"string"
+    },
+    "cm13" :{
+      "cf" :"gen",
+      "col" :"ac",
+      "type" :"string"
+    },
+    "hb9_nbr_offr_terms_id" :{
+      "cf" :"gen",
+      "col" :"ad",
+      "type" :"string"
+    },
+    "hb9_code_bal_type" :{
+      "cf" :"gen",
+      "col" :"ae",
+      "type" :"string"
+    },
+    "hb9_date_stmt_dy" :{
+      "cf" :"gen",
+      "col" :"af",
+      "type" :"string"
+    },
+    "butl_code_rec_type" :{
+      "cf" :"gen",
+      "col" :"ag",
+      "type" :"string"
+    },
+    "butl_code_tran_dest_ccy" :{
+      "cf" :"gen",
+      "col" :"ah",
+      "type" :"string"
+    },
+    "butl_nbr_cardh_acct" :{
+      "cf" :"gen",
+      "col" :"ai",
+      "type" :"string"
+    },
+    "cm15" :{
+      "cf" :"gen",
+      "col" :"aj",
+      "type" :"string"
+    },
+    "butl_nbr_offr_terms_id" :{
+      "cf" :"gen",
+      "col" :"ak",
+      "type" :"string"
+    },
+    "butl_amt_crnt_new_prch" :{
+      "cf" :"gen",
+      "col" :"al",
+      "type" :"string"
+    },
+    "butl_amt_crnt_new_cadv" :{
+      "cf" :"gen",
+      "col" :"am",
+      "type" :"string"
+    },
+    "butl_amt_ctd_prch_fnchg" :{
+      "cf" :"gen",
+      "col" :"an",
+      "type" :"string"
+    },
+    "butl_amt_ctd_cadv_fnchg" :{
+      "cf" :"gen",
+      "col" :"ao",
+      "type" :"string"
+    },
+    "butl_amt_cyc_prch_fee" :{
+      "cf" :"gen",
+      "col" :"ap",
+      "type" :"string"
+    },
+    "butl_amt_cyc_cadv_fee" :{
+      "cf" :"gen",
+      "col" :"aq",
+      "type" :"string"
+    },
+    "butl_amt_ctd_fc_ins_bal" :{
+      "cf" :"gen",
+      "col" :"ar",
+      "type" :"string"
+    },
+    "butl_amt_pymt_prch" :{
+      "cf" :"pmt",
+      "col" :"as",
+      "type" :"string"
+    },
+    "butl_amt_pymt_cadv" :{
+      "cf" :"pmt",
+      "col" :"at",
+      "type" :"string"
+    },
+    "butl_amt_pymt_prch_fc" :{
+      "cf" :"pmt",
+      "col" :"au",
+      "type" :"string"
+    },
+    "butl_amt_pymt_cadv_fc" :{
+      "cf" :"pmt",
+      "col" :"av",
+      "type" :"string"
+    },
+    "butl_amt_pymt_prch_fee" :{
+      "cf" :"pmt",
+      "col" :"aw",
+      "type" :"string"
+    },
+    "butl_amt_pymt_cadv_fee" :{
+      "cf" :"pmt",
+      "col" :"ax",
+      "type" :"string"
+    },
+    "butl_amt_pymt_ins" :{
+      "cf" :"pmt",
+      "col" :"ay",
+      "type" :"string"
+    },
+    "butl_amt_cyc_prch_adj" :{
+      "cf" :"prc",
+      "col" :"az",
+      "type" :"string"
+    },
+    "butl_amt_cyc_cadv_adj" :{
+      "cf" :"cdv",
+      "col" :"ba",
+      "type" :"string"
+    },
+    "butl_amt_aj_prch_fc_cyc" :{
+      "cf" :"prc",
+      "col" :"bb",
+      "type" :"string"
+    },
+    "butl_amt_adj_ca_fc_cyc" :{
+      "cf" :"cdv",
+      "col" :"cc",
+      "type" :"string"
+    },
+    "butl_amt_ajd_prch_fee" :{
+      "cf" :"prc",
+      "col" :"bd",
+      "type" :"string"
+    },
+    "butl_amt_adj_cadv_fee" :{
+      "cf" :"cdv",
+      "col" :"be",
+      "type" :"string"
+    },
+    "butl_amt_adj_ins" :{
+      "cf" :"prc",
+      "col" :"bf",
+      "type" :"string"
+    },
+    "butl_amt_crnt_prch_bal" :{
+      "cf" :"prc",
+      "col" :"bg",
+      "type" :"string"
+    },
+    "butl_amt_crnt_cadv_bal" :{
+      "cf" :"cdv",
+      "col" :"bh",
+      "type" :"string"
+    },
+    "butl_amt_fnchg_prch" :{
+      "cf" :"prc",
+      "col" :"bi",
+      "type" :"string"
+    },
+    "butl_amt_fnchg_cadv" :{
+      "cf" :"cdv",
+      "col" :"bj",
+      "type" :"string"
+    },
+    "butl_amt_crnt_prch_fee" :{
+      "cf" :"prc",
+      "col" :"bk",
+      "type" :"string"
+    },
+    "butl_amt_crnt_cadv_fee" :{
+      "cf" :"cdv",
+      "col" :"bl",
+      "type" :"string"
+    },
+    "butl_amt_insur_bal" :{
+      "cf" :"prc",
+      "col" :"bm",
+      "type" :"string"
+    },
+    "butl_pct_natl_prime" :{
+      "cf" :"pmt",
+      "col" :"bn",
+      "type" :"string"
+    },
+    "butl_pct_annl_nat_prime" :{
+      "cf" :"pmt",
+      "col" :"bo",
+      "type" :"string"
+    },
+    "butl_pct_90_tbill" :{
+      "cf" :"pmt",
+      "col" :"bp",
+      "type" :"string"
+    },
+    "butl_pct_annl_90_tbill" :{
+      "cf" :"pmt",
+      "col" :"bq",
+      "type" :"string"
+    },
+    "butl_pct_one_year_tbill" :{
+      "cf" :"pmt",
+      "col" :"br",
+      "type" :"string"
+    },
+    "butl_pct_annl_yr_tbill" :{
+      "cf" :"pmt",
+      "col" :"bs",
+      "type" :"string"
+    },
+    "butl_indc_fc_calc_meth" :{
+      "cf" :"pmt",
+      "col" :"bt",
+      "type" :"string"
+    },
+    "butl_pct_prch_fc_1" :{
+      "cf" :"prc",
+      "col" :"bu",
+      "type" :"string"
+    },
+    "butl_pct_prch_fc_apr_1" :{
+      "cf" :"prc",
+      "col" :"bv",
+      "type" :"string"
+    },
+    "butl_code_prch_natl_rte" :{
+      "cf" :"prc",
+      "col" :"bw",
+      "type" :"string"
+    },
+    "butl_indc_prch_dly_mthl" :{
+      "cf" :"prc",
+      "col" :"bx",
+      "type" :"string"
+    },
+    "butl_pct_cadv_fc_1" :{
+      "cf" :"cdv",
+      "col" :"by",
+      "type" :"string"
+    },
+    "butl_pct_cadv_fc_apr_1" :{
+      "cf" :"cdv",
+      "col" :"bz",
+      "type" :"string"
+    },
+    "butl_code_cadv_natl_rte" :{
+      "cf" :"cdv",
+      "col" :"ca",
+      "type" :"string"
+    },
+    "butl_indc_cadv_dly_mthl" :{
+      "cf" :"cdv",
+      "col" :"cb",
+      "type" :"string"
+    },
+    "butl_code_incl_fc_bal" :{
+      "cf" :"gen",
+      "col" :"cc",
+      "type" :"string"
+    },
+    "butl_code_fc_incl_fee" :{
+      "cf" :"gen",
+      "col" :"cd",
+      "type" :"string"
+    },
+    "butl_code_fc_incl_ins" :{
+      "cf" :"gen",
+      "col" :"ce",
+      "type" :"string"
+    },
+    "butl_indc_grms_acct" :{
+      "cf" :"gen",
+      "col" :"cf",
+      "type" :"string"
+    },
+    "butl_amt_prch_adb" :{
+      "cf" :"prc",
+      "col" :"cg",
+      "type" :"string"
+    },
+    "butl_amt_cadv_adb" :{
+      "cf" :"cdv",
+      "col" :"ch",
+      "type" :"string"
+    },
+    "butl_nbr_plyr_acct" :{
+      "cf" :"gen",
+      "col" :"ci",
+      "type" :"string"
+    },
+    "butl_code_prod_nbr" :{
+      "cf" :"gen",
+      "col" :"cj",
+      "type" :"string"
+    },
+    "butl_code_stgy" :{
+      "cf" :"gen",
+      "col" :"ck",
+      "type" :"string"
+    },
+    "butl_code_stgy_2" :{
+      "cf" :"gen",
+      "col" :"cl",
+      "type" :"string"
+    },
+    "butl_code_stgy_3" :{
+      "cf" :"gen",
+      "col" :"cm",
+      "type" :"string"
+    },
+    "butl_code_stgy_4" :{
+      "cf" :"gen",
+      "col" :"cn",
+      "type" :"string"
+    },
+    "butl_code_acct_cyc_day" :{
+      "cf" :"gen",
+      "col" :"co",
+      "type" :"string"
+    },
+    "butl_code_bal_type" :{
+      "cf" :"gen",
+      "col" :"cp",
+      "type" :"string"
+    },
+    "butl_pct_prch_dpr" :{
+      "cf" :"prc",
+      "col" :"cq",
+      "type" :"string"
+    },
+    "butl_pct_cash_dpr" :{
+      "cf" :"cdv",
+      "col" :"cr",
+      "type" :"string"
+    },
+    "butl_nbr_prch_fc_opt" :{
+      "cf" :"prc",
+      "col" :"cs",
+      "type" :"string"
+    },
+    "butl_nbr_cadv_fc_opt" :{
+      "cf" :"cdv",
+      "col" :"ct",
+      "type" :"string"
+    },
+    "butl_pct_stmt_apr_prch" :{
+      "cf" :"prc",
+      "col" :"cu",
+      "type" :"string"
+    },
+    "butl_pct_stmt_apr_cadv" :{
+      "cf" :"cdv",
+      "col" :"cv",
+      "type" :"string"
+    },
+    "butl_pct_actl_apr_pur" :{
+      "cf" :"prc",
+      "col" :"cw",
+      "type" :"string"
+    },
+    "butl_pct_actl_apr_cadv" :{
+      "cf" :"cdv",
+      "col" :"cx",
+      "type" :"string"
+    },
+    "butl_time_add" :{
+      "cf" :"gen",
+      "col" :"cy",
+      "type" :"string"
+    },
+    "butl_date_stmt_mo" :{
+      "cf" :"gen",
+      "col" :"cz",
+      "type" :"string"
+    },
+    "butl_date_stmt_yr" :{
+      "cf" :"gen",
+      "col" :"da",
+      "type" :"string"
+    },
+    "butl_date_stmt_dy" :{
+      "cf" :"gen",
+      "col" :"db",
+      "type" :"string"
+    },
+    "butl_amt_delnq_due" :{
+      "cf" :"gen",
+      "col" :"dc",
+      "type" :"string"
+    },
+    "butl_code_stmt_addr" :{
+      "cf" :"gen",
+      "col" :"dd",
+      "type" :"string"
+    },
+    "butl_nme_beg_titl_ptcpt" :{
+      "cf" :"gen",
+      "col" :"de",
+      "type" :"string"
+    },
+    "butl_nme_1st_ptcpt" :{
+      "cf" :"gen",
+      "col" :"df",
+      "type" :"string"
+    },
+    "butl_nme_midi_ptcpt" :{
+      "cf" :"gen",
+      "col" :"dg",
+      "type" :"string"
+    },
+    "butl_nme_last_ptcpt" :{
+      "cf" :"gen",
+      "col" :"dh",
+      "type" :"string"
+    },
+    "butl_nme_end_titl_ptcpt" :{
+      "cf" :"gen",
+      "col" :"di",
+      "type" :"string"
+    },
+    "butl_qty_item_in_suspn" :{
+      "cf" :"gen",
+      "col" :"dj",
+      "type" :"string"
+    },
+    "butl_date_due" :{
+      "cf" :"gen",
+      "col" :"dk",
+      "type" :"string"
+    },
+    "butl_code_acct_stat" :{
+      "cf" :"gen",
+      "col" :"dl",
+      "type" :"string"
+    },
+    "butl_code_prev_stat" :{
+      "cf" :"gen",
+      "col" :"dm",
+      "type" :"string"
+    },
+    "butl_amt_acct_cr_limt" :{
+      "cf" :"gen",
+      "col" :"dn",
+      "type" :"string"
+    },
+    "butl_amt_acct_overl" :{
+      "cf" :"gen",
+      "col" :"do",
+      "type" :"string"
+    },
+    "butl_amt_suspn" :{
+      "cf" :"gen",
+      "col" :"dp",
+      "type" :"string"
+    },
+    "butl_amt_curr_outst_bal" :{
+      "cf" :"gen",
+      "col" :"dq",
+      "type" :"string"
+    },
+    "butl_amt_bal_last_stmt" :{
+      "cf" :"gen",
+      "col" :"dr",
+      "type" :"string"
+    },
+    "butl_amt_overl_chrg" :{
+      "cf" :"gen",
+      "col" :"ds",
+      "type" :"string"
+    },
+    "butl_amt_cr_avbl" :{
+      "cf" :"gen",
+      "col" :"dt",
+      "type" :"string"
+    },
+    "butl_amt_total_fnchg" :{
+      "cf" :"gen",
+      "col" :"du",
+      "type" :"string"
+    },
+    "butl_amt_curr_min_due" :{
+      "cf" :"gen",
+      "col" :"dv",
+      "type" :"string"
+    },
+    "butl_amt_stmt_skip_pay" :{
+      "cf" :"gen",
+      "col" :"dw",
+      "type" :"string"
+    },
+    "butl_amt_other_due" :{
+      "cf" :"gen",
+      "col" :"dx",
+      "type" :"string"
+    },
+    "butl_qty_prch_cyc" :{
+      "cf" :"gen",
+      "col" :"dy",
+      "type" :"string"
+    },
+    "butl_qty_cadv_cyc" :{
+      "cf" :"gen",
+      "col" :"dz",
+      "type" :"string"
+    },
+    "butl_indc_dlnq" :{
+      "cf" :"dlq",
+      "col" :"ea",
+      "type" :"string"
+    },
+    "butl_date_actual_delnq" :{
+      "cf" :"dlq",
+      "col" :"eb",
+      "type" :"string"
+    },
+    "butl_amt_delnq_neg_1" :{
+      "cf" :"dlq",
+      "col" :"ec",
+      "type" :"string"
+    },
+    "butl_date_neg_1_aged" :{
+      "cf" :"dlq",
+      "col" :"ed",
+      "type" :"string"
+    },
+    "butl_amt_delnq_neg_2" :{
+      "cf" :"dlq",
+      "col" :"ee",
+      "type" :"string"
+    },
+    "butl_date_neg_2_aged" :{
+      "cf" :"dlq",
+      "col" :"ef",
+      "type" :"string"
+    },
+    "butl_amt_dlnq_neg_3" :{
+      "cf" :"dlq",
+      "col" :"eg",
+      "type" :"string"
+    },
+    "butl_date_neg_3_aged" :{
+      "cf" :"dlq",
+      "col" :"eh",
+      "type" :"string"
+    },
+    "butl_amt_dlnq_neg_4" :{
+      "cf" :"dlq",
+      "col" :"ei",
+      "type" :"string"
+    },
+    "butl_date_neg_4_aged" :{
+      "cf" :"dlq",
+      "col" :"ej",
+      "type" :"string"
+    },
+    "butl_amt_dlnq_neg_5" :{
+      "cf" :"dlq",
+      "col" :"ek",
+      "type" :"string"
+    },
+    "butl_date_neg_5_aged" :{
+      "cf" :"dlq",
+      "col" :"el",
+      "type" :"string"
+    },
+    "butl_amt_dlnq_neg_6" :{
+      "cf" :"dlq",
+      "col" :"em",
+      "type" :"string"
+    },
+    "butl_date_neg_6_aged" :{
+      "cf" :"dlq",
+      "col" :"en",
+      "type" :"string"
+    },
+    "butl_amt_dlnq_neg_7" :{
+      "cf" :"dlq",
+      "col" :"eo",
+      "type" :"string"
+    },
+    "butl_date_neg_7_aged" :{
+      "cf" :"dlq",
+      "col" :"ep",
+      "type" :"string"
+    },
+    "butl_amt_dlnq_neg_8" :{
+      "cf" :"dlq",
+      "col" :"eq",
+      "type" :"string"
+    },
+    "butl_date_neg_8_aged" :{
+      "cf" :"dlq",
+      "col" :"er",
+      "type" :"string"
+    },
+    "butl_indc_promo_bal" :{
+      "cf" :"dlq",
+      "col" :"es",
+      "type" :"string"
+    },
+    "butl_date_last_paymt" :{
+      "cf" :"dlq",
+      "col" :"et",
+      "type" :"string"
+    },
+    "butl_code_prev_cyc_day" :{
+      "cf" :"dlq",
+      "col" :"eu",
+      "type" :"string"
+    },
+    "butl_indc_skip_pymt" :{
+      "cf" :"dlq",
+      "col" :"ev",
+      "type" :"string"
+    },
+    "butl_code_late_fee" :{
+      "cf" :"dlq",
+      "col" :"ew",
+      "type" :"string"
+    },
+    "butl_code_acct_clas" :{
+      "cf" :"dlq",
+      "col" :"ex",
+      "type" :"string"
+    },
+    "butl_date_calc_delnq" :{
+      "cf" :"dlq",
+      "col" :"ey",
+      "type" :"string"
+    },
+    "butl_code_paymt_hist" :{
+      "cf" :"dlq",
+      "col" :"ez",
+      "type" :"string"
+    },
+    "butl_amt_ytd_late_fee" :{
+      "cf" :"dlq",
+      "col" :"fa",
+      "type" :"string"
+    },
+    "butl_date_last_overl" :{
+      "cf" :"dlq",
+      "col" :"fb",
+      "type" :"string"
+    },
+    "butl_date_last_delnq" :{
+      "cf" :"dlq",
+      "col" :"fc",
+      "type" :"string"
+    },
+    "butl_amt_fnchg_pd_ytd" :{
+      "cf" :"dlq",
+      "col" :"fd",
+      "type" :"string"
+    },
+    "butl_date_last_cadv" :{
+      "cf" :"gen",
+      "col" :"fe",
+      "type" :"string"
+    },
+    "butl_date_last_prch" :{
+      "cf" :"gen",
+      "col" :"ff",
+      "type" :"string"
+    },
+    "butl_date_last_crnt" :{
+      "cf" :"gen",
+      "col" :"fg",
+      "type" :"string"
+    },
+    "butl_nme_prmy_card" :{
+      "cf" :"gen",
+      "col" :"fh",
+      "type" :"string"
+    },
+    "butl_addr_city" :{
+      "cf" :"gen",
+      "col" :"fi",
+      "type" :"string"
+    },
+    "butl_date_cr_limt_chng" :{
+      "cf" :"gen",
+      "col" :"fj",
+      "type" :"string"
+    },
+    "butl_nbr_acct_xfer_fm" :{
+      "cf" :"gen",
+      "col" :"fk",
+      "type" :"string"
+    },
+    "butl_nbr_acct_xfer_to" :{
+      "cf" :"gen",
+      "col" :"fl",
+      "type" :"string"
+    },
+    "butl_amt_acct_xfer_bal" :{
+      "cf" :"gen",
+      "col" :"fm",
+      "type" :"string"
+    },
+    "butl_date_last_use_xfer" :{
+      "cf" :"gen",
+      "col" :"fn",
+      "type" :"string"
+    },
+    "butl_amt_fnchg_prev_yr" :{
+      "cf" :"gen",
+      "col" :"fo",
+      "type" :"string"
+    },
+    "butl_amt_fc_pd_pri_yr" :{
+      "cf" :"gen",
+      "col" :"fp",
+      "type" :"string"
+    },
+    "butl_amt_ppt_pre_pay" :{
+      "cf" :"gen",
+      "col" :"fq",
+      "type" :"string"
+    },
+    "butl_qty_nbr_cyc" :{
+      "cf" :"gen",
+      "col" :"fr",
+      "type" :"string"
+    },
+    "butl_qty_csc_py_on_time" :{
+      "cf" :"gen",
+      "col" :"fs",
+      "type" :"string"
+    },
+    "butl_date_chgof" :{
+      "cf" :"gen",
+      "col" :"ft",
+      "type" :"string"
+    },
+    "butl_indc_wve_fnchg" :{
+      "cf" :"gen",
+      "col" :"fu",
+      "type" :"string"
+    },
+    "butl_indc_no_pset_lmt" :{
+      "cf" :"gen",
+      "col" :"fv",
+      "type" :"string"
+    },
+    "butl_date_first_use" :{
+      "cf" :"gen",
+      "col" :"fw",
+      "type" :"string"
+    },
+    "butl_amt_last_paymt" :{
+      "cf" :"gen",
+      "col" :"fx",
+      "type" :"string"
+    },
+    "butl_amt_stmt_min_due" :{
+      "cf" :"gen",
+      "col" :"fy",
+      "type" :"string"
+    },
+    "butl_code_dlnq_stat_36" :{
+      "cf" :"gen",
+      "col" :"fz",
+      "type" :"string"
+    },
+    "butl_date_acct_lst_cyc" :{
+      "cf" :"gen",
+      "col" :"ga",
+      "type" :"string"
+    },
+    "butl_code_pr_po_fin" :{
+      "cf" :"gen",
+      "col" :"gb",
+      "type" :"string"
+    },
+    "butl_amt_dnlq_rev" :{
+      "cf" :"gen",
+      "col" :"gc",
+      "type" :"string"
+    },
+    "butl_amt_dnlq_chg" :{
+      "cf" :"gen",
+      "col" :"gd",
+      "type" :"string"
+    },
+    "butl_amt_ctd_pch_cr_voc" :{
+      "cf" :"gen",
+      "col" :"ge",
+      "type" :"string"
+    },
+    "butl_amt_carry_chrg" :{
+      "cf" :"gen",
+      "col" :"gf",
+      "type" :"string"
+    },
+    "butl_code_claim_stat" :{
+      "cf" :"gen",
+      "col" :"gg",
+      "type" :"string"
+    },
+    "butl_qty_rtrn_ck" :{
+      "cf" :"gen",
+      "col" :"gh",
+      "type" :"string"
+    },
+    "butl_amt_ac_cash_cr_lmt" :{
+      "cf" :"gen",
+      "col" :"gi",
+      "type" :"string"
+    },
+    "butl_qty_days_delq_setl" :{
+      "cf" :"gen",
+      "col" :"gj",
+      "type" :"string"
+    },
+    "butl_amt_rvlv_crnt_min" :{
+      "cf" :"gen",
+      "col" :"gk",
+      "type" :"string"
+    },
+    "butl_nbr_acct_autop_ach" :{
+      "cf" :"gen",
+      "col" :"gl",
+      "type" :"string"
+    },
+    "butl_indc_trust" :{
+      "cf" :"gen",
+      "col" :"gm",
+      "type" :"string"
+    },
+    "butl_desc_prod_short_10" :{
+      "cf" :"gen",
+      "col" :"gn",
+      "type" :"string"
+    },
+    "butl_nbr_sub_prod_1" :{
+      "cf" :"gen",
+      "col" :"go",
+      "type" :"string"
+    },
+    "butl_code_chgof_class" :{
+      "cf" :"gen",
+      "col" :"gp",
+      "type" :"string"
+    },
+    "butl_addr_state" :{
+      "cf" :"gen",
+      "col" :"gq",
+      "type" :"string"
+    },
+    "butl_rfrn_tier_crnt" :{
+      "cf" :"gen",
+      "col" :"gr",
+      "type" :"string"
+    },
+    "butl_pct_cur_flr_apr_p" :{
+      "cf" :"prc",
+      "col" :"gs",
+      "type" :"string"
+    },
+    "butl_pct_cur_flr_dpr_p" :{
+      "cf" :"prc",
+      "col" :"gt",
+      "type" :"string"
+    },
+    "butl_pct_cur_flr_apr_c" :{
+      "cf" :"prc",
+      "col" :"gu",
+      "type" :"string"
+    },
+    "butl_pct_cur_flr_dpr_c" :{
+      "cf" :"prc",
+      "col" :"gv",
+      "type" :"string"
+    },
+    "butl_code_prch_pric_lvl" :{
+      "cf" :"prc",
+      "col" :"gw",
+      "type" :"string"
+    },
+    "butl_code_prch_nat_rate" :{
+      "cf" :"prc",
+      "col" :"gx",
+      "type" :"string"
+    },
+    "butl_pct_prch_mrgn_apr" :{
+      "cf" :"prc",
+      "col" :"gy",
+      "type" :"string"
+    },
+    "butl_amt_prch_apr_rate" :{
+      "cf" :"prc",
+      "col" :"gz",
+      "type" :"string"
+    },
+    "butl_amt_prch_fc_dpr" :{
+      "cf" :"prc",
+      "col" :"ha",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_apr" :{
+      "cf" :"prc",
+      "col" :"hb",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_dpr" :{
+      "cf" :"prc",
+      "col" :"hc",
+      "type" :"string"
+    },
+    "butl_code_prch_pric_lvl1" :{
+      "cf" :"prc",
+      "col" :"hd",
+      "type" :"string"
+    },
+    "butl_code_prch_nat_rate1" :{
+      "cf" :"prc",
+      "col" :"he",
+      "type" :"string"
+    },
+    "butl_pct_prch_mrgn_apr1" :{
+      "cf" :"prc",
+      "col" :"hf",
+      "type" :"string"
+    },
+    "butl_amt_prch_apr_rate1" :{
+      "cf" :"prc",
+      "col" :"hg",
+      "type" :"string"
+    },
+    "butl_amt_prch_fc_dpr1" :{
+      "cf" :"prc",
+      "col" :"hh",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_apr1" :{
+      "cf" :"prc",
+      "col" :"hi",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_dpr1" :{
+      "cf" :"prc",
+      "col" :"hj",
+      "type" :"string"
+    },
+    "butl_code_prch_pric_lvl2" :{
+      "cf" :"prc",
+      "col" :"hk",
+      "type" :"string"
+    },
+    "butl_code_prch_nat_rate2" :{
+      "cf" :"prc",
+      "col" :"hl",
+      "type" :"string"
+    },
+    "butl_pct_prch_mrgn_apr2" :{
+      "cf" :"prc",
+      "col" :"hm",
+      "type" :"string"
+    },
+    "butl_amt_prch_apr_rate2" :{
+      "cf" :"prc",
+      "col" :"hn",
+      "type" :"string"
+    },
+    "butl_amt_prch_fc_dpr2" :{
+      "cf" :"prc",
+      "col" :"ho",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_apr2" :{
+      "cf" :"prc",
+      "col" :"hp",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_dpr2" :{
+      "cf" :"prc",
+      "col" :"hq",
+      "type" :"string"
+    },
+    "butl_code_prch_pric_lvl3" :{
+      "cf" :"prc",
+      "col" :"hr",
+      "type" :"string"
+    },
+    "butl_code_prch_nat_rate3" :{
+      "cf" :"prc",
+      "col" :"hs",
+      "type" :"string"
+    },
+    "butl_pct_prch_mrgn_apr3" :{
+      "cf" :"prc",
+      "col" :"ht",
+      "type" :"string"
+    },
+    "butl_amt_prch_apr_rate3" :{
+      "cf" :"prc",
+      "col" :"hu",
+      "type" :"string"
+    },
+    "butl_amt_prch_fc_dpr3" :{
+      "cf" :"prc",
+      "col" :"hv",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_apr3" :{
+      "cf" :"prc",
+      "col" :"hw",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_dpr3" :{
+      "cf" :"prc",
+      "col" :"hx",
+      "type" :"string"
+    },
+    "butl_code_prch_pric_lvl4" :{
+      "cf" :"prc",
+      "col" :"hy",
+      "type" :"string"
+    },
+    "butl_code_prch_nat_rate4" :{
+      "cf" :"prc",
+      "col" :"hz",
+      "type" :"string"
+    },
+    "butl_pct_prch_mrgn_apr4" :{
+      "cf" :"prc",
+      "col" :"ia",
+      "type" :"string"
+    },
+    "butl_amt_prch_apr_rate4" :{
+      "cf" :"prc",
+      "col" :"ib",
+      "type" :"string"
+    },
+    "butl_amt_prch_fc_dpr4" :{
+      "cf" :"prc",
+      "col" :"ic",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_apr4" :{
+      "cf" :"prc",
+      "col" :"id",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_dpr4" :{
+      "cf" :"prc",
+      "col" :"ie",
+      "type" :"string"
+    },
+    "butl_code_prch_pric_lvl5" :{
+      "cf" :"prc",
+      "col" :"if",
+      "type" :"string"
+    },
+    "butl_code_prch_nat_rate5" :{
+      "cf" :"prc",
+      "col" :"ig",
+      "type" :"string"
+    },
+    "butl_pct_prch_mrgn_apr5" :{
+      "cf" :"prc",
+      "col" :"ih",
+      "type" :"string"
+    },
+    "butl_amt_prch_apr_rate5" :{
+      "cf" :"prc",
+      "col" :"ii",
+      "type" :"string"
+    },
+    "butl_amt_prch_fc_dpr5" :{
+      "cf" :"prc",
+      "col" :"ij",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_apr5" :{
+      "cf" :"prc",
+      "col" :"ik",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_dpr5" :{
+      "cf" :"prc",
+      "col" :"il",
+      "type" :"string"
+    },
+    "butl_code_prch_pric_lvl6" :{
+      "cf" :"prc",
+      "col" :"im",
+      "type" :"string"
+    },
+    "butl_code_prch_nat_rate6" :{
+      "cf" :"prc",
+      "col" :"in",
+      "type" :"string"
+    },
+    "butl_pct_prch_mrgn_apr6" :{
+      "cf" :"prc",
+      "col" :"io",
+      "type" :"string"
+    },
+    "butl_amt_prch_apr_rate6" :{
+      "cf" :"prc",
+      "col" :"ip",
+      "type" :"string"
+    },
+    "butl_amt_prch_fc_dpr6" :{
+      "cf" :"prc",
+      "col" :"iq",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_apr6" :{
+      "cf" :"prc",
+      "col" :"ir",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_dpr6" :{
+      "cf" :"prc",
+      "col" :"is",
+      "type" :"string"
+    },
+    "butl_code_prch_pric_lvl7" :{
+      "cf" :"prc",
+      "col" :"it",
+      "type" :"string"
+    },
+    "butl_code_prch_nat_rate7" :{
+      "cf" :"prc",
+      "col" :"iu",
+      "type" :"string"
+    },
+    "butl_pct_prch_mrgn_apr7" :{
+      "cf" :"prc",
+      "col" :"iv",
+      "type" :"string"
+    },
+    "butl_amt_prch_apr_rate7" :{
+      "cf" :"prc",
+      "col" :"iw",
+      "type" :"string"
+    },
+    "butl_amt_prch_fc_dpr7" :{
+      "cf" :"prc",
+      "col" :"ix",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_apr7" :{
+      "cf" :"prc",
+      "col" :"iy",
+      "type" :"string"
+    },
+    "butl_pct_prch_flr_dpr7" :{
+      "cf" :"prc",
+      "col" :"iz",
+      "type" :"string"
+    },
+    "butl_code_cadv_pric_lvl" :{
+      "cf" :"cdv",
+      "col" :"ja",
+      "type" :"string"
+    },
+    "butl_code_cadv_nat_rate" :{
+      "cf" :"cdv",
+      "col" :"jb",
+      "type" :"string"
+    },
+    "butl_pct_cadv_mrgn_apr" :{
+      "cf" :"cdv",
+      "col" :"jc",
+      "type" :"string"
+    },
+    "butl_amt_cadv_apr_rate" :{
+      "cf" :"cdv",
+      "col" :"jd",
+      "type" :"string"
+    },
+    "butl_amt_cadv_fc_dpr" :{
+      "cf" :"cdv",
+      "col" :"je",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_apr" :{
+      "cf" :"cdv",
+      "col" :"jf",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_dpr" :{
+      "cf" :"cdv",
+      "col" :"jg",
+      "type" :"string"
+    },
+    "butl_code_cadv_pric_lvl1" :{
+      "cf" :"cdv",
+      "col" :"jh",
+      "type" :"string"
+    },
+    "butl_code_cadv_nat_rate1" :{
+      "cf" :"cdv",
+      "col" :"ji",
+      "type" :"string"
+    },
+    "butl_pct_cadv_mrgn_apr1" :{
+      "cf" :"cdv",
+      "col" :"jj",
+      "type" :"string"
+    },
+    "butl_amt_cadv_apr_rate1" :{
+      "cf" :"cdv",
+      "col" :"jk",
+      "type" :"string"
+    },
+    "butl_amt_cadv_fc_dpr1" :{
+      "cf" :"cdv",
+      "col" :"jl",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_apr1" :{
+      "cf" :"cdv",
+      "col" :"jm",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_dpr1" :{
+      "cf" :"cdv",
+      "col" :"jn",
+      "type" :"string"
+    },
+    "butl_code_cadv_pric_lvl2" :{
+      "cf" :"cdv",
+      "col" :"jo",
+      "type" :"string"
+    },
+    "butl_code_cadv_nat_rate2" :{
+      "cf" :"cdv",
+      "col" :"jp",
+      "type" :"string"
+    },
+    "butl_pct_cadv_mrgn_apr2" :{
+      "cf" :"cdv",
+      "col" :"jq",
+      "type" :"string"
+    },
+    "butl_amt_cadv_apr_rate2" :{
+      "cf" :"cdv",
+      "col" :"jr",
+      "type" :"string"
+    },
+    "butl_amt_cadv_fc_dpr2" :{
+      "cf" :"cdv",
+      "col" :"js",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_apr2" :{
+      "cf" :"cdv",
+      "col" :"jt",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_dpr2" :{
+      "cf" :"cdv",
+      "col" :"ju",
+      "type" :"string"
+    },
+    "butl_code_cadv_pric_lvl3" :{
+      "cf" :"cdv",
+      "col" :"jv",
+      "type" :"string"
+    },
+    "butl_code_cadv_nat_rate3" :{
+      "cf" :"cdv",
+      "col" :"jw",
+      "type" :"string"
+    },
+    "butl_pct_cadv_mrgn_apr3" :{
+      "cf" :"cdv",
+      "col" :"jx",
+      "type" :"string"
+    },
+    "butl_amt_cadv_apr_rate3" :{
+      "cf" :"cdv",
+      "col" :"jy",
+      "type" :"string"
+    },
+    "butl_amt_cadv_fc_dpr3" :{
+      "cf" :"cdv",
+      "col" :"jz",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_apr3" :{
+      "cf" :"cdv",
+      "col" :"ka",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_dpr3" :{
+      "cf" :"cdv",
+      "col" :"kb",
+      "type" :"string"
+    },
+    "butl_code_cadv_pric_lvl4" :{
+      "cf" :"cdv",
+      "col" :"kc",
+      "type" :"string"
+    },
+    "butl_code_cadv_nat_rate4" :{
+      "cf" :"cdv",
+      "col" :"kd",
+      "type" :"string"
+    },
+    "butl_pct_cadv_mrgn_apr4" :{
+      "cf" :"cdv",
+      "col" :"ke",
+      "type" :"string"
+    },
+    "butl_amt_cadv_apr_rate4" :{
+      "cf" :"cdv",
+      "col" :"kf",
+      "type" :"string"
+    },
+    "butl_amt_cadv_fc_dpr4" :{
+      "cf" :"cdv",
+      "col" :"kg",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_apr4" :{
+      "cf" :"cdv",
+      "col" :"kh",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_dpr4" :{
+      "cf" :"cdv",
+      "col" :"ki",
+      "type" :"string"
+    },
+    "butl_code_cadv_pric_lvl5" :{
+      "cf" :"cdv",
+      "col" :"kj",
+      "type" :"string"
+    },
+    "butl_code_cadv_nat_rate5" :{
+      "cf" :"cdv",
+      "col" :"kk",
+      "type" :"string"
+    },
+    "butl_pct_cadv_mrgn_apr5" :{
+      "cf" :"cdv",
+      "col" :"kl",
+      "type" :"string"
+    },
+    "butl_amt_cadv_apr_rate5" :{
+      "cf" :"cdv",
+      "col" :"km",
+      "type" :"string"
+    },
+    "butl_amt_cadv_fc_dpr5" :{
+      "cf" :"cdv",
+      "col" :"kn",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_apr5" :{
+      "cf" :"cdv",
+      "col" :"ko",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_dpr5" :{
+      "cf" :"cdv",
+      "col" :"kp",
+      "type" :"string"
+    },
+    "butl_code_cadv_pric_lvl6" :{
+      "cf" :"cdv",
+      "col" :"kq",
+      "type" :"string"
+    },
+    "butl_code_cadv_nat_rate6" :{
+      "cf" :"cdv",
+      "col" :"kr",
+      "type" :"string"
+    },
+    "butl_pct_cadv_mrgn_apr6" :{
+      "cf" :"cdv",
+      "col" :"ks",
+      "type" :"string"
+    },
+    "butl_amt_cadv_apr_rate6" :{
+      "cf" :"cdv",
+      "col" :"kt",
+      "type" :"string"
+    },
+    "butl_amt_cadv_fc_dpr6" :{
+      "cf" :"cdv",
+      "col" :"ku",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_apr6" :{
+      "cf" :"cdv",
+      "col" :"kv",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_dpr6" :{
+      "cf" :"cdv",
+      "col" :"kw",
+      "type" :"string"
+    },
+    "butl_code_cadv_pric_lvl7" :{
+      "cf" :"cdv",
+      "col" :"kx",
+      "type" :"string"
+    },
+    "butl_code_cadv_nat_rate7" :{
+      "cf" :"cdv",
+      "col" :"ky",
+      "type" :"string"
+    },
+    "butl_pct_cadv_mrgn_apr7" :{
+      "cf" :"cdv",
+      "col" :"kz",
+      "type" :"string"
+    },
+    "butl_amt_cadv_apr_rate7" :{
+      "cf" :"cdv",
+      "col" :"la",
+      "type" :"string"
+    },
+    "butl_amt_cadv_fc_dpr7" :{
+      "cf" :"cdv",
+      "col" :"lb",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_apr7" :{
+      "cf" :"cdv",
+      "col" :"lc",
+      "type" :"string"
+    },
+    "butl_pct_cadv_flr_dpr7" :{
+      "cf" :"cdv",
+      "col" :"ld",
+      "type" :"string"
+    },
+    "butl_indc_cyc_rvlv" :{
+      "cf" :"gen",
+      "col" :"le",
+      "type" :"string"
+    },
+    "butl_indc_line_below_ba" :{
+      "cf" :"gen",
+      "col" :"lf",
+      "type" :"string"
+    },
+    "butl_code_fund_inst" :{
+      "cf" :"gen",
+      "col" :"lg",
+      "type" :"string"
+    },
+    "butl_addr_ctry_code" :{
+      "cf" :"gen",
+      "col" :"lh",
+      "type" :"string"
+    },
+    "butl_addr_pstl_code" :{
+      "cf" :"gen",
+      "col" :"li",
+      "type" :"string"
+    },
+    "butl_amt_tot_rvlv_lend" :{
+      "cf" :"gen",
+      "col" :"lj",
+      "type" :"string"
+    },
+    "butl_code_appl_srce" :{
+      "cf" :"gen",
+      "col" :"lk",
+      "type" :"string"
+    },
+    "butl_code_ia_prod_id" :{
+      "cf" :"gen",
+      "col" :"ll",
+      "type" :"string"
+    },
+    "butl_code_ler_type" :{
+      "cf" :"gen",
+      "col" :"lm",
+      "type" :"string"
+    },
+    "butl_date_anniv" :{
+      "cf" :"gen",
+      "col" :"ln",
+      "type" :"string"
+    },
+    "butl_date_eff" :{
+      "cf" :"gen",
+      "col" :"lo",
+      "type" :"string"
+    },
+    "butl_amt_rvlv_splt_pymt" :{
+      "cf" :"pmt",
+      "col" :"lp",
+      "type" :"string"
+    },
+    "butl_amt_chrg_splt_pymt" :{
+      "cf" :"pmt",
+      "col" :"lq",
+      "type" :"string"
+    },
+    "butl_code_sold_selbk" :{
+      "cf" :"pmt",
+      "col" :"lr",
+      "type" :"string"
+    },
+    "butl_date_sold_selbk" :{
+      "cf" :"pmt",
+      "col" :"ls",
+      "type" :"string"
+    },
+    "butl_code_prtnr_id" :{
+      "cf" :"pmt",
+      "col" :"lt",
+      "type" :"string"
+    },
+    "butl_nbr_deal_id" :{
+      "cf" :"pmt",
+      "col" :"lu",
+      "type" :"string"
+    },
+    "butl_indc_erly_pay_enbl" :{
+      "cf" :"pmt",
+      "col" :"lv",
+      "type" :"string"
+    },
+    "butl_amt_epo_cred" :{
+      "cf" :"pmt",
+      "col" :"lw",
+      "type" :"string"
+    },
+    "butl_amt_epo_disc_rate" :{
+      "cf" :"pmt",
+      "col" :"lx",
+      "type" :"string"
+    },
+    "butl_amt_epo_cred1" :{
+      "cf" :"pmt",
+      "col" :"ly",
+      "type" :"string"
+    },
+    "butl_amt_epo_disc_rate1" :{
+      "cf" :"pmt",
+      "col" :"lz",
+      "type" :"string"
+    },
+    "butl_amt_epo_cred2" :{
+      "cf" :"pmt",
+      "col" :"ma",
+      "type" :"string"
+    },
+    "butl_amt_epo_disc_rate2" :{
+      "cf" :"pmt",
+      "col" :"mb",
+      "type" :"string"
+    },
+    "butl_date_next_pay_by" :{
+      "cf" :"pmt",
+      "col" :"mc",
+      "type" :"string"
+    },
+    "butl_amt_erly_pay_disc" :{
+      "cf" :"pmt",
+      "col" :"md",
+      "type" :"string"
+    },
+    "butl_amt_epo_elig_bal" :{
+      "cf" :"pmt",
+      "col" :"me",
+      "type" :"string"
+    },
+    "butl_amt_spnd_disc_rate" :{
+      "cf" :"pmt",
+      "col" :"mf",
+      "type" :"string"
+    },
+    "butl_indc_dfr_pay_enbl" :{
+      "cf" :"mnd",
+      "col" :"mg",
+      "type" :"string"
+    },
+    "butl_amt_defr" :{
+      "cf" :"mnd",
+      "col" :"mh",
+      "type" :"string"
+    },
+    "butl_indc_dfr_pay_elig" :{
+      "cf" :"mnd",
+      "col" :"mi",
+      "type" :"string"
+    },
+    "butl_amt_defr_elig" :{
+      "cf" :"mnd",
+      "col" :"mj",
+      "type" :"string"
+    },
+    "butl_code_min_d_const" :{
+      "cf" :"mnd",
+      "col" :"mk",
+      "type" :"string"
+    },
+    "butl_amt_min_d_a" :{
+      "cf" :"mnd",
+      "col" :"ml",
+      "type" :"string"
+    },
+    "butl_code_prct_fixed" :{
+      "cf" :"mnd",
+      "col" :"mm",
+      "type" :"string"
+    },
+    "butl_pct_min_d_x_fctr" :{
+      "cf" :"mnd",
+      "col" :"mn",
+      "type" :"string"
+    },
+    "butl_amt_min_d_y_fctr" :{
+      "cf" :"mnd",
+      "col" :"mo",
+      "type" :"string"
+    },
+    "butl_amt_min_d_fix_fc" :{
+      "cf" :"mnd",
+      "col" :"mp",
+      "type" :"string"
+    },
+    "butl_amt_xpct_bal" :{
+      "cf" :"mnd",
+      "col" :"mq",
+      "type" :"string"
+    },
+    "butl_amt_new_bal_fc" :{
+      "cf" :"mnd",
+      "col" :"mr",
+      "type" :"string"
+    },
+    "butl_amt_ol_fe_net_ctd" :{
+      "cf" :"mnd",
+      "col" :"ms",
+      "type" :"string"
+    },
+    "butl_amt_lte_fe_net_ctd" :{
+      "cf" :"mnd",
+      "col" :"mt",
+      "type" :"string"
+    },
+    "butl_amt_add_ovr_cr_lmt" :{
+      "cf" :"mnd",
+      "col" :"mu",
+      "type" :"string"
+    },
+    "butl_indc_cons_dcn_ovrd" :{
+      "cf" :"mnd",
+      "col" :"mv",
+      "type" :"string"
+    },
+    "butl_amt_ttl_stmt_fc" :{
+      "cf" :"mnd",
+      "col" :"mw",
+      "type" :"string"
+    },
+    "butl_amt_min_d_overl" :{
+      "cf" :"mnd",
+      "col" :"mx",
+      "type" :"string"
+    },
+    "butl_amt_min_d_fixed" :{
+      "cf" :"mnd",
+      "col" :"my",
+      "type" :"string"
+    },
+    "butl_indc_min_ovrl_fee" :{
+      "cf" :"mnd",
+      "col" :"mz",
+      "type" :"string"
+    },
+    "butl_indc_min_late_fee" :{
+      "cf" :"mnd",
+      "col" :"na",
+      "type" :"string"
+    },
+    "butl_nbr_min_cons_lk_pr" :{
+      "cf" :"mnd",
+      "col" :"nb",
+      "type" :"string"
+    },
+    "butl_pct_min_d_thrshld" :{
+      "cf" :"mnd",
+      "col" :"nc",
+      "type" :"string"
+    },
+    "butl_amt_min_min" :{
+      "cf" :"mnd",
+      "col" :"nd",
+      "type" :"string"
+    },
+    "butl_amt_fc_cap" :{
+      "cf" :"mnd",
+      "col" :"ne",
+      "type" :"string"
+    },
+    "butl_amt_rlv_bal_min" :{
+      "cf" :"mnd",
+      "col" :"nf",
+      "type" :"string"
+    },
+    "butl_amt_min_due_fc" :{
+      "cf" :"mnd",
+      "col" :"ng",
+      "type" :"string"
+    },
+    "butl_indc_out_of_scope" :{
+      "cf" :"mnd",
+      "col" :"nh",
+      "type" :"string"
+    },
+    "butl_indc_trshd" :{
+      "cf" :"mnd",
+      "col" :"ni",
+      "type" :"string"
+    },
+    "butl_code_rev_pymt_sta" :{
+      "cf" :"mnd",
+      "col" :"nj",
+      "type" :"string"
+    },
+    "butl_indc_line_above_ba" :{
+      "cf" :"mnd",
+      "col" :"nk",
+      "type" :"string"
+    },
+    "butl_qty_lrbb_lrab_ovrd" :{
+      "cf" :"mnd",
+      "col" :"nl",
+      "type" :"string"
+    },
+    "butl_amt_pay_cr_dif" :{
+      "cf" :"mnd",
+      "col" :"nm",
+      "type" :"string"
+    },
+    "butl_amt_py_cr_rev" :{
+      "cf" :"mnd",
+      "col" :"nn",
+      "type" :"string"
+    },
+    "butl_amt_tot_stm_db_dif" :{
+      "cf" :"mnd",
+      "col" :"no",
+      "type" :"string"
+    },
+    "butl_amt_tot_stm_db_rev" :{
+      "cf" :"mnd",
+      "col" :"np",
+      "type" :"string"
+    },
+    "butl_amt_pay_cr" :{
+      "cf" :"mnd",
+      "col" :"nq",
+      "type" :"string"
+    },
+    "butl_amt_tot_stm_db" :{
+      "cf" :"mnd",
+      "col" :"nr",
+      "type" :"string"
+    },
+    "butl_nbr_calc_min_py_pr" :{
+      "cf" :"mnd",
+      "col" :"ns",
+      "type" :"string"
+    },
+    "butl_amt_min_py_tot_pay" :{
+      "cf" :"mnd",
+      "col" :"nt",
+      "type" :"string"
+    },
+    "butl_amt_36_mo_fix_pay" :{
+      "cf" :"mnd",
+      "col" :"nu",
+      "type" :"string"
+    },
+    "butl_amt_36_mo_tot_pay" :{
+      "cf" :"mnd",
+      "col" :"nv",
+      "type" :"string"
+    },
+    "butl_code_amrt_excp" :{
+      "cf" :"mnd",
+      "col" :"nw",
+      "type" :"string"
+    },
+    "butl_indc_rebil_redspt" :{
+      "cf" :"mnd",
+      "col" :"nx",
+      "type" :"string"
+    },
+    "butl_time_add_mra" :{
+      "cf" :"mnd",
+      "col" :"ny",
+      "type" :"string"
+    },
+    "butl_intr_saver_pbl_am" :{
+      "cf" :"mnd",
+      "col" :"nz",
+      "type" :"string"
+    },
+    "butl_pct_min_due_fc_am" :{
+      "cf" :"mnd",
+      "col" :"oa",
+      "type" :"string"
+    },
+    "butl_pct_min_due_ovrlmt_am" :{
+      "cf" :"mnd",
+      "col" :"ob",
+      "type" :"string"
+    },
+    "butl_pct_purch_hi_dpr_am" :{
+      "cf" :"mnd",
+      "col" :"oc",
+      "type" :"string"
+    },
+    "butl_pct_cadv_hi_dpr_am" :{
+      "cf" :"mnd",
+      "col" :"od",
+      "type" :"string"
+    },
+    "butl_unpd_bill_bal_prior_am" :{
+      "cf" :"mnd",
+      "col" :"oe",
+      "type" :"string"
+    },
+    "butl_unpd_bill_bal_post_am" :{
+      "cf" :"mnd",
+      "col" :"of",
+      "type" :"string"
+    },
+    "butl_min_due_ovrlmt_am" :{
+      "cf" :"mnd",
+      "col" :"og",
+      "type" :"string"
+    },
+    "butl_dfc_am" :{
+      "cf" :"mnd",
+      "col" :"oh",
+      "type" :"string"
+    },
+    "butl_jgrace_thld_ovrlmt_dt" :{
+      "cf" :"mnd",
+      "col" :"oi",
+      "type" :"string"
+    },
+    "butl_min_due_lmt_use_am" :{
+      "cf" :"mnd",
+      "col" :"oj",
+      "type" :"string"
+    },
+    "butl_avg_bal_lmt_use_am" :{
+      "cf" :"mnd",
+      "col" :"ok",
+      "type" :"string"
+    },
+    "butl_p2p_db_am" :{
+      "cf" :"mnd",
+      "col" :"ol",
+      "type" :"string"
+    },
+    "butl_p2p_cr_am" :{
+      "cf" :"mnd",
+      "col" :"om",
+      "type" :"string"
+    },
+    "delinq_prtn_plan_ura" :{
+      "cf" :"mnd",
+      "col" :"on",
+      "type" :"string"
+    },
+    "bal_dmd_pct" :{
+      "cf" :"mnd",
+      "col" :"oo",
+      "type" :"string"
+    },
+    "bal_fc_plus_xcalc" :{
+      "cf" :"mnd",
+      "col" :"op",
+      "type" :"string"
+    }
+  }
+}
