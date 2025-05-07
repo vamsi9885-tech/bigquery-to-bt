@@ -43,7 +43,7 @@ on:
         description: Specify the release version
         default: ''
   schedule:
-    - cron: "*/2 * * * *" # Runs daily at 12:30 AM UTC
+    - cron: "* * * * *" # Runs daily at 12:30 AM UTC
 
 jobs:
   run-scheduled-and-manual-task:
