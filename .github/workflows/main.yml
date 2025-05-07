@@ -17,31 +17,7 @@ on:
           - qa
           - integration
         default: qa
-      client_resource_name:
-        type: string
-        required: false
-        description: Enter the client resource name
-        default: ''
-      emr_version:
-        type: string
-        required: false
-        description: Enter the EMR version
-        default: ''
-      spec_version:
-        type: string
-        required: false
-        description: Enter the Spec version
-        default: ''
-      include_jar:
-        type: boolean
-        required: false
-        description: Include the Jar file (true/false)
-        default: false
-      release_version:
-        type: string
-        required: false
-        description: Specify the release version
-        default: ''
+
   schedule:
     - cron: "* * * * *" # Runs daily at 12:30 AM UTC
 
@@ -60,32 +36,19 @@ jobs:
           # Default values for scheduled runs
           DEFAULT_CLIENT_NAME="regressionv1"
           DEFAULT_ENVIRONMENT="qa"
-          DEFAULT_CLIENT_RESOURCE_NAME="default_client_resource_name"
-          DEFAULT_EMR_VERSION="default_emr_version"
-          DEFAULT_SPEC_VERSION="default_spec_version"
-          DEFAULT_INCLUDE_JAR="false"
-          DEFAULT_RELEASE_VERSION=""
 
           # Set inputs dynamically based on trigger
           CLIENT_NAME=${{ github.event.inputs.client_name || DEFAULT_CLIENT_NAME }}
           ENVIRONMENT=${{ github.event.inputs.environment || DEFAULT_ENVIRONMENT }}
-          CLIENT_RESOURCE_NAME=${{ github.event.inputs.client_resource_name || DEFAULT_CLIENT_RESOURCE_NAME }}
-          EMR_VERSION=${{ github.event.inputs.emr_version || DEFAULT_EMR_VERSION }}
-          SPEC_VERSION=${{ github.event.inputs.spec_version || DEFAULT_SPEC_VERSION }}
-          INCLUDE_JAR=${{ github.event.inputs.include_jar || DEFAULT_INCLUDE_JAR }}
-          RELEASE_VERSION=${{ github.event.inputs.release_version || DEFAULT_RELEASE_VERSION }}
+
 
           # Save values to environment variables
           echo "CLIENT_NAME=$CLIENT_NAME" >> $GITHUB_ENV
           echo "ENVIRONMENT=$ENVIRONMENT" >> $GITHUB_ENV
-          echo "CLIENT_RESOURCE_NAME=$CLIENT_RESOURCE_NAME" >> $GITHUB_ENV
-          echo "EMR_VERSION=$EMR_VERSION" >> $GITHUB_ENV
-          echo "SPEC_VERSION=$SPEC_VERSION" >> $GITHUB_ENV
-          echo "INCLUDE_JAR=$INCLUDE_JAR" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+
 
           # Print for debugging
-          echo "Parameters: Client name = $CLIENT_NAME, Environment = $ENVIRONMENT, Client resource name = $CLIENT_RESOURCE_NAME, EMR version = $EMR_VERSION, Spec version = $SPEC_VERSION, Include Jar = $INCLUDE_JAR, Release version = $RELEASE_VERSION"
+          echo "Parameters: Client name = $CLIENT_NAME, Environment = $ENVIRONMENT"
         shell: bash
 
       # Example: Checkout specific app properties
@@ -100,21 +63,9 @@ jobs:
           ref: 'main'
           token: ${{ secrets.GIT_TOKEN }}
 
-      # Example: List files in DataExtraction
-      - name: Temp list files in data extraction
-        run: ls ./dataextraction/DataExtraction
 
-      # Example: Read property value and determine release version
-      - name: Read property value and set release version
-        run: |
-          VALUE=$(grep -i 'app.version' ./dataextraction/DataExtraction/application.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          echo "VALUE=$VALUE"
-          FINAL_RELEASE_VERSION=$([ ! -z "${{ github.event.inputs.release_version }}" ] && echo "${{ github.event.inputs.release_version }}" || echo "v$VALUE")
-          echo "DAP Extractor release_version=$FINAL_RELEASE_VERSION"
-          echo "release_version=$FINAL_RELEASE_VERSION" >> $GITHUB_ENV
-        shell: bash
 
       # Example: Use the release version dynamically
       - name: Print final release version
         run: |
-          echo "The final release version is: ${{ env.RELEASE_VERSION }}"
+          echo "The final release version is: ${{ github.event.inputs.client_name }}"
