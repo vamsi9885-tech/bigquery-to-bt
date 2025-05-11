@@ -63,8 +63,8 @@ env:
   HOSTNAME: ecgpe.healthtechnologygroup.com
   LOCAL_PATH: downloaded_artifacts
   REMOTE_PATH: /DAP/DAP_Artifact
-  client_name: regressionv1
-  environment: qa
+  client_name: ${{ github.event.inputs.client_name || 'regressionv1' }}
+  environment: ${{ github.event.inputs.environment || 'qa' }}
 
 jobs:
   conditional-run:
