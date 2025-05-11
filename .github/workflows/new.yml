@@ -1,0 +1,102 @@
+name: RegressionTrigger
+run-name: Deploying ${{ inputs.client_name }} on ${{ inputs.environment }} environment with specfile ${{ inputs.specfile_name }} ${{ inputs.emr_version }}/${{ inputs.spec_name }}/${{ inputs.spec_version }}
+on:
+  schedule:
+    - cron: '* * * * *'
+  workflow_dispatch:
+    inputs:
+      client_name:
+        type: string
+        required: true
+        description: Enter the client name without .yml extension
+        default: 'regressionv1'
+      environment:
+        type: choice
+        required: true
+        description: Environment (dev/qa/integration)
+        options:
+          - dev
+          - qa
+          - integration
+        default: qa
+      client_resource_name:
+        type: string
+        required: true
+        description: Enter the client resource name any of these "hsodev"(dev or QA env for developer)/"release" (integration environment)
+        default: 'hsodev'
+      specfile_name:
+        type: string
+        required: true
+        description: Enter the spec file name without the extension
+        default: 'EIS Modules Requirements - Version 1.3centura'
+      emr_version:
+        type: string
+        required: false
+        description: Enter the emr_version (Mandatory only for pull feed)
+        default: 'v1.0'
+      spec_name:
+        type: string
+        required: false
+        description: Enter the spec_name (Mandatory only for pull feed)
+        default: 'spec'
+      spec_version:
+        type: string
+        required: false
+        description: Enter the spec_version (Mandatory only for pull feed)
+        default: 'v1.0'
+      release_version:
+        type: string
+        required: false
+        description: release version
+        default: ''
+      include_jar:
+        type: boolean
+        required: false
+        description: Include JAR in client artifact
+        default: true
+
+env:
+  DEPLOY_BRANCH_NAME: main
+  hcc_env: ${{ secrets.EIP_AZURE_HCC_NONPROD_SP}}
+  USERNAME: es10tec
+  PASSWORD: ${{ secrets.ECG_UPLOAD_PASSWORD }}
+  HOSTNAME: ecgpe.healthtechnologygroup.com
+  LOCAL_PATH: downloaded_artifacts
+  REMOTE_PATH: /DAP/DAP_Artifact
+
+jobs:
+  conditional-run:
+    runs-on: ubuntu-latest
+    if:  always()
+    steps:
+      - name: Set Defaults for Scheduled Run
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "client_name=regressionv1" >> $GITHUB_ENV
+            echo "environment=qa" >> $GITHUB_ENV
+            echo "client_resource_name=hsodev" >> $GITHUB_ENV
+            echo "specfile_name=EIS Modules Requirements - Version 1.3centura" >> $GITHUB_ENV
+            echo "emr_version=v1.0" >> $GITHUB_ENV
+            echo "spec_name=spec" >> $GITHUB_ENV
+            echo "spec_version=v1.0" >> $GITHUB_ENV
+            echo "release_version=" >> $GITHUB_ENV
+            echo "include_jar=true" >> $GITHUB_ENV
+            echo "allow_scheduled_run=true" >> $GITHUB_ENV
+          else
+            echo "client_name=${{ github.event.inputs.client_name }}" >> $GITHUB_ENV
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+            echo "client_resource_name=${{ github.event.inputs.client_resource_name }}" >> $GITHUB_ENV
+            echo "specfile_name=${{ github.event.inputs.specfile_name }}" >> $GITHUB_ENV
+            echo "emr_version=${{ github.event.inputs.emr_version }}" >> $GITHUB_ENV
+            echo "spec_name=${{ github.event.inputs.spec_name }}" >> $GITHUB_ENV
+            echo "spec_version=${{ github.event.inputs.spec_version }}" >> $GITHUB_ENV
+            echo "release_version=${{ github.event.inputs.release_version }}" >> $GITHUB_ENV
+            echo "include_jar=${{ github.event.inputs.include_jar }}" >> $GITHUB_ENV
+            echo "allow_scheduled_run=${{ github.event.inputs.allow_scheduled_run }}" >> $GITHUB_ENV
+          fi
+      - name: Exit if scheduled and not allowed
+        if: ${{ github.event_name == 'schedule' &&  vars.regression_automation_run != 'true' }}
+        run: |
+          echo "Scheduled run is not allowed. Skipping..."
+          exit 0
+
