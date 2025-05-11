@@ -7,7 +7,7 @@ on:
     inputs:
       client_name:
         type: string
-        required: true
+        
         description: Enter the client name without .yml extension
         default: 'regressionv1'
       environment:
