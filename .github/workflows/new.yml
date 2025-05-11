@@ -63,6 +63,8 @@ env:
   HOSTNAME: ecgpe.healthtechnologygroup.com
   LOCAL_PATH: downloaded_artifacts
   REMOTE_PATH: /DAP/DAP_Artifact
+  client_name: regressionv1
+  environment: qa
 
 jobs:
   conditional-run:
