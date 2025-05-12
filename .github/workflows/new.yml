@@ -112,7 +112,7 @@ jobs:
     steps:
       - name: print the variables
         run: | 
-          echo "Client Name is: $client_name"
+          echo "Client Name is: ${{ env.client_name }}"
           echo "Environment is: $environment"
 
         
