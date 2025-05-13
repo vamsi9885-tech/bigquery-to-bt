@@ -1,0 +1,33 @@
+name: Testing
+run-name: Deploying ${{ inputs.client_name }} on ${{ inputs.environment }} environment with specfile ${{ inputs.specfile_name }} ${{ inputs.emr_version }}/${{ inputs.spec_name }}/${{ inputs.spec_version }}
+on:
+  schedule:
+    - cron: '* * * * *'
+  workflow_dispatch:
+    inputs:
+      id:
+        type: string
+        description: Enter the client name without .yml extension
+        default: '22'
+      environment:
+        type: string
+        description: Enter the client name without .yml extension
+        default: 'qa'
+env:
+  id: ${{ github.event.inputs.id | 52}}
+  environment: ${{ github.event.inputs.environment | qa}} 
+jobs:
+  conditional-run:
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Set Defaults for Scheduled Run
+        run: |          
+          if [[ "${{env.id}}" == "52" ]];then
+            destination_bob="data/${{ env.environment }}/bronze/landed_feed_folder"
+          else
+            destination_bob="data/${{ env.environment }}/bronze/landed_feed_folder"
+          fi
+
+          echo "$destination_blob"
+        
