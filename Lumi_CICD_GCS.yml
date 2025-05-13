@@ -1,0 +1,165 @@
+name: CICD with Github Actions - GCS
+
+on:
+  workflow_call:
+    inputs:
+      artifact_url:
+        required: true
+        description: "Artifact URL"
+        type: string
+        default: ""
+      rollback_artifact_url:
+        required: true
+        description: "Rollback Artifact URL"
+        type: string
+        default: ""
+      gcp_project_e1:
+        required: true
+        description: "GCP Project - E1"
+        type: string
+        default: ""
+      region:
+        required: true
+        description: "Region"
+        type: string
+        default: "US"
+      car_id:
+        required: true
+        description: "CAR ID"
+        type: string
+        default: ""
+      build_type:
+        required: true
+        description: "Build Type"
+        type: string
+        default: "bigdata"
+
+    secrets:
+      ARTIFACTORY_USERNAME:
+        required: true
+      ARTIFACTORY_PASSWORD:
+        required: true
+      GH_NOSCOPE_TOKEN:
+        required: true
+      SONARQUBE_TOKEN:
+        required: true
+      API_PROXY_TOKEN:
+        required: true
+
+# ------------------------------------------------------------------------------------------------------
+# Set the default shell for all run steps.
+# ------------------------------------------------------------------------------------------------------
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  # ------------------------------------------------------------------------------------------------------
+  # Build Repo with deploy.config file for bigdata project.
+  # ------------------------------------------------------------------------------------------------------
+
+  ci-bigdata:
+    name: CI - Build for Bigdata project
+    if: ${{ (inputs.build_type == 'bigdata') && (inputs.artifact_url == '')}}
+    uses: amex-eng/gcp-cicd-pocs-ghactions/.github/workflows/bigdata-build.yml@main
+    with:
+      repo_name: ${{ github.event.repository.name}}
+      bd_build_type: "bundle_deploy"
+      repo_lang: "bigdata"
+      artifactory_url: ${{ inputs.artifact_url }}
+      sonar_host: https://sonar.aexp.com
+      config_file: "deploy.config"
+      default_branch: ""
+    secrets:
+      ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+      ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+      SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+
+  # ------------------------------------------------------------------------------------------------------
+  # Retrieve & Print Final Artifact URL
+  # ------------------------------------------------------------------------------------------------------
+
+  artifact-url:
+    name: CI - Artifact URL
+    if: ${{ !failure() && !cancelled() }}
+    runs-on: aexp-ubuntu-latest-medium
+    needs: [ci-bigdata]
+    outputs:
+      ci_artifact_url: ${{ steps.print-artifact-url.outputs.ci_artifact_url }}
+
+    steps:
+      - name: Print Artifact URL
+        id: print-artifact-url
+        shell: bash
+        run: |
+          if(${{ inputs.artifact_url == '' }}); then
+            if(${{ inputs.build_type == 'bigdata' }}); then
+              echo "Artifact URL: "${{ needs.ci-bigdata.outputs.artifactory_url }}
+              echo -e "ci_artifact_url=${{ needs.ci-bigdata.outputs.artifactory_url }}" >> $GITHUB_OUTPUT
+              echo "Build Stage completed"
+
+            else
+              echo "Build type is invalid"
+            fi
+          else
+            echo -e "ci_artifact_url=${{ inputs.artifact_url }}" >> $GITHUB_OUTPUT
+            echo "Artifact URL: "${{ inputs.artifact_url }}
+          fi
+
+  # ------------------------------------------------------------------------------------------------------
+  # E1 deployment start
+  # ------------------------------------------------------------------------------------------------------
+
+  cd-env-e1:
+    name: CD - Deployment on E1
+    if: ${{ !failure() && !cancelled() }}
+    needs: [ci-bigdata, artifact-url ]
+    runs-on: aexp-ubuntu-latest-medium
+    outputs:
+      payload_object: ${{ steps.print-payload.outputs.payload_object }}
+
+    steps:
+      - name: Print Payload
+        id: print-payload
+        shell: bash
+        run: |
+            echo 'payload_object={ "technology": "gcs", "source": "GHA", "workflow_uuid": "${{github.run_id}}", "car_id": "${{ inputs.car_id }}", "artifact_url": "${{ needs.artifact-url.outputs.ci_artifact_url }}", "environment": "E1", "deployment_user": "${{github.actor}}", "repo_name": "${{ github.event.repository.name }}", "config_json": { "gcp_project": "${{ inputs.gcp_project_e1}}", "region": "${{ inputs.region }}"}}' >> $GITHUB_OUTPUT
+
+      - name: Start Deployment
+        uses: amex-eng/nonpaas-deploy-util@c68b028e2d76e58c46f9a5847f3e772d26d1fdbe
+        if: ${{ needs.artifact-url.outputs.ci_artifact_url != '' && inputs.gcp_project_e1 != '' }}
+        with:
+          payload_object: ${{ steps.print-payload.outputs.payload_object }}
+          token: ${{ secrets.ANSIBLE_PROXY_TOKEN }}
+
+  cd-rollback-e1:
+    name: CD - Rollback on E1
+    if: ${{ !cancelled() && (needs.cd-env-e1.result == 'failure') && (needs.artifact-url.outputs.ci_artifact_url != '') }}
+    needs: [ ci-bigdata, artifact-url, cd-env-e1]
+    runs-on: aexp-ubuntu-latest-medium
+    outputs:
+      payload_object: ${{ steps.print-rollback-payload-e1.outputs.payload_object }}
+      exit-status: ${{ steps.set-exit-e1.outputs.exit-status }}
+
+    steps:
+      - name: Print Rollback Payload - E1
+        id: print-rollback-payload-e1
+        shell: bash
+        run: |
+            echo 'payload_object={ "technology": "gcs", "source": "GHA", "workflow_uuid": "${{github.run_id}}", "car_id": "${{ inputs.car_id }}", "artifact_url": "${{ inputs.rollback_artifact_url}}", "environment": "E1", "deployment_user": "${{github.actor}}", "repo_name": "${{ github.event.repository.name }}", "config_json": { "gcp_project": "${{ inputs.gcp_project_e1}}", "region": "${{ inputs.region }}"}}' >> $GITHUB_OUTPUT
+
+      - name: Start Rollback E1
+        uses: amex-eng/nonpaas-deploy-util@c68b028e2d76e58c46f9a5847f3e772d26d1fdbe
+        if: ${{ inputs.rollback_artifact_url != '' && inputs.gcp_project_e1 != '' }}
+        with:
+          payload_object: ${{ steps.print-rollback-payload-e1.outputs.payload_object }}
+          token: ${{ secrets.ANSIBLE_PROXY_TOKEN }}
+
+      - name: Exit Deployment at E1
+        id: set-exit-e1
+        shell: bash
+        run: |
+          echo "Deployment terminates at E1"
+          echo 'exit-status=true' >> $GITHUB_OUTPUT

@@ -1,0 +1,220 @@
+#--------Prerequisite---------#
+# Application should be onboarded on DTC and have valid GCS & Hydra project details
+# Standard rfc template should be approved in ITSM inorder to use workflow created-standard-rfc job
+#-----------------------------#
+
+name: Lumi CICD Github Actions
+
+on:
+  workflow_dispatch:
+    secrets:
+        ARTIFACTORY_USERNAME:
+          required: true
+        ARTIFACTORY_PASSWORD:
+          required: true
+        GH_NOSCOPE_TOKEN:
+          required: true
+        SONARQUBE_TOKEN:
+          required: true
+
+#-----------------------------------------------------------------------------------------------
+# Set the env variable
+# Artifactory username and password set the org level.
+# Action on fail: Please validate if user is part of CAR Id on DTC (https://dtcentral.aexp.com)
+#-----------------------------------------------------------------------------------------------
+
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  #-----------------------------------------------------------------------------------------------
+  # This stage always run if valid user triggered the deployment
+  # Prerequisite:
+  # Repository should have buildblocks.yml file with valid CAR Id
+  #-----------------------------------------------------------------------------------------------
+  set_env:
+    name: Set Variables
+    runs-on: ${{ vars.RUNNER_MEDIUM_LABEL }} # RUNNER_MEDIUM_LABEL represents aexp-ubuntu-latest-medium, please feel free to change to respective labels available
+    outputs:
+      create_pr: false # Whether a PR should be created when there is an update to this and dependent workflow(s)
+      create_issue: true # Whether an issue should be created when there is an update to this and dependent workflow(s)
+
+      # Configuration End - DONT CHANGE BELOW THIS LINE
+      # ------------------------------------------------------------------------------------------------------
+      current_version: v1.0.0 # The current version of the workflow template
+    steps:
+      # limitation defined at https://docs.github.com/en/enterprise-server@3.8/actions/using-workflows/reusing-workflows#limitations
+      - name: Workaround https://github.com/orgs/community/discussions/26671
+        id: workaround
+        run: echo
+
+  # ------------------------------------------------------------------------------------------------------
+  # Always runs once set_env job completes its configuration
+  # Check if this file (the workflow template) and the called workflows (reusable workflows) are up to date
+  # Only runs against default branch
+  # ------------------------------------------------------------------------------------------------------
+  check_dependent_version:
+    name: Update Check
+    # if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    needs: [set_env]
+    uses: amex-eng/.github/.github/workflows/update-checker.yml@6343c0e3b9626c4c1b25834eb6a32e46b00888d0
+    with:
+      create_pr: ${{ needs.set_env.outputs.create_pr == 'true' }}
+      create_issue: ${{ needs.set_env.outputs.create_issue == 'true' }}
+      current_template_version: ${{ needs.set_env.outputs.current_version }}
+      workflow_version: |
+        amex-eng/gcp-cicd-pocs-ghactions/.github/workflows/Lumi_CICD_GCS.yml@77ef4a1a9452153b9455e4696243639376620799
+        amex-eng/gcp-cicd-pocs-ghactions/.github/workflows/Lumi_CICD_HYDRA.yml@6df41884232a0045fc8fe6ac7f7d9f5849dd1ae9
+
+    secrets:
+      pr_token: ${{ secrets.AUTO_UPDATE_PR_TOKEN }}
+
+# ------------------------------------------------------------------------------------------------------
+# Prepare CICD inputs
+# Read the config yml file from .amex folder and set the ouptput.
+# You can read all the keys defined in yml file. For example
+#  test:
+#      step1: 'test'
+# You can read step1 key using ${{ steps.read-profile-deploy.outputs.step1 }}
+# You can read configuration key and sub-params as one object.
+# ------------------------------------------------------------------------------------------------------
+
+  input-params:
+    name: Prepare CICD inputs
+    runs-on: aexp-ubuntu-latest-medium
+    needs: [ set_env, check_dependent_version ]
+    outputs:
+      deployment_platform: ${{ steps.read-input-json.outputs.deployment_platform }}
+      rfc_no: ${{ steps.read-input-json.outputs.rfc_no }}
+      ctask_number: ${{ steps.read-input-json.outputs.ctask_number }}
+      build_type: ${{ steps.read-input-json.outputs.build_type }}
+      change_template_name: ${{ steps.read-input-json.outputs.change_template_name }}
+      assignment_workgroup: ${{ steps.read-input-json.outputs.assignment_workgroup }}
+      central_app_name: ${{ steps.read-input-json.outputs.central_app_name }}
+      artifact_url: ${{ steps.read-input-json.outputs.artifact_url }}
+      rollback_artifact_url: ${{ steps.read-input-json.outputs.rollback_artifact_url }}
+      gcp_project_e1: ${{ steps.read-input-json.outputs.gcp_project_e1 }}
+      gcp_project_e2: ${{ steps.read-input-json.outputs.gcp_project_e2 }}
+      gcp_project_e3: ${{ steps.read-input-json.outputs.gcp_project_e3 }}
+      region: ${{ steps.read-input-json.outputs.region }}
+      car_id: ${{ steps.get-car-id.outputs.car_id }}
+      python_pkg_name: ${{ steps.read-input-json.outputs.python_pkg_name }}
+      java_version: ${{ steps.read-input-json.outputs.java_version }}
+      enable_uat: ${{ steps.read-input-json.outputs.enable_uat }}
+      enable_dr: ${{ steps.read-input-json.outputs.enable_dr }}
+      hydra_project: ${{ steps.read-input-json.outputs.hydra_project }}
+      hydra_service: ${{ steps.read-input-json.outputs.hydra_service }}
+      hydra_e1Deployment: ${{ steps.read-input-json.outputs.hydra_e1Deployment }}
+      hydra_e2Deployment: ${{ steps.read-input-json.outputs.hydra_e2Deployment }}
+      hydra_e3Deployment: ${{ steps.read-input-json.outputs.hydra_e3Deployment }}
+      hydra_values_file_path: ${{ steps.read-input-json.outputs.hydra_values_file_path }}
+      hydra_RollbackImageSHA: ${{ steps.read-input-json.outputs.hydra_RollbackImageSHA }}
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@main
+
+      - name: Retrieve CAR ID
+        id: get-car-id
+        run: |
+          if git rev-parse --verify --quiet FETCH_HEAD:.amex/buildblocks.yaml >/dev/null; then
+            echo "car_id=$(yq ".central.id" .amex/buildblocks.yaml)"
+            echo "car_id=$(yq ".central.id" .amex/buildblocks.yaml)" >> $GITHUB_OUTPUT
+          else
+            echo "car_id=$(yq ".central.id" .amex/buildblocks.yml)"
+            echo "car_id=$(yq ".central.id" .amex/buildblocks.yml)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Read inputs from JSON file
+        id: read-input-json
+        uses: amex-ghactions/read-input-params@0c06c905e964c6cdb6b3757328008c42ecf58ac9
+        with:
+          config_file_name: "Lumi_CICD_input.yml"
+
+
+
+# ------------------------------------------------------------------------------------------------------
+# Calling GCS Deployment
+# This stage always run if valid build_type provided
+# Prerequisite:
+#     1. Previous stage should be successful.
+#     2. No early deployment should be in running stage.
+#     3. Valid gcp project's id, build_type and artifact url.
+# Action on fail: In case of deployment failure please reach out to support team with valid deployment id.
+# ------------------------------------------------------------------------------------------------------
+
+  gcs:
+    name: GCS Deployment
+    needs: input-params
+    if: ${{ (needs.input-params.outputs.deployment_platform == 'gcs') }}
+    uses: amex-eng/gcp-cicd-pocs-ghactions/.github/workflows/Lumi_CICD_GCS.yml@17c88a5e6695f633553d596c34871c776134dd1e
+    with:
+      rfc_no: ${{ needs.input-params.outputs.rfc_no }}
+      ctask_number: ${{ needs.input-params.outputs.ctask_number }}
+      artifact_url: ${{ needs.input-params.outputs.artifact_url }}
+      rollback_artifact_url: ${{ needs.input-params.outputs.rollback_artifact_url }}
+      gcp_project_e1: ${{ needs.input-params.outputs.gcp_project_e1 }}
+      gcp_project_e2: ${{ needs.input-params.outputs.gcp_project_e2 }}
+      gcp_project_e3: ${{ needs.input-params.outputs.gcp_project_e3 }}
+      region: ${{ needs.input-params.outputs.region }}
+      car_id: ${{ needs.input-params.outputs.car_id }}
+      build_type: ${{ needs.input-params.outputs.build_type }}
+      python_pkg_name: ${{ needs.input-params.outputs.python_pkg_name }}
+      java_version: ${{ needs.input-params.outputs.java_version }}
+      environment: workflow-approvers
+      enable_uat: ${{ needs.input-params.outputs.enable_uat }}
+      enable_dr: ${{ needs.input-params.outputs.enable_dr }}
+      change_template_name: ${{ needs.input-params.outputs.change_template_name }}
+      assignment_workgroup: ${{ needs.input-params.outputs.assignment_workgroup }}
+      central_app_name: ${{ needs.input-params.outputs.central_app_name }}
+
+
+    secrets:
+      ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+      ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+      GH_NOSCOPE_TOKEN: ${{ secrets.GH_NOSCOPE_TOKEN }}
+      SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+      API_PROXY_TOKEN: ${{ secrets.CD_API_PROXY_TOKEN }}
+
+# ------------------------------------------------------------------------------------------------------
+# Calling Hydra Deployment
+# This stage always run if valid build_type provided
+# Prerequisite:
+#     1. Previous stage should be successful.
+#     2. No early deployment should be in running stage.
+#     3. Valid hydra project name, service name, build_type and artifact url.
+# Action on fail: In case of deployment failure please reach out to support team with valid deployment id.
+# ------------------------------------------------------------------------------------------------------
+
+  hydra:
+    name: Hydra Deployment
+    needs: input-params
+    if: ${{ (needs.input-params.outputs.deployment_platform == 'hydra') }}
+    uses: amex-eng/gcp-cicd-pocs-ghactions/.github/workflows/Lumi_CICD_HYDRA.yml@17c88a5e6695f633553d596c34871c776134dd1e
+    with:
+      project: ${{ needs.input-params.outputs.hydra_project }}
+      service: ${{ needs.input-params.outputs.hydra_service }}
+      e1Deployment: ${{ needs.input-params.outputs.hydra_e1Deployment }}
+      e2Deployment: ${{ needs.input-params.outputs.hydra_e2Deployment }}
+      e3Deployment: ${{ needs.input-params.outputs.hydra_e3Deployment }}
+      builderImage: artifactory.aexp.com/paas-registry/buildpacks/rhel-jdk-17-builder:17.x.latest
+      builderImagePython: artifactory.aexp.com/paas-registry/buildpacks/rhel-python-39-builder:3.9.x.latest
+      values_file_path: ${{ needs.input-params.outputs.hydra_values_file_path }}
+      RollbackImageSHA: ${{ needs.input-params.outputs.hydra_RollbackImageSHA }}
+      build_type: ${{ needs.input-params.outputs.build_type }}
+      rfc_no: ${{ needs.input-params.outputs.rfc_no }}
+      change_template_name: ${{ needs.input-params.outputs.change_template_name }}
+      assignment_workgroup: ${{ needs.input-params.outputs.assignment_workgroup }}
+      central_app_name: ${{ needs.input-params.outputs.central_app_name }}
+      java_version: ${{ needs.input-params.outputs.java_version }}
+      artifact_url: ${{ needs.input-params.outputs.artifact_url }}
+      car_id: ${{ needs.input-params.outputs.car_id }}
+
+    secrets:
+      USERNAME: ${{ secrets.HYDRA_USERNAME }}
+      PASSWORD: ${{ secrets.HYDRA_PASSWORD }}
+      ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+      ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+      SONARQUBE_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
