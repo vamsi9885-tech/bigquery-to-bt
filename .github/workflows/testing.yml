@@ -14,8 +14,8 @@ on:
         description: Enter the client name without .yml extension
         default: 'qa'
 env:
-  id: ${{ github.event.inputs.id | 52}}
-  environment: ${{ github.event.inputs.environment | qa}} 
+  id: ${{ github.event.inputs.id || 52}}
+  environment: ${{ github.event.inputs.environment || qa}} 
 jobs:
   conditional-run:
     runs-on: ubuntu-latest
