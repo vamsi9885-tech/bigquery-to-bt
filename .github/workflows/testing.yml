@@ -24,9 +24,9 @@ jobs:
       - name: Set Defaults for Scheduled Run
         run: |          
           if [[ "${{env.id}}" == "52" ]];then
-            destination_bob="data/${{ env.environment }}/bronze/landed_feed_folder"
+            destination_blob="data/${{ env.environment }}/bronze/landed_feed_folder"
           else
-            destination_bob="data/${{ env.environment }}/bronze/landed_feed_folder"
+            destination_blob="data/${{ env.environment }}/bronze/landed_feed_folder"
           fi
 
           echo "$destination_blob"
