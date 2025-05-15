@@ -1,0 +1,203 @@
+{
+  "table" :{
+    "bq_table_name" :"triumph_transactions",
+    "bt_table_name" :"gear_triumph_transactions_2"
+  },
+  "decrypt_expr" :{
+    "decrypt_cm13" :"`{project_id}.{dataset_id}`.decrypt_sde(`{project_id}.{dataset_id}`.get_sde_tag('cm13','{bq_table_name}'),cm13)",
+    "decrypt_cm15" :"`{project_id}.{dataset_id}`.decrypt_sde(`{project_id}.{dataset_id}`.get_sde_tag('cm15','{bq_table_name}'),cm15)"
+  },
+  "query" :"SELECT ({decrypt_cm13} || '#' || date_stmt_yr || date_stmt_mo || '#' || se10 || '#' || code_trans || '#' || time_add) as bq_rowkey, {decrypt_cm13} AS decrypt_cm13 ,{decrypt_cm15} AS decrypt_cm15, {columns} FROM `{project_id}.{dataset_id}.{bq_table_name}` WHERE date_stmt_yr=2024 and date_stmt_mo='02' LIMIT 10",
+  "column_mapping" :{
+    "bq_rowkey": {
+        "cf": "rowkey",
+        "col": "bq_rowkey",
+        "type": "string"
+    },
+    "date_stmt_yr": {
+        "cf": "tr",
+        "col": "aa",
+        "type": "string"
+    },
+    "date_stmt_mo": {
+        "cf": "tr",
+        "col": "ab",
+        "type": "string"
+    },
+    "cm13": {
+        "cf": "tr",
+        "col": "ac",
+        "type": "string"
+    },
+    "decrypt_cm13": {
+        "cf": "tr",
+        "col": "ac",
+        "type": "string"
+    },
+    "se10": {
+        "cf": "tr",
+        "col": "ad",
+        "type": "string"
+    },
+    "code_trans": {
+        "cf": "tr",
+        "col": "ae",
+        "type": "string"
+    },
+    "time_add": {
+        "cf": "tr",
+        "col": "af",
+        "type": "string"
+    },
+    "time_add_dttm": {
+        "cf": "tr",
+        "col": "ag",
+        "type": "string"
+    },
+    "date_stmt_dy": {
+        "cf": "tr",
+        "col": "ah",
+        "type": "string"
+    },
+    "date_trans_1": {
+        "cf": "tr",
+        "col": "ai",
+        "type": "string"
+    },
+    "amt_trans": {
+        "cf": "tr",
+        "col": "aj",
+        "type": "string"
+    },
+    "addr_state": {
+        "cf": "tr",
+        "col": "ak",
+        "type": "string"
+    },
+    "date_post": {
+        "cf": "tr",
+        "col": "al",
+        "type": "string"
+    },
+    "nbr_offr_terms_id": {
+        "cf": "tr",
+        "col": "am",
+        "type": "string"
+    },
+    "rfrn_mrkt_offr_id": {
+        "cf": "tr",
+        "col": "an",
+        "type": "string"
+    },
+    "cm15": {
+        "cf": "tr",
+        "col": "ao",
+        "type": "string"
+    },
+    "decrypt_cm15": {
+        "cf": "tr",
+        "col": "ao",
+        "type": "string"
+    },
+    "rfrn_majr_inds_cd": {
+        "cf": "tr",
+        "col": "ap",
+        "type": "string"
+    },
+    "rfrn_sub_inds_cd": {
+        "cf": "tr",
+        "col": "aq",
+        "type": "string"
+    },
+    "rfrn_batch_nbr": {
+        "cf": "tr",
+        "col": "ar",
+        "type": "string"
+    },
+    "nbr_sub_code": {
+        "cf": "tr",
+        "col": "as",
+        "type": "string"
+    },
+    "desc_trans": {
+        "cf": "tr",
+        "col": "at",
+        "type": "string"
+    },
+    "indc_cr_db": {
+        "cf": "tr",
+        "col": "au",
+        "type": "string"
+    },
+    "code_prod_nbr": {
+        "cf": "tr",
+        "col": "av",
+        "type": "string"
+    },
+    "code_acct_cyc_day": {
+        "cf": "tr",
+        "col": "aw",
+        "type": "string"
+    },
+    "code_acct_stat": {
+        "cf": "tr",
+        "col": "ax",
+        "type": "string"
+    },
+    "nbr_plyr_acct": {
+        "cf": "tr",
+        "col": "ay",
+        "type": "string"
+    },
+    "code_pr_po_fin": {
+        "cf": "tr",
+        "col": "az",
+        "type": "string"
+    },
+    "nbr_sub_prod_1": {
+        "cf": "tr",
+        "col": "ba",
+        "type": "string"
+    },
+    "rfrn_capt_cntr_nbr": {
+        "cf": "tr",
+        "col": "bb",
+        "type": "string"
+    },
+    "code_mrkt_offr_typ": {
+        "cf": "tr",
+        "col": "bc",
+        "type": "string"
+    },
+    "indc_be_loc_xfer": {
+        "cf": "tr",
+        "col": "bd",
+        "type": "string"
+    },
+    "code_adj_ssp_pymt": {
+        "cf": "tr",
+        "col": "be",
+        "type": "string"
+    },
+    "nme_serv_estb": {
+        "cf": "tr",
+        "col": "bf",
+        "type": "string"
+    },
+    "indst_prch_code": {
+        "cf": "tr",
+        "col": "bg",
+        "type": "string"
+    },
+    "code_srce_ctry": {
+        "cf": "tr",
+        "col": "bh",
+        "type": "string"
+    },
+    "trans_refer_no": {
+        "cf": "tr",
+        "col": "bi",
+        "type": "string"
+    }
+  }
+}
