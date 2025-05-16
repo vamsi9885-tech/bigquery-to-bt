@@ -1,0 +1,76 @@
+
+==========================
+AIF INGESTION FRAMEWORK
+==========================
+
+Overview:
+---------
+The Allianz Ingestion Framework (AIF) is a PySpark-based solution for ingesting data from various sources (CSV, TXT, XML, RDBMS) into Hive tables on Hadoop. It supports both full and incremental ingestion along with audit logging and retry mechanisms.
+
+Primary Scripts Involved:
+--------------------------
+1. aif_run.py                - Main controller script
+2. aif_db_stage.py           - Ingests CSV files (from DB or filesystem) to staging
+3. aif_txt_file_stage.py     - Ingests delimited TXT/CSV files to staging
+4. aif_xml_land_stage_lake.py- Handles XML file loading (land -> stage -> lake)
+5. aif_stage_lake.py         - Moves data from stage to lake layer
+6. aif_meta.py               - Metadata class for audit tracking
+
+Inputs Required:
+----------------
+1. input_feed.csv  - Job definition CSV
+2. wc_connection.yaml - Environment-specific config
+3. columns.json    - Table-wise schema info
+
+Sample: input_feed.csv
+-----------------------
+flow_type,lob,load_type,file_format,source_db,source_table,target_db,target_table,lake_db,storage_type,split_column,lake_partitions,bucket_columns,source_loc,source_file,header_avail,local_file
+fs_hv,insurance,full,csv,/data/input,sales_data,sales_db,sales_stage,sales_lake,parquet,,load_dt,,/data/input,sales.csv,true,y
+
+Sample: wc_connection.yaml
+---------------------------
+DEV:
+  hive_base_path: hdfs://namenode/user/hive/warehouse/
+  meta_path: /data/meta
+  not_loaded_path: /data/not_loaded
+  lob: insurance
+  jdbc_url: "jdbc:mysql://localhost:3306/test"
+  db_user: "user"
+  db_pass: "pass"
+
+Sample: columns.json
+---------------------
+{
+  "sales_data": [
+    "id string",
+    "customer_name string",
+    "amount double",
+    "load_dt string"
+  ]
+}
+
+Command-Line Arguments:
+------------------------
+--env           : Environment (e.g., DEV, QA, PRD)
+--input_feed    : CSV file with job definitions
+--conf_file     : Path to wc_connection.yaml
+--columns       : (Optional) Path to table schema JSON file
+--mode          : Spark execution mode (e.g., yarn, local)
+--file_nm_ptrn  : (Optional) File pattern for XML jobs
+--tables        : (Optional) Comma-separated table list to run
+
+
+
+Execution Flow:
+----------------
+1. Parse arguments and load YAML + CSV inputs.
+2. Loop over each row in input_feed.
+3. Depending on flow_type:
+   - fs_hv  -> Use db_stage() + stage_lake()
+   - txt_hv -> Use txt_file_stage() + stage_lake()
+   - xml_hv -> Use xml_loc_land(), xml_land_stage(), xml_stage_lake()
+4. Track audit metadata and failed tables for rerun.
+5. Output two files:
+   - metadata.csv (audit)
+   - not_loaded.csv (failed jobs)
+
