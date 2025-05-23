@@ -1,0 +1,1245 @@
+name: RegressionTrigger
+run-name: Deploying ${{ inputs.client_name }} on ${{ inputs.environment }} environment with specfile ${{ inputs.specfile_name }} ${{ inputs.emr_version }}/${{ inputs.spec_name }}/${{ inputs.spec_version }}
+on:
+  schedule:
+    - cron: '30 0 * * *'
+  workflow_dispatch:
+    inputs:
+      client_name:
+        type: string
+        required: true
+        description: Enter the client name without .yml extension
+        default: 'regressionv1'
+      environment:
+        type: choice
+        required: true
+        description: Environment (dev/qa/integration)
+        options:
+          - dev
+          - qa
+          - integration
+        default: qa
+      client_resource_name:
+        type: string
+        required: true
+        description: Enter the client resource name any of these "hsodev"(dev or QA env for developer)/"release" (integration environment)
+        default: 'hsodev'
+      specfile_name:
+        type: string
+        required: true
+        description: Enter the spec file name without the extension
+        default: 'EIS Modules Requirements - Version 1.3centura'
+      emr_version:
+        type: string
+        required: false
+        description: Enter the emr_version (Mandatory only for pull feed)
+        default: 'v1.0'
+      spec_name:
+        type: string
+        required: false
+        description: Enter the spec_name (Mandatory only for pull feed)
+        default: 'spec'
+      spec_version:
+        type: string
+        required: false
+        description: Enter the spec_version (Mandatory only for pull feed)
+        default: 'v1.0'
+      release_version:
+        type: string
+        required: false
+        description: release version   
+        default: ''
+      include_jar:
+        type: boolean
+        required: false
+        description: Include JAR in client artifact
+        default: true
+  
+env:
+  DEPLOY_BRANCH_NAME: main
+  hcc_env: ${{ secrets.EIP_AZURE_HCC_NONPROD_SP}}
+  USERNAME: es10tec
+  PASSWORD: ${{ secrets.ECG_UPLOAD_PASSWORD }}
+  HOSTNAME: ecgpe.healthtechnologygroup.com
+  LOCAL_PATH: downloaded_artifacts
+  REMOTE_PATH: /DAP/DAP_Artifact
+
+jobs:
+  conditional-run:
+    runs-on: ubuntu-latest
+    if:  always() 
+    steps:
+      - name: Set Defaults for Scheduled Run
+        run: |
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "client_name=regressionv1" >> $GITHUB_ENV
+            echo "environment=qa" >> $GITHUB_ENV
+            echo "client_resource_name=hsodev" >> $GITHUB_ENV
+            echo "specfile_name=EIS Modules Requirements - Version 1.3centura" >> $GITHUB_ENV
+            echo "emr_version=v1.0" >> $GITHUB_ENV
+            echo "spec_name=spec" >> $GITHUB_ENV
+            echo "spec_version=v1.0" >> $GITHUB_ENV
+            echo "release_version=" >> $GITHUB_ENV
+            echo "include_jar=true" >> $GITHUB_ENV
+            echo "allow_scheduled_run=true" >> $GITHUB_ENV 
+          else
+            echo "client_name=${{ github.event.inputs.client_name }}" >> $GITHUB_ENV
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_ENV
+            echo "client_resource_name=${{ github.event.inputs.client_resource_name }}" >> $GITHUB_ENV
+            echo "specfile_name=${{ github.event.inputs.specfile_name }}" >> $GITHUB_ENV
+            echo "emr_version=${{ github.event.inputs.emr_version }}" >> $GITHUB_ENV
+            echo "spec_name=${{ github.event.inputs.spec_name }}" >> $GITHUB_ENV
+            echo "spec_version=${{ github.event.inputs.spec_version }}" >> $GITHUB_ENV
+            echo "release_version=${{ github.event.inputs.release_version }}" >> $GITHUB_ENV
+            echo "include_jar=${{ github.event.inputs.include_jar }}" >> $GITHUB_ENV
+            echo "allow_scheduled_run=${{ github.event.inputs.allow_scheduled_run }}" >> $GITHUB_ENV
+          fi
+      - name: Exit if scheduled and not allowed
+        if: ${{ github.event_name == 'schedule' &&  vars.regression_automation_run != 'true' }}
+        run: |
+          echo "Scheduled run is not allowed. Skipping..."
+          exit 0
+        
+
+  execute_delete_queries:
+    needs: conditional-run
+    runs-on: uhg-runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+        
+
+      - name: Execute SQL delete queries
+        env:
+          function_app_key_secret: ${{ secrets.function_app_key_secret}}
+        run: |          
+          import json      
+          import requests      
+          import os         
+          function_app_key_secret = os.getenv("function_app_key_secret")
+          print(function_app_key_secret)
+          url = f'https://hsodev-dap-functn-app.azurewebsites.net/api/SQL_Executor?code={function_app_key_secret}'      
+          headers = { 'Content-Type': 'application/json' }      
+          
+          # Open the clear.json file  
+          with open('regression/clear.json') as f:      
+              data = json.load(f)    
+              delete_queries = [data.get("file_master_delete_query"), data.get("cadence_master_delete_query"), data.get("feed_master_delete_query"), data.get("client_feed_config_delete_query")]  
+          
+              # Iterate over the delete queries and execute them  
+              for query in delete_queries:  
+                  if query:      
+                      response = requests.post(url, headers=headers, json={ 'query': query })      
+                      if response.status_code == 200:  
+                          print("Delete query executed successfully")  
+                      else:  
+                          print("Delete query execution failed") 
+                          print(f"status code : {response.status_code}")  
+        shell: python
+  #dap_workflow_job:
+  #   uses: OptumInsight-Analytics/dap-data-extraction/.github/workflows/action.yml@main_demo_csvremove
+  #   with:
+  #     dap-flowname: "${{ github.event.inputs.flow }}"
+  #     deploy-branchname: "$(echo ${GITHUB_REF#refs/heads/})"
+  #     dap-branchname: "${{ github.event.inputs.branch }}"
+  #   secrets: inherit
+  create_feeds:
+    needs: execute_delete_queries
+    runs-on: uhg-runner
+    if: ${{ always() && needs.execute_delete_queries.result == 'success' && !failure() && !cancelled() }}
+    steps:
+      - name: Build parameters
+        run: |
+          echo "Client name = ${{ github.event.inputs.client_name }}, environment = ${{ github.event.inputs.environment }}, client_resource_name = ${{ github.event.inputs.client_resource_name }}, emr_version = ${{ github.event.inputs.emr_version }}, spec_version = ${{ github.event.inputs.spec_version }}, Include Jar = ${{ github.event.inputs.include_jar }} , Release version = ${{ github.event.inputs.release_version }}" >> $GITHUB_ENV
+        shell: bash
+      - name: Checkout app properties in data extraction
+        uses: actions/checkout@v3
+        with:
+          sparse-checkout: |
+            DataExtraction/application.properties
+          sparse-checkout-cone-mode: false
+          repository: OptumInsight-Analytics/dap-data-extraction
+          path: './dataextraction'
+          ref: 'main'
+          token: ${{ secrets.GIT_TOKEN }}
+      - name: temp list files data extraction  
+        run: ls ./dataextraction/DataExtraction
+      - name: Read property value  
+        run: |
+          VALUE=$(grep -i 'app.version' ./dataextraction/DataExtraction/application.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          echo "VALUE=$VALUE"
+          Final_release_version=$([ ! -z "${{ github.event.inputs.release_version }}" ] && echo "${{github.event.inputs.release_version}}" || echo "v$VALUE")
+          echo "DAP Extractor release_version=$Final_release_version"
+          echo "release_version=$Final_release_version" >> $GITHUB_ENV
+        shell: bash
+
+      - name: 'Cleanup build folder'
+        run: ls -A1 | xargs rm -rf
+
+      - name: Checkout deploy branch
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+
+      - name: Install pyyaml to read yaml files
+        run: pip install pyyaml
+        shell: bash
+
+      - name: Call python script to split client yaml to feed yaml
+        id: split-config
+        run: python src/split_config.py --client_name=${{ inputs.client_name }} --blob_env=${{ inputs.environment }}
+      - run: ls -lahR ./
+        shell: bash
+
+      - run: echo "clientname=${{ steps.split-config.outputs.clientname }}" >> $GITHUB_OUTPUT
+      - run: echo "subscription_id=${{ steps.split-config.outputs.subscription_id }}" >> $GITHUB_OUTPUT
+      - run: echo "resource_group=${{ steps.split-config.outputs.resource_group }}" >> $GITHUB_OUTPUT
+      - run: echo "storage_account=${{ steps.split-config.outputs.storage_account }}" >> $GITHUB_OUTPUT
+      - run: echo "container_name=${{ steps.split-config.outputs.container_name }}" >> $GITHUB_OUTPUT
+      - run: echo "adf_name=${{ steps.split-config.outputs.adf_name }}" >> $GITHUB_OUTPUT
+      - run: echo "feednames=${{ steps.split-config.outputs.feednames }}" >> $GITHUB_OUTPUT
+      - run: echo "pullfeeds=${{ steps.split-config.outputs.pullfeeds }}" >> $GITHUB_OUTPUT
+      - run: echo "pushfeeds=${{ steps.split-config.outputs.pushfeeds }}" >> $GITHUB_OUTPUT
+      #- run: echo "triggernames=${{ steps.split-config.outputs.triggernames }}" >> $GITHUB_OUTPUT
+      #- run: echo "invalidtriggernames=${{ steps.split-config.outputs.invalidtriggernames }}" >> $GITHUB_OUTPUT
+      - run: echo "dap_common_storage_account=${{ steps.split-config.outputs.dap_common_storage_account }}" >> $GITHUB_OUTPUT
+      - run: echo "config_files_container_name=${{ steps.split-config.outputs.config_files_container_name }}" >> $GITHUB_OUTPUT
+      - run: echo "purge_old_files_by_days=${{ steps.split-config.outputs.purge_old_files_by_days }}" >> $GITHUB_OUTPUT
+      - run: echo "output_archive_path=${{ steps.split-config.outputs.output_archive_path }}" >> $GITHUB_OUTPUT
+      - run: echo "zip_file_archive_path=${{ steps.split-config.outputs.zip_file_archive_path }}" >> $GITHUB_OUTPUT
+      - run: echo "env.release_version=${{ env.release_version }}"
+     
+      - name: Download and install yq binary
+        run: sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+
+      - name: Provide execute permission to run the tool as command
+        run: sudo chmod a+x /usr/local/bin/yq
+
+      - name: Create artifacts
+        run: mkdir artifact && cp -R './${{ steps.split-config.outputs.clientname }}' artifact
+
+      - uses: actions/upload-artifact@master
+        with:
+          name: feed-artifact
+          path: artifact/${{ steps.split-config.outputs.clientname }}
+          retention-days: 1
+      - name: Azure Login to upload schema definitions
+        uses: azure/login@v1
+        with:
+          creds: ${{env.hcc_env}}
+      - name: upload DAP Configs to container
+        env:
+          storage_account: ${{steps.split-config.outputs.storage_account}}
+          container: ${{steps.split-config.outputs.container_name}}
+          clientname: ${{ inputs.client_name }}  
+        run: |
+            mkdir -p DAP_Configs
+            python src/dap_pipelineconnector_yamls.py --client_name=${{ inputs.client_name }} --blob_env=${{ inputs.environment }}
+            az storage blob upload-batch --destination ${{env.container}} --source ./DAP_Configs/ --account-name ${{ env.storage_account }} --destination-path "data/${{ inputs.environment }}/DAP_configs" --pattern "*.yaml" --overwrite
+
+    outputs:
+      clientname: ${{ steps.split-config.outputs.clientname }}
+      subscription_id: ${{ steps.split-config.outputs.subscription_id }}
+      resource_group: ${{ steps.split-config.outputs.resource_group }}
+      storage_account: ${{ steps.split-config.outputs.storage_account }}
+      container_name: ${{ steps.split-config.outputs.container_name }}
+      adf_name: ${{ steps.split-config.outputs.adf_name }}
+      feednames: ${{ steps.split-config.outputs.feednames }}
+      pullfeeds: ${{ steps.split-config.outputs.pullfeeds}}
+      pushfeeds: ${{ steps.split-config.outputs.pushfeeds}}
+      #triggernames: ${{steps.split-config.outputs.triggernames}}
+      #invalidtriggernames: ${{steps.split-config.outputs.invalidtriggernames}}
+      dap_common_storage_account: ${{ steps.split-config.outputs.dap_common_storage_account }}
+      config_files_container_name: ${{ steps.split-config.outputs.config_files_container_name }}
+      purge_old_files_by_days: ${{ steps.split-config.outputs.purge_old_files_by_days }}
+      output_archive_path: ${{ steps.split-config.outputs.output_archive_path }}
+      zip_file_archive_path: ${{ steps.split-config.outputs.zip_file_archive_path }}
+      release_version: ${{ env.release_version }}
+      namespace: ${{  steps.split-config.outputs.namespace }}
+  loop_create_adf_orchestration_trigger:
+    needs: [create_feeds, loop_pull_feeds, loop_push_feeds]
+    #if: always() && needs.create_feeds.result == 'success' && (needs.loop_pull_feeds.result == 'success' || needs.loop_pull_feeds.result == 'skipped') &&(needs.loop_push_feeds.result == 'success' || needs.loop_push_feeds.result == 'skipped') && ${{ toJson(fromJson(needs.create_feeds.outputs.feednames)) != '[]' && needs.create_feeds.outputs.feednames != '' }}
+    if: ${{ always() && needs.create_feeds.result == 'success' && !failure() && !cancelled() }}
+    strategy:
+      max-parallel: 1
+      matrix:
+        feedname: "${{ fromJson(needs.create_feeds.outputs.feednames) }}"
+    uses: OptumInsight-Analytics/eip-commercial-client-config/.github/workflows/DAP_Trigger_Deployment_Reusable_Workflow.yml@main
+    with:
+      FeedName: "${{ matrix.feedname }}"
+      client_name: "${{ github.event.inputs.client_resource_name }}"
+      environment: "${{ github.event.inputs.environment }}"
+      pipeline:  "DAP_ADF_Orchestration"
+      pipeline_group: "dap_pipelines"
+      branch: "main"
+      namespace: ${{ needs.create_feeds.outputs.namespace }}
+      FeedType: "${{ contains(needs.create_feeds.outputs.pullfeeds, matrix.feedname) && 'pull' || 'push' }}"
+      ActualClientName: "${{ github.event.inputs.client_name }}"
+      trigger_folder: "landed_feed_files"
+    secrets: inherit
+  loop_create_adf_preprocessing_trigger: 
+    needs: [create_feeds, loop_pull_feeds, loop_push_feeds, loop_create_adf_orchestration_trigger]
+    if: ${{ always() && needs.loop_create_adf_orchestration_trigger.result == 'success' && !failure() && !cancelled() }}
+    strategy:
+      max-parallel: 1
+      matrix:
+        feedname: "${{ fromJson(needs.create_feeds.outputs.feednames) }}"
+    uses: OptumInsight-Analytics/eip-commercial-client-config/.github/workflows/DAP_Trigger_Deployment_Reusable_Workflow.yml@main
+    with:
+      FeedName: "${{ matrix.feedname }}"
+      client_name: "${{ github.event.inputs.client_resource_name }}"
+      environment: "${{ github.event.inputs.environment }}"
+      pipeline:  "DAP_ADF_PreProcessing"
+      pipeline_group: "dap_pipelines"
+      branch: "main"
+      namespace: ${{ needs.create_feeds.outputs.namespace }}
+      FeedType: "${{ contains(needs.create_feeds.outputs.pullfeeds, matrix.feedname) && 'pull' || 'push' }}"
+      ActualClientName: "${{ github.event.inputs.client_name }}"
+      trigger_folder: "preprocessing_feed_files"
+    secrets: inherit
+  
+  loop_pull_feeds:
+    needs: create_feeds
+    runs-on: uhg-runner
+    if: ${{ toJson(fromJson(needs.create_feeds.outputs.pullfeeds)) != '[]' && needs.create_feeds.outputs.pullfeeds != '' }}
+    strategy:
+      matrix:
+        pullfeeds: "${{ fromJson(needs.create_feeds.outputs.pullfeeds) }}"
+    steps:
+      - run: echo "${{ matrix.value }}"
+
+      - name: Set clientname environment variable
+        run: |
+          clientname=${{ needs.create_feeds.outputs.clientname }}
+          echo "clientname=$clientname" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set release_version environment variable
+        run: |
+          release_version=${{ needs.create_feeds.outputs.release_version }}
+          echo "release_version=$release_version" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Set dap jar version environment variable
+        run: |
+          dap_jar_version=${{needs.create_feeds.outputs.release_version}}
+          echo "dap_jar_version=${dap_jar_version#v}" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Checkout deploy branch
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install required python libraries
+        run: pip install -r src/requirements.txt
+        # GitHub Action installing pip packages as common job at the start and adding it as dependency (keyword "needs") to the
+        # current job is throwing NoModuleFound error as pip list is not showing azure libraries. Hence, doing pip install in current job
+
+      - name: create stage folder
+        run: |
+          cd ../..
+          pwd
+          mkdir stage
+          ls -lrt
+          cd dap-client-deploy/dap-client-deploy
+          pwd
+      - uses: actions/checkout@master
+
+      - uses: actions/download-artifact@master
+        with:
+          name: feed-artifact
+          path: feed-artifact
+
+      - name: Download and install yq binary
+        run: sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+
+      - name: Provide execute permission to run the tool as command
+        run: sudo chmod a+x /usr/local/bin/yq
+
+      - name: Set EMR and Spec Versions
+        id: set-versions
+        run: |
+          # Define the directories where the versions are stored
+          EMR_DIR="./${{ env.clientname }}/${{ matrix.pullfeeds}}/connector-lib/${{ env.connector }}/"
+          SPEC_DIR="./${{ env.clientname }}/${{ matrix.pullfeeds}}/connector-lib/${{ env.connector }}/${{ inputs.emr_version }}/"
+          # Check if EMR version is provided
+          if [ -z "${{ inputs.emr_version }}" ]; then
+            echo "EMR version not provided. Determining the latest version..."
+            EMR_VERSION=$(ls -v $EMR_DIR | tail -n 1)
+            echo "Latest EMR version: $EMR_VERSION"
+          else
+            EMR_VERSION="${{ inputs.emr_version }}"
+            echo "Using provided EMR version: $EMR_VERSION"
+          fi
+          # Check if Spec version is provided
+          if [ -z "${{ inputs.spec_version }}" ]; then
+            echo "Spec version not provided. Determining the latest version..."
+            SPEC_VERSION=$(ls -v $SPEC_DIR | tail -n 1)
+            echo "Latest Spec version: $SPEC_VERSION"
+          else
+            SPEC_VERSION="${{ inputs.spec_version }}"
+            echo "Using provided Spec version: $SPEC_VERSION"
+          fi
+          # Export the versions as environment variables
+          echo "EMR_VERSION=$EMR_VERSION" >> $GITHUB_ENV
+          echo "SPEC_VERSION=$SPEC_VERSION" >> $GITHUB_ENV
+      - name: Get connector
+        run: |
+          connector=$(yq '.connector_type' ./feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}.yml)
+          echo "connectortype=eis_ms/$connector" >> $GITHUB_ENV
+          echo "connector=$connector" >> $GITHUB_ENV
+        id: get-connector
+        shell: bash
+
+      - name: Checkout connector lib
+        uses: actions/checkout@v3
+        with:
+          repository: OptumInsight-Analytics/dap-connector-lib
+          path: './${{ env.clientname }}/${{ matrix.pullfeeds}}/connector-lib'
+          ref: ${{ env.connectortype }}
+          token: ${{ secrets.GIT_TOKEN }}
+
+      - name: Azure Login to upload schema definitions
+        uses: azure/login@v1
+        with:
+          creds: ${{env.hcc_env}}
+
+      - name: TB, PB, and FAV folder structure creation  
+        env:  
+          storage_account: ${{ needs.create_feeds.outputs.storage_account }}  
+          container_name: ${{ needs.create_feeds.outputs.container_name }}  
+        run: |  
+          az config set extension.use_dynamic_install=yes_without_prompt   
+          dirName=(  '${{ matrix.pushfeeds }}'  '${{ matrix.pushfeeds }}/tarnishedbronze'  '${{ matrix.pushfeeds }}/polishedbronze' '${{ matrix.pushfeeds }}/tarnishedbronze/extracted_files' '${{ matrix.pushfeeds }}/tarnishedbronze/landed_feed_files' '${{ matrix.pushfeeds }}/tarnishedbronze/processed_files' '${{ matrix.pushfeeds }}/tarnishedbronze/processing_files' '${{ matrix.pushfeeds }}/tarnishedbronze/schema_definition_files' '${{ matrix.pushfeeds }}/tarnishedbronze/extracted_holding' 'FAV' 'FAV/FAV_reports' 'FAV/templates' 'FAV/FAV_reports/landed_fav_files' 'FAV/FAV_reports/processed_fav_files' 'FAV/FAV_reports/Reports' '${{ matrix.pushfeeds }}/tarnishedbronze/preprocessing_feed_files')  
+        
+          for name in "${dirName[@]}";  
+          do    
+              if [[ $name == FAV* ]]; then  
+                  base_path="data/$name"  
+              else  
+                  base_path="data/${{ inputs.environment }}/bronze/$name"  
+              fi  
+         
+              result=$(az storage fs directory exists --file-system ${{ env.container_name }} --name $base_path --account-name ${{ env.storage_account }})  
+              isExists=$(jq -r '.exists' <<< ${result})  
+        
+              if [[ $isExists == false ]]; then  
+                  az storage fs directory create --file-system ${{ env.container_name }} --name $base_path --account-name ${{ env.storage_account }}  
+                  echo "Created directory: $base_path"  
+              else  
+                  echo "Directory already exists: $base_path"  
+              fi  
+          done 
+      - name: Upload Manifest_Sample.csv
+        env:
+          storage_account: ${{needs.create_feeds.outputs.storage_account}}
+          container_name: ${{needs.create_feeds.outputs.container_name}}
+        run: |
+          touch Manifest_Sample.csv
+          az storage blob upload --file Manifest_Sample.csv --account-name ${{ env.storage_account }} --container-name ${{ env.container_name }} --name "data/${{ inputs.environment }}/bronze/${{ matrix.pullfeeds }}/tarnishedbronze/extracted_files/temp/Manifest_Sample.csv" --overwrite
+      
+      - name: Copy JSON template to fav_template.json  
+        run: cp template/fav_input_template.json fav_template.json  
+        
+      - name: Upload fav_template.json
+        env:
+          storage_account: ${{needs.create_feeds.outputs.storage_account}}
+          container_name: ${{needs.create_feeds.outputs.container_name}}
+        run: |
+          touch fav_template.json
+          az storage blob upload --file fav_template.json --account-name ${{ env.storage_account }} --container-name ${{ env.container_name }} --name "data/FAV/templates/fav_template.json" --overwrite
+      - name: Upload feed config files
+        env:
+          dap_common_storage_account: ${{needs.create_feeds.outputs.dap_common_storage_account}}
+          config_files_container_name: ${{needs.create_feeds.outputs.config_files_container_name}}
+        run:
+          az storage blob upload --file ./feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}_upsertScript.sql --account-name ${{ env.dap_common_storage_account }} --container-name ${{ env.config_files_container_name }} --name "feed-config-files/${{ matrix.pullfeeds}}_upsertScript.sql" --overwrite  
+      - name: trigger azure function app to run the query 
+        env: 
+          function_app_key_secret: ${{ secrets.function_app_key_secret}}
+          pullfeed: ${{ matrix.pullfeeds}}
+        run: |
+          import requests
+          import os
+          function_app_key_secret = os.getenv("function_app_key_secret")
+          pullfeed = os.getenv("pullfeed")
+          url = f'https://hsodev-dap-functn-app.azurewebsites.net/api/SQL_Executor?code={function_app_key_secret}'
+          headers = {'Content-Type' : 'application/json'}
+          sql_file_path = f'./feed-artifact/{pullfeed}/{pullfeed}_upsertScript.sql'
+          with open(sql_file_path, 'r') as f:
+            sql_content = f.read()
+          if sql_content:
+            response = requests.post(url,headers=headers, json={ 'query': sql_content })
+            if response.status_code == 200:
+              print("insert query executed successfully")
+            else:
+              print("insert query failed")
+              print(f"status code : {response.status_code}")
+        shell: python
+
+
+
+
+      - name: Create connector artifact
+        run: |
+          mkdir connector_artifact
+          cp -R "./${{ env.clientname }}/${{ matrix.pullfeeds}}/connector-lib/${{ env.connector }}/${{ env.EMR_VERSION }}/${{ inputs.spec_name }}/${{ env.SPEC_VERSION }}/${{ env.clientname }}/schema_definitions/" connector_artifact
+          cp -R "./${{ env.clientname }}/${{ matrix.pullfeeds}}/connector-lib/${{ env.connector }}/${{ env.EMR_VERSION }}/${{ inputs.spec_name }}/${{ env.SPEC_VERSION }}/${{ env.clientname }}/sql_scripts" connector_artifact
+          # cp -R "./${{ env.clientname }}/${{ matrix.pullfeeds}}/connector-lib/${{ env.connector }}/${{ env.EMR_VERSION }}/${{ inputs.spec_name }}/${{ env.SPEC_VERSION }}/${{ env.clientname }}/validation_rules" connector_artifact
+          ls -lrt -R connector_artifact
+          
+        shell: bash
+
+      - name: Convert Client's spec to DAP & DVP specific Schema JSONs
+        run: |
+            mkdir -p DVP_Schema
+            mkdir -p DVP_Rules
+            mkdir -p DAP_Schema
+            python src/EIS-XL_To_Schema_Converter.py --client_name "${{ env.clientname }}" --eis_file_name "spec/${{ inputs.specfile_name }}.xlsx" --env "hsodev"
+            cp -R DAP_Schema/* connector_artifact/schema_definitions/
+            ls -lrt -R connector_artifact
+        shell: bash
+
+      - name: Create bat script to execute feeds
+        run: |
+          touch ${{ matrix.pullfeeds}}.bat connector_artifact
+          echo "
+          @echo off
+          SET YY=%date:~10,4%
+          SET MM=%date:~4,2%
+          SET DD=%date:~7,2%
+          SET HH=%time:~0,2%
+          IF %HH% lss 10 (SET HH=0%time:~1,1%)
+          SET NN=%time:~3,2%
+          SET SS=%time:~6,2%
+          SET MS=%time:~9,2%
+          SET DATETIME=%YY%%MM%%DD%-%HH%%NN%
+          SET feed_name=${{ matrix.pullfeeds}}
+          setlocal enabledelayedexpansion
+          if defined IS_CALLED_FROM_PARENT (
+            cd %feed_name%
+          )
+          echo Calling !feed_name!..>> ..\logs\start_application_%DATETIME%.log
+          REM Set the path to your YAML file
+          set \"yaml_file=config\feed.yml\"
+          set \"python_script=..\setup_validation.py\"
+          set \"sql_scripts_path=sql_scripts\"
+          
+          set \"key_to_check=is_adhoc_run\"
+          for /f \"tokens=1,* delims=:\" %%a in ('findstr /C:\"%key_to_check%:\" \"%yaml_file%\"') do (
+            set \"value=%%b\"
+          )
+          REM Trim leading and trailing spaces from the value
+          set \"value=!value:~1!\"
+          REM Check if the value is true or false
+          if /i \"!value!\"==\"true\" (
+            if defined IS_CALLED_FROM_PARENT (
+              echo %date% %time% : The feed !feed_name! is adhoc. Please run adhoc feeds at feed-level by triggering feed-level bat file..>> ..\logs\start_application_%DATETIME%.log
+              exit
+            ) else ( 
+              echo -----------------------------------  
+              echo SQL Validation started for feed:!feed_name!
+              echo SQL Validation started for feed:!feed_name! >> ..\"%targetDir%\\logs\\start_application_%DATETIME%.log\"
+              python %python_script% %yaml_file% %sql_scripts_path%
+              python %python_script% %yaml_file% %sql_scripts_path% >> ..\"%targetDir%\\logs\\start_application_%DATETIME%.log\"
+              echo Adhoc_run is true for feed !feed_name!.
+              REM Prompt the user for input parameters
+              set /p \"files=Enter comma separated list of file names or 'all' for all files: \"
+              set /p \"use_previous_manifest=Extract from next day of previous manifest end date if previous manifest file exists? true/false : \"
+              REM Check if input is provided for files and use_previous_manifest
+              if \"!files!\"==\"\" (
+                echo Error: No input provided for files. Exiting...
+                exit /b 1
+              )
+              if \"!use_previous_manifest!\"==\"\" (
+                echo Error: No input provided for use_previous_manifest. Exiting...
+                exit /b 1
+              )
+              
+              REM Display the provided files and use_previous_manifest
+            )
+          ) else (
+            echo Adhoc_run for !feed_name! is not true.
+            set \"files=all\"
+            set \"use_previous_manifest=true\"
+          )
+          echo Selected files: !files!
+          echo Use previous manifest: !use_previous_manifest!
+          echo Data Extraction started
+          echo Check logs at logs\%feed_name%_%DATETIME%.log
+          java --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar -Dserver.port=0 ..\DataExtraction-${{ env.dap_jar_version }}.jar --file_list=!files! --use_previous_manifest=!use_previous_manifest! --spring.config.location=config\feed.yml *>> ..\logs\%feed_name%_%DATETIME%.log" > connector_artifact/${{ matrix.pullfeeds}}.bat
+          exit
+        shell: bash
+
+      - name: Call python script to get connection setting type
+        id: get-feed-config-value
+        run: python3 src/getFeedConfigValue.py -clientyaml "./feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}.yml" -key "extraction_settings.connection_setting.type"
+
+      - name: Find Missing files in sqlScripts
+        run: |
+          connection_type=${{ steps.get-feed-config-value.outputs.key_value }}
+          if echo "${{ env.connectortype }}" | grep -qi 'epic'; then
+            echo "Skipped Checking for SQL Availability"
+          elif echo "${connection_type}" | grep -qi 'ntfs'; then
+            echo "Skipped Checking for SQL Availability for folder level extraction"
+          else
+            python ./src/findMissingFiles.py "connector_artifact/" "./feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}.yml"
+          fi            
+      - name: Install croniter to validate cron expression
+        run: pip install croniter
+        shell: bash
+      - name: Transfrom client name
+        run: |
+          CLIENTNAME_UPPER=$(echo "${{ env.clientname }}" | tr '[:lower:]' '[:upper:]')
+          echo "CLIENTNAME_UPPER=$CLIENTNAME_UPPER" >> $GITHUB_ENV
+      - name: Replace feed secret values
+        run: |
+          if [ -n "${{ secrets[format('CLIENT_SQL_PASSWORD_{0}',env.CLIENTNAME_UPPER)] }}" ]; then
+            echo "Secret found, performing action"
+            python src/encryptor.py  ${{ secrets[format('CLIENT_SQL_PASSWORD_{0}',env.CLIENTNAME_UPPER)] }}  ${{ secrets.EIP_DAP_ENCRYPTIONKEY }} ${{ secrets.EIP_DAP_ENCRYPTION_INIT_VECTOR }}  "./feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}.yml" "extraction_settings.connection_setting.password"
+          else
+            echo "Secret not found"
+          fi
+      - name: Adding key files in feed.yml file
+        run: |
+          if [ -n "${{ secrets[format('CLIENT_SFTPKEY_{0}',env.CLIENTNAME_UPPER)] }}" ]; then
+            python src/updateFeedFile.py  "./feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}.yml" "transporter.settings.keyFilePath" "../.ssh/rsa_privatekey_file"
+          else
+            echo "SFTP KEY not found"
+          fi
+      - name: Update directory details
+        run: |
+          python src/updateDirectories.py  "./feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}.yml"
+      - name: Add derived_cron_schedule to feed yaml
+        run: python ./src/CronExpressionBuilder.py "./feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}.yml"
+
+      - name: Copy feed ymls to connector artifact
+        run: cp -R './feed-artifact/${{ matrix.pullfeeds}}/${{ matrix.pullfeeds}}.yml' connector_artifact
+
+      - name: create config folder and copy the files
+        run: |
+          cd feed-artifact/${{ matrix.pullfeeds}}
+          mkdir config && mv '${{ matrix.pullfeeds}}.yml' config/feed.yml
+          cd ../..
+          cp -R feed-artifact/${{ matrix.pullfeeds}}/config connector_artifact
+        shell: bash
+
+      - name: create config_watcher folder and copy the files
+        run: |
+          cd feed-artifact/${{ matrix.pullfeeds}}
+          mkdir -p config_watcher/archive
+          touch config_watcher/archive/dummy.txt
+          cd ../..
+          cp -R feed-artifact/${{ matrix.pullfeeds}}/config_watcher connector_artifact
+        shell: bash
+
+      - name: Upload feed artifacts
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.pullfeeds }}
+          if-no-files-found: ignore
+          path: connector_artifact
+          retention-days: 1
+          
+    outputs:
+      dap_jar_version: ${{ env.dap_jar_version }}
+      
+
+  create-client-artifacts:
+    runs-on: uhg-runner
+    needs: [create_feeds, loop_pull_feeds]
+    if: ${{ toJson(fromJson(needs.create_feeds.outputs.pullfeeds)) != '[]' && needs.create_feeds.outputs.pullfeeds != '' }} && (success() || failure())
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./downloaded_artifacts
+
+      - name: Remove feed artifact after copying
+        run: |
+          ls -a ./downloaded_artifacts
+          #rm -r ./downloaded_artifacts/feed-artifact
+      - name: Set release_version environment variable
+        run: |
+          release_version=${{ needs.create_feeds.outputs.release_version }}
+          echo "release_version=$release_version" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Create Client artifacts
+        shell: bash
+        run: |
+          touch ${{ needs.create_feeds.outputs.clientname }}.bat ./downloaded_artifacts
+          cd downloaded_artifacts
+          echo "
+          @echo off
+          set "targetDir=%~dp0"
+          cd /d \"%targetDir%\"
+          SET YY=%date:~10,4%
+          SET MM=%date:~4,2%
+          SET DD=%date:~7,2%
+          SET HH=%time:~0,2%
+          IF %HH% lss 10 (SET HH=0%time:~1,1%)
+          SET NN=%time:~3,2%
+          SET SS=%time:~6,2%
+          SET MS=%time:~9,2%
+          SET DATETIME=%YY%%MM%%DD%-%HH%%NN%
+          echo %date% %time% : Started DAP extraction process.>> \"%targetDir%\\logs\\start_application_%DATETIME%.log\"
+          
+          " > ${{ needs.create_feeds.outputs.clientname }}.bat
+          for i in $(ls -d */)
+          do
+            feed_name=${i%%/}
+            if [[ $feed_name == "feed_artifact" ]]; then
+              continue
+            fi
+            if [[ $exec_cmd == "" ]]; then
+              exec_cmd="start /b /wait \"\" \"%targetDir%\\${feed_name}\\${feed_name}.bat\""
+            else
+              exec_cmd="${exec_cmd} | start /b /wait \"\" \"%targetDir%\\${feed_name}\\${feed_name}.bat\""
+            fi
+            echo "
+            set feed_name=${feed_name}
+            set "python_script=\"%targetDir%\\setup_validation.py\""  
+            set "sql_scripts_path=\"%targetDir%\\%feed_name%\\sql_scripts\""  
+            set "feed_config_file=\"%targetDir%\\%feed_name%\\config\\feed.yml\""  
+            echo -----------------------------------  
+            echo SQL Validation started for feed:%feed_name%  
+            echo SQL Validation started for feed:%feed_name% >> \"%targetDir%\\logs\\start_application_%DATETIME%.log\"
+            python %python_script% %feed_config_file% %sql_scripts_path%
+            python %python_script% %feed_config_file% %sql_scripts_path% >> \"%targetDir%\\logs\\start_application_%DATETIME%.log\"
+            
+            " >> ${{ needs.create_feeds.outputs.clientname }}.bat
+          done
+          echo "
+          echo -----------------------------------
+          echo Calling all the feeds parallely..
+          set IS_CALLED_FROM_PARENT=true
+          ${exec_cmd}
+          exit" >> ${{ needs.create_feeds.outputs.clientname }}.bat
+          cd ..
+      
+      - name: Create bat script for adhoc feed executor
+        run: |
+          cat << 'EOF' > ./downloaded_artifacts/adhoc_feed_executor.bat
+          @echo off
+          SET CLIENT_NAME=${{ needs.create_feeds.outputs.clientname }}-${{ needs.create_feeds.outputs.release_version }}
+          set "currentdir=%~dp0"
+          for %%i in ("%currentdir:~0,-1%") do set "EXPORT_PATH=%%~dpi"
+          if "%EXPORT_PATH:~-1%"=="\" set "EXPORT_PATH=%EXPORT_PATH:~0,-1%"
+          echo CLIENT_NAME : %CLIENT_NAME%
+          echo EXPORT_PATH : %EXPORT_PATH%
+          FOR /F "tokens=*" %%i IN ('dir /b /s *.jar ^| findstr /r /c:".*"') DO SET jar_path=%%i
+          IF "%jar_path%"=="" (
+            echo .jar file not found!
+            exit /b 1
+          )
+          echo jar path: %jar_path%
+          java --add-opens=java.base/sun.nio.ch=ALL-UNNAMED -jar -Dserver.port=8092 %jar_path% --adhoc_process="true" --client_name="%CLIENT_NAME%" --root_path="%EXPORT_PATH%"
+          exit
+          EOF
+        shell: bash
+
+      - name: Create Start/Stop Application batch script
+        shell: bash
+        run: |
+          touch start_application.bat ./downloaded_artifacts
+          touch stop_application.bat ./downloaded_artifacts
+          touch starter.ps1 ./downloaded_artifacts
+          touch ${{ needs.create_feeds.outputs.clientname }}_purge_script.bat ./downloaded_artifacts
+          cd downloaded_artifacts
+          echo "
+          @echo off
+          setlocal enabledelayedexpansion
+          set \"folderPath=%~dp0\"
+          set days=%~1
+          set folderList=%~2
+          echo %folderList%
+          cd /D %folderPath%
+          title DAP Purge Script
+          :loop
+          SET YY=%date:~10,4%
+          SET MM=%date:~4,2%
+          SET DD=%date:~7,2%
+          SET HH=%time:~0,2%
+          IF %HH% lss 10 (SET HH=0%time:~1,1%)
+          SET NN=%time:~3,2%
+          SET SS=%time:~6,2%
+          SET MS=%time:~9,2%
+          SET DATETIME=%YY%%MM%%DD%-%HH%%NN%%SS%
+          set \"logFile=logs\purge_%DATETIME%.log\"
+          rem Split the string into an array
+          set "i=0"
+          for %%A in ("%folderList:,=" "%") do (
+              echo !i!
+              set "folders[!i!]=%%~A"
+              set /a i+=1
+          )
+          echo \"Below are the files that are purged during this run:\" >> \"%logFile%\"
+          set /a i-=1
+          for /l %%i in (0,1,%i%) do (
+              echo %%i
+              echo Files deleted under !folders[%%i]! >> \"%logFile%\" 2>&1
+              echo !folders[%%i]! | findstr /C:\"output\" >> \"%logFile%\" 2>&1
+              if !errorlevel! equ 0 (
+          	    echo \"Its output directory\" >> \"%logFile%\" 2>&1
+          	    call :DelFiles !folders[%%i]!
+                REM Remove empty output archive directories
+                for /f \"delims=\" %%d in ('dir /s /b /ad \"!folders[%%i]!\" ^| sort /r') do (
+                    rd \"%%d\" 2>nul
+                )
+              ) else (
+          	    forfiles /p \"!folders[%%i]!\" /m * /d -%days% /c \"cmd /c if @ISDIR==FALSE echo @path @fdate @ftime\" >> \"%logFile%\" 2>&1
+          	    forfiles /p \"!folders[%%i]!\" /m * /d -%days% /c \"cmd /c if @ISDIR==FALSE del /F /Q @path\"
+              )
+          )
+          timeout /t 86400 >nul
+          goto :loop
+          :DelFiles
+          for /d %%F in (\"%~1\\*\") do (
+              if exist \"%%F\" (
+                  forfiles /p \"%%F\" /m * /d -%days% /c \"cmd /c if @ISDIR==FALSE echo @path @fdate @ftime\" >> \"%logFile%\" 2>&1
+                  forfiles /p \"%%F\" /m * /d -%days% /c \"cmd /c if @ISDIR==FALSE del /F /Q @path\"
+              )
+          )
+          goto :eof
+          " >> ${{ needs.create_feeds.outputs.clientname }}_purge_script.bat
+          echo "
+          \$currentDirectory = Split-Path -Parent \$MyInvocation.MyCommand.Path
+          \$parentDirectory  = Split-Path -Parent \$currentDirectory
+          \$dirPath = \"\$currentDirectory\\logs${{ needs.create_feeds.outputs.output_archive_path }}${{ needs.create_feeds.outputs.zip_file_archive_path }}\"
+          \$numDays = ${{ needs.create_feeds.outputs.purge_old_files_by_days }}
+          \$batchFile = Join-Path -Path \$currentDirectory -ChildPath \"${{ needs.create_feeds.outputs.clientname }}.bat\"
+          \$process1 = Start-Process -FilePath \"\"\"\$batchFile\"\"\" -ArgumentList \"\"\"\$currentDirectory\"\"\" -WindowStyle Hidden -PassThru
+          \$purgeBatchFile = Join-Path -Path \$currentDirectory -ChildPath \"${{ needs.create_feeds.outputs.clientname }}_purge_script.bat\"
+          \$process2 = Start-Process -FilePath \"\"\"\$purgeBatchFile\"\"\" -ArgumentList \"\"\"\$numDays\"\"\",\"\"\"\$dirPath\"\"\" -WindowStyle Hidden -PassThru
+          \$processIds = \$process1.Id.ToString() + \",\" + \$process2.Id.ToString()
+          \$processIds.Trim() | Out-File -FilePath \"\$currentDirectory\\pid.txt\" -Encoding ascii -NoNewline
+          " >> starter.ps1
+          echo "
+          @echo off
+          @setlocal enableextensions
+          @cd /d "%~dp0"
+          SET YY=%date:~10,4%
+          SET MM=%date:~4,2%
+          SET DD=%date:~7,2%
+          SET HH=%time:~0,2%
+          IF %HH% lss 10 (SET HH=0%time:~1,1%)
+          SET NN=%time:~3,2%
+          SET SS=%time:~6,2%
+          SET MS=%time:~9,2%
+          SET DATETIME=%YY%%MM%%DD%-%HH%%NN%
+          echo %date% %time% : Start DAP application as process - Execution started, This process start all the routes at Client level >> logs/start_application_%DATETIME%.log
+          set TaskName="${{ needs.create_feeds.outputs.clientname }}_dap_process"
+          set ScriptPath="%cd%\\starter.ps1"
+          :: Prompt for the username
+          echo " DAP application Start as process - Enter the UserName and Password to create the task."
+          set /p AdminUsername=Enter the UserName:
+          :: Prompt for the  password (hidden input)
+          set \"psCommand=powershell -Command \"\$pword = read-host 'Enter User's Password' -AsSecureString ;\$BSTR=[System.Runtime.InteropServices.Marshal]::SecureStringToBSTR(\$pword);[System.Runtime.InteropServices.Marshal]::PtrToStringAuto(\$BSTR)\"\"
+          for /f \"usebackq delims=\" %%p in (\`%psCommand%\`) do set AdminPassword=%%p
+          :: create task and set to run everytime system restart
+          schtasks /create /tn "%TaskName%" /tr \"powershell.exe -ExecutionPolicy Bypass -File \\\"%ScriptPath%\\\" \" /IT /sc onstart /rl HIGHEST /ru %AdminUsername% /rp %AdminPassword% /f
+          :: Set the task to run as hidden
+          :: Run the scheduled task immediately
+          schtasks /run /tn \"%TaskName%\"
+          :: Exit the batch file
+          echo " Application started as process - DAP application started as process. please enter any key to exit this window. Application will be running in background."
+          pause
+          exit
+          " >> start_application.bat
+          echo "
+          @echo off
+          @setlocal enableextensions
+          @cd /d "%~dp0"
+          SET YY=%date:~10,4%
+          SET MM=%date:~4,2%
+          SET DD=%date:~7,2%
+          SET HH=%time:~0,2%
+          IF %HH% lss 10 (SET HH=0%time:~1,1%)
+          SET NN=%time:~3,2%
+          SET SS=%time:~6,2%
+          SET MS=%time:~9,2%
+          SET DATETIME=%YY%%MM%%DD%-%HH%%NN%
+          echo %date% %time% : Stop Application - Execution started, This shutdowns all the routes at Client level >> logs/stop_application_%DATETIME%.log
+          set TaskName=\"${{ needs.create_feeds.outputs.clientname }}_dap_process\"
+          set \"pidFile=pid.txt\"
+          set ProcessName=cmd.exe
+          :: Stop the scheduled task
+          schtasks /end /tn \"%TaskName%\"
+          :: Check the exit code to determine if the task was successfully stopped
+          if %errorlevel% equ 0 (
+              echo Task \"%TaskName%\" has been successfully stopped.
+          ) else (
+              echo Failed to stop task \"%TaskName%\".
+          )
+          for /F \"usebackq tokens=1,2 delims=,\" %%A in (\"%pidFile%\") do (
+              echo %date% %time% : Stop-application - Termination PID %%A >> logs/stop_application_%DATETIME%.log
+              taskkill /F /PID %%A
+              echo %date% %time% : Stop-application - Termination PID %%B >> logs/stop_application_%DATETIME%.log
+              taskkill /F /PID %%B
+          )
+          echo %date% %time% : Stop-application - Power shell processes are terminated >> logs/stop_application_%DATETIME%.log
+          del %pidFile%
+          echo "Please confirm to stop the Application process by entering Y or N."
+          schtasks /delete /tn \"%TaskName%\"
+          setlocal enabledelayedexpansion
+          mkdir \"stopcontext\" 2>nul
+          echo %date% %time% >> "stopcontext/stopcamel.txt"
+          echo %date% %time% : Stop Application - stopcamel.txt file is in place >> logs/stop_application_%DATETIME%.log
+          echo %date% %time% : Stop Application - Timeout period is 5 minutes. All the routes will  be terminated after 5 minutes. >> logs/stop_application_%DATETIME%.log
+          echo "Stop Application - Timeout period is 5 minutes. All the routes will  be terminated after 5 minutes."
+          pause
+          exit
+          " > stop_application.bat
+      - name: Download Jar from release assets
+        run: gh release download ${{ needs.create_feeds.outputs.release_version }} --repo OptumInsight-Analytics/dap-data-extraction --pattern DataExtraction-${{ needs.loop_pull_feeds.outputs.dap_jar_version }}.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+
+      - name: Copy artifacts to downloaded_artifacts folder if checkbox ticked
+        run: |
+          if ${{ github.event.inputs.include_jar }}; then
+            cp "DataExtraction-${{ needs.loop_pull_feeds.outputs.dap_jar_version }}.jar" ./downloaded_artifacts/
+            echo "Included Jar files!"
+          else
+            echo "Not Including Jar files!"
+          fi
+      - name: Checkout extraction repository
+        uses: actions/checkout@v3
+        with:
+          repository: OptumInsight-Analytics/dap-data-extraction
+          path: './data-extraction'
+          ref: ${{ needs.create_feeds.outputs.release_version }}
+          token: ${{ secrets.GIT_TOKEN }}
+
+      #- name: Python script artifact
+      #  run: |
+      #    mkdir scripts && cp -R ./data-extraction/DataExtraction/processors/DataExtraction/src/main/python/* scripts
+      - name: Transfrom client name
+        run: |
+          CLIENTNAME_UPPER=$(echo "${{ needs.create_feeds.outputs.clientname }}" | tr '[:lower:]' '[:upper:]')
+          echo "CLIENTNAME_UPPER=$CLIENTNAME_UPPER" >> $GITHUB_ENV
+      - name: Adding key files
+        run: |
+          cd downloaded_artifacts
+          mkdir .ssh
+          echo "${{ needs.create_feeds.outputs.clientname }}"
+          if [ -n "${{ secrets[format('CLIENT_SFTPKEY_{0}',env.CLIENTNAME_UPPER)] }}" ]; then
+            cd .ssh
+            echo "SFTPKEY key file is present, performing action"
+            echo "${{ secrets[format('CLIENT_SFTPKEY_{0}',env.CLIENTNAME_UPPER)] }}"  >> "rsa_privatekey_file"
+            chmod 600 "rsa_privatekey_file"
+            ssh-keygen -p -N "${{ needs.create_feeds.outputs.clientname }}-${{ secrets.PRIVATEKEY_PASSPHRASE }}" -f "rsa_privatekey_file"
+            cd ..
+          else
+            echo "SFTP KEY not found"
+          fi
+          cd ..
+      - name: create artifacts required folders (scripts, outputs & logs)
+        run: |
+          cd downloaded_artifacts
+          mkdir logs && cd logs && touch dummy.txt && cd ../..
+      #           mkdir scripts
+      #- name: Python script artifact
+      #  run: cp -R scripts/* ./downloaded_artifacts/scripts
+
+      # - name: Download Jar from Maven repository
+      #   run: |
+      #     wget -d --header="Authorization: token ${{ secrets.GIT_TOKEN }}" \
+      #     https://maven.pkg.github.com/{githubUser}/{githubRepository}/{groupId}/{artifactId}/{version}/{artifactId}-{value}.jar
+
+      # - name: downloaded_artifacts
+      #   run: ls -lahR ./downloaded_artifacts/
+
+
+      #Include setup_validation.py script in the client level artifact-mm
+      - name: Copy setup_validation.py to downloaded artifacts  
+        run: cp src/setup_validation.py ./downloaded_artifacts
+
+
+      - name: Upload Client artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.client_name }}-${{ needs.create_feeds.outputs.release_version }}
+          path: ./downloaded_artifacts/
+          retention-days: 1
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install pysftp to upload files
+        run: |
+          pip install pysftp
+        shell: bash
+
+      - name: Zip All Artifacts
+        run: |
+          cd downloaded_artifacts
+          zip -r ${{ inputs.client_name }}-${{ needs.create_feeds.outputs.release_version }}.zip . 
+          ls -lart
+          cd ..
+        shell: bash
+
+      - name: Call python script to upload the artifacts
+        id: sftp-upload
+        run: python3 src/sftp_upload.py -username ${{env.USERNAME}} -password ${{env.PASSWORD}} -hostname ${{env.HOSTNAME}} -local_path ${{env.LOCAL_PATH}} -remote_path ${{env.REMOTE_PATH}}
+      - run: echo "status=${{ steps.sftp_upload.outputs.status }}"
+  
+  loop_push_feeds:
+    needs: create_feeds
+    runs-on: uhg-runner
+    if: ${{ toJson(fromJson(needs.create_feeds.outputs.pushfeeds)) != '[]' && needs.create_feeds.outputs.pushfeeds != '' }}
+    strategy:
+      matrix:
+        pushfeeds: "${{ fromJson(needs.create_feeds.outputs.pushfeeds) }}"
+
+    steps:
+      - name: Set clientname environment variable
+        run: |
+          clientname=${{ needs.create_feeds.outputs.clientname }}
+          echo "clientname=$clientname" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Checkout deploy branch
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install required python libraries
+        run: pip install -r src/requirements.txt
+        # GitHub Action installing pip packages as common job at the start and adding it as dependency (keyword "needs") to the
+        # current job is throwing NoModuleFound error as pip list is not showing azure libraries. Hence, doing pip install in current job
+
+      - name: create stage folder
+        run: |
+          cd ../..
+          pwd
+          mkdir stage
+          ls -lrt
+          cd dap-client-deploy/dap-client-deploy
+          pwd
+      - uses: actions/checkout@master
+
+      - uses: actions/download-artifact@master
+        with:
+          name: feed-artifact
+          path: feed-artifact
+
+      - name: Download and install yq binary
+        run: sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+
+      - name: Provide execute permission to run the tool as command
+        run: sudo chmod a+x /usr/local/bin/yq
+
+      - name: Azure Login to upload schema definitions
+        uses: azure/login@v1
+        with:
+          creds: ${{env.hcc_env}}
+
+      - name: TB, PB, and FAV folder structure creation  
+        env:  
+          storage_account: ${{ needs.create_feeds.outputs.storage_account }}  
+          container_name: ${{ needs.create_feeds.outputs.container_name }}  
+        run: |  
+          az config set extension.use_dynamic_install=yes_without_prompt   
+          dirName=(  '${{ matrix.pushfeeds }}'  '${{ matrix.pushfeeds }}/tarnishedbronze'  '${{ matrix.pushfeeds }}/polishedbronze' '${{ matrix.pushfeeds }}/tarnishedbronze/extracted_files' '${{ matrix.pushfeeds }}/tarnishedbronze/landed_feed_files' '${{ matrix.pushfeeds }}/tarnishedbronze/processed_files' '${{ matrix.pushfeeds }}/tarnishedbronze/processing_files' '${{ matrix.pushfeeds }}/tarnishedbronze/schema_definition_files' '${{ matrix.pushfeeds }}/tarnishedbronze/extracted_holding' 'FAV' 'FAV/FAV_reports' 'FAV/templates' 'FAV/FAV_reports/landed_fav_files' 'FAV/FAV_reports/processed_fav_files' 'FAV/FAV_reports/Reports' '${{ matrix.pushfeeds }}/tarnishedbronze/preprocessing_feed_files')   
+          polished_br_path="data/${{ inputs.environment }}/bronze/${{ matrix.pushfeeds }}/polishedbronze/*" 
+          echo $polished_br_path
+          az storage blob delete-batch --source ${{ env.container_name }} --pattern $polished_br_path --account-name ${{ env.storage_account }} --auth-mode login
+          echo "Deleted the path : $polished_br_path"
+          for name in "${dirName[@]}";  
+          do    
+              if [[ $name == FAV* ]]; then  
+                  base_path="data/$name"  
+              else  
+                  base_path="data/${{ inputs.environment }}/bronze/$name"  
+              fi  
+         
+              result=$(az storage fs directory exists --file-system ${{ env.container_name }} --name $base_path --account-name ${{ env.storage_account }})  
+              isExists=$(jq -r '.exists' <<< ${result})  
+        
+              if [[ $isExists == false ]]; then  
+                  az storage fs directory create --file-system ${{ env.container_name }} --name $base_path --account-name ${{ env.storage_account }}  
+                  echo "Created directory: $base_path"  
+              else
+                  echo "Directory already exists: $base_path"  
+              fi  
+          done 
+
+
+      - name: Upload Manifest_Sample.csv
+        env:
+          storage_account: ${{needs.create_feeds.outputs.storage_account}}
+          container_name: ${{needs.create_feeds.outputs.container_name}}
+        run: |
+          touch Manifest_Sample.csv
+          az storage blob upload --file Manifest_Sample.csv --account-name ${{ env.storage_account }} --container-name ${{ env.container_name }} --name "data/${{ inputs.environment }}/bronze/${{ matrix.pushfeeds }}/tarnishedbronze/extracted_files/temp/Manifest_Sample.csv" --overwrite
+      
+      - name: Copy JSON template to fav_template.json  
+        run: cp template/fav_input_template.json fav_template.json 
+
+      - name: Upload fav_template.json
+        env:
+          storage_account: ${{needs.create_feeds.outputs.storage_account}}
+          container_name: ${{needs.create_feeds.outputs.container_name}}
+        run: |
+          touch fav_template.json
+          az storage blob upload --file fav_template.json --account-name ${{ env.storage_account }} --container-name ${{ env.container_name }} --name "data/FAV/templates/fav_template.json" --overwrite
+      - name: Upload feed config files
+        env:
+          dap_common_storage_account: ${{needs.create_feeds.outputs.dap_common_storage_account}} 
+          config_files_container_name: ${{needs.create_feeds.outputs.config_files_container_name}} 
+        run:
+          az storage blob upload --file ./feed-artifact/${{ matrix.pushfeeds}}/${{ matrix.pushfeeds}}_upsertScript.sql --account-name ${{ env.dap_common_storage_account }} --container-name ${{ env.config_files_container_name }} --name "feed-config-files/${{ matrix.pushfeeds}}_upsertScript.sql" --overwrite
+      - name: trigger azure function app to run the query 
+        env: 
+          function_app_key_secret: ${{ secrets.function_app_key_secret}}
+          pushfeed: ${{ matrix.pushfeeds}}
+        run: |
+          import requests
+          import os
+          function_app_key_secret = os.getenv("function_app_key_secret")
+          pushfeed = os.getenv("pushfeed")
+          url = f'https://hsodev-dap-functn-app.azurewebsites.net/api/SQL_Executor?code={function_app_key_secret}'
+          headers = {'Content-Type' : 'application/json'}
+          sql_file_path = f'./feed-artifact/{pushfeed}/{pushfeed}_upsertScript.sql'
+          with open(sql_file_path, 'r') as f:
+            sql_content = f.read()
+          if sql_content:
+            response = requests.post(url,headers=headers, json={ 'query': sql_content })
+            if response.status_code == 200:
+              print("insert query executed successfully")
+            else:
+              print("insert query failed")
+              print(f"status code : {response.status_code}")
+        shell: python
+  upload_files:
+      runs-on: uhg-runner
+      needs: [create_feeds, loop_create_adf_orchestration_trigger]
+      if: ${{ always() && needs.create_feeds.result == 'success' && !failure() && !cancelled() }}
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+  
+        - name: Install jq
+          run: |
+            sudo wget -qO /usr/local/bin/jq https://github.com/stedolan/jq/releases/latest/download/jq-linux64  
+            sudo chmod a+x /usr/local/bin/jq
+          shell: bash
+  
+        - name: Azure Login
+          uses: azure/login@v1
+          with:
+            creds: ${{env.hcc_env}}  
+          
+        - name: List storage accounnt
+          run: |
+            RESOURCE_GROUP="eip-hsodev-rg"
+            az storage account list --resource-group $RESOURCE_GROUP --query "[].{Name:name}" -o table
+        - name: Parse config.json and copy files
+          run: |
+            # Define the source and target directories
+            SOURCE_CONTAINER="eip-hsodev-container"
+            DESTINATION_CONTAINER="eip-hsodev-container"
+            ACCOUNT_NAME="eiphsodeveipstorage"
+            SOURCE_PREFIX="data/${{ inputs.environment }}/Test_files/regression/"
+            CONFIG_FILE="data/${{ inputs.environment }}/Test_files/regression/test_config.json"
+            CSV_FILE="copied_files.csv"
+            # Create the CSV file and add the header
+            echo "testid,FileName" > $CSV_FILE
+            # Parse the config.json file to get the test cases
+            az storage blob download --account-name $ACCOUNT_NAME --container-name $SOURCE_CONTAINER --name $CONFIG_FILE --file test_config.json
+            ids=$(jq -r '.test_cases[] | select(.IsActive == "true") | .ID' test_config.json)
+            feed_names=$(jq -r '.test_cases[] | select(.IsActive == "true") | .Feed_Name' test_config.json)
+            # List all blobs in the source directory
+            blobs=$(az storage blob list --account-name $ACCOUNT_NAME --container-name $SOURCE_CONTAINER --prefix $SOURCE_PREFIX --query "[].{name:name}" -o tsv)
+            # Loop through each test case and copy the files
+            for id in $ids; do
+              feed_name=$(jq -r --arg id "$id" '.test_cases[] | select(.ID == $id) | .Feed_Name' test_config.json)
+              for blob in $blobs; do
+                if [[ $blob == *"/tc$id/input_files/"* ]]; then
+                  if [[ "$id" == "52" ]]; then 
+                    destination_blob="data/${{ inputs.environment }}/bronze/$feed_name/tarnishedbronze/preprocessing_feed_files/${blob##*/}"
+                  else
+                    destination_blob="data/${{ inputs.environment }}/bronze/$feed_name/tarnishedbronze/landed_feed_files/${blob##*/}"
+                  fi
+                  echo "Copying $blob to $destination_blob"
+                  copy_status=$(az storage blob copy start \
+                    --account-name $ACCOUNT_NAME \
+                    --destination-blob $destination_blob \
+                    --destination-container $DESTINATION_CONTAINER \
+                    --source-uri https://$ACCOUNT_NAME.blob.core.windows.net/$SOURCE_CONTAINER/$blob \
+                    --auth-mode login)
+                  if [[ $? -eq 0 ]]; then
+                    # Append the testid and filename to the CSV file only if the copy was successful
+                    echo "$id,${blob##*/}" >> $CSV_FILE
+                  else
+                    echo "Failed to copy $blob"
+                  fi
+                fi
+              done
+            done
+        - name: Upload copied files CSV
+          uses: actions/upload-artifact@v4
+          with:
+            name: copied-files
+            path: copied_files.csv
+  sleep-job:
+    runs-on: ubuntu-latest
+    needs: upload_files
+    if: ${{ always() && needs.upload_files.result == 'success' && !failure() && !cancelled() }}
+    steps:
+    - name: Sleep for 60 minutes
+      run: |
+        echo "Sleeping for 60 minutes..."
+        sleep $((60 * 60))
+        echo "Woke up after 60 minutes!"
+  databricks-notebokok:
+    runs-on: ubuntu-latest
+    needs: sleep-job
+    if: ${{ always() && needs.sleep-job.result == 'success' && !failure() && !cancelled() }}
+    steps:
+      - name: Trigger data bricks notebook 
+        env: 
+         DATABRICKS_HOST: ${{ vars.eip_hsodev_databricks_host }}
+         DATABRICKS_TOKEN: ${{ secrets.eip_hsodev_databricks_regression_access_token }}
+         DATABRICKS_CLUSTER_ID: ${{ secrets.eip_hsodev_databricks_atmos_cluster_id }}
+         env: ${{ inputs.environment }}
+        run: |
+          curl -X POST "$DATABRICKS_HOST/api/2.0/jobs/runs/submit" \
+          -H "Authorization: Bearer $DATABRICKS_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "run_name": "Github Workflow Run for regression automation ",
+            "existing_cluster_id": "'"$DATABRICKS_CLUSTER_ID"'",
+            "notebook_task": {
+              "notebook_path": "/Workspace/Users/spokala8@optumcloud.com/regression_validation",
+              "base_parameters": {
+              "environment": "${{ inputs.environment }}"
+              }
+            }
+          }'
