@@ -1,27 +1,28 @@
-name: Unzip File
+name: Unzip and Commit Files
 
 on:
-  workflow_dispatch:
-    inputs:
-      zip_path:
-        description: 'Path to zip file in repo (e.g. myfolder/myfile.zip)'
-        required: true
-        default: ''
+  workflow_dispatch: # Manual trigger
 
 jobs:
-  unzip:
+  unzip_and_commit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Unzip file
+      - name: Unzip specific file
         run: |
-          if [ -z "${{ github.event.inputs.zip_path }}" ]; then
-            echo "No zip file path provided!"
-            exit 1
-          fi
-          unzip "${{ github.event.inputs.zip_path }}" -d unzipped_files
-          
-      - name: List unzipped files
-        run: ls -R unzipped_files
+          unzip ".optum/regression/regression copy.zip" -d .optum/regression/
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit unzipped files
+        run: |
+          git add ./PATH/TO/*
+          git commit -m "Unzipped and committed files from YOUR_ZIP_FILENAME.zip" || echo "Nothing to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
