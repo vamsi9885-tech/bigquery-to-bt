@@ -1,0 +1,27 @@
+name: Unzip File
+
+on:
+  workflow_dispatch:
+    inputs:
+      zip_path:
+        description: 'Path to zip file in repo (e.g. myfolder/myfile.zip)'
+        required: true
+        default: ''
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Unzip file
+        run: |
+          if [ -z "${{ github.event.inputs.zip_path }}" ]; then
+            echo "No zip file path provided!"
+            exit 1
+          fi
+          unzip "${{ github.event.inputs.zip_path }}" -d unzipped_files
+          
+      - name: List unzipped files
+        run: ls -R unzipped_files
