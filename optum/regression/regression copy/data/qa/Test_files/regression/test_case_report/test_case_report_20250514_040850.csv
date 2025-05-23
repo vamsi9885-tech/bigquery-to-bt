@@ -1,0 +1,42 @@
+Test Case,Status,Description,Error Message
+TC_PUSH_001,PASS,Verify if an end to end run (happy path) drop files in landing folder→triggers ADF→updates all values in DAP RUN LOG DB,null
+TC_PUSH_002,PASS,Check for a CSV file with valid name (as per expected regex) and date. Validate the count of the rows in source file vs parquet file. Validate the data for columns and rows,null
+TC_PUSH_003,PASS,Check for a TXT file with valid name (as per expected regex) and date. Validate the count of the rows in source file vs parquet file,null
+TC_PUSH_004,PASS,Check for a DAT file with valid name (as per expected regex) and date. Validate the count of the rows in source file vs parquet file,null
+TC_PUSH_005,PASS,Check for a EXCEL file with  valid name (as per expected regex) and date. Validate the count of the rows in source file vs parquet file,null
+TC_PUSH_005a,PASS,Check for a EXCEL file with  valid name (as per expected regex) and date. Validate the count of the rows in source file vs parquet file,null
+TC_PUSH_006,FAIL,Check for ZIP folder with files from same cadence,SQL result is empty
+TC_PUSH_009,PASS,Check for a blank file drop with only valid header row. Check the converted parquet as well for schema and data type conversion,null
+TC_PUSH_010,PASS,Check for files with Comma as column delimiter and /r/n as row delimiters. Same should be specified in Config stored in DB,null
+TC_PUSH_011,PASS,Check for files with Comma as column delimiter and /r/n as row delimiters. Config should have different delimiters. Check if error is captured,null
+TC_PUSH_012,PASS,Check for a file that has extra columns than specified in spec defintion,null
+TC_PUSH_013,PASS,Check for a file that has one column less (missing) or renames as in spec definition. This file should fail in Schema Validation. Check DB,null
+TC_PUSH_014,PASS,Check for a file that has a different data type than spec definition. This should fail in schema validation,null
+TC_PUSH_015,PASS,Check the Manifest file generated as part of the PUSH scenarios. Check if the details in DB are entered correctly for such runs,null
+TC_PUSH_016,PASS,Check for good rows and bad row counts for a file with known count of such rows,null
+TC_PUSH_017,PASS,Check for schema validation results. Files with even 1 row of bad data should have 'Schema_Validation_Passed' =False,null
+TC_PUSH_018,PASS,Check for a  file name which is valid but has no dates in the name. Regex should be without dates,null
+TC_PUSH_019,PASS,Verify if the new step in ADF 'Handle Quotes And Copy To Extracted Folder' is executed for large files,null
+TC_PUSH_020,FAIL,Verify if the recipient email list is copied from the config for DVP triggers from ADF.,alavala_babu@optum.com not presented in DVP parameters
+TC_PUSH_022,PASS,"Ensure that the 'Output_Folder' gets created as per chosen frequency for all incoming file in the ADF step. Check for daily,monthly,yearly.",null
+TC_PUSH_026,PASS,Check PUSH scenario with a large file - 1 GB or 3 GB ,null
+TC_PUSH_027,PASS,Check PUSH for comma and pipe column delimiters. Update the config with pipe delimiter,null
+TC_PUSH_029,PASS,"Verify for large files, the splits should happen as a factor of 512 MB. Parquet files in PB should be not more than 512 MB",null
+TC_PUSH_030,PASS,"Check if the ADF RUN Id captured in Feed Master, can be tracked on the ADF for a particular run",null
+TC_PUSH_034,FAIL,Check for the DVP trigger as part  of the ADF trigger - both schema and content check. Check if error are caught in case of failures. ,DVP trigger failed 
+TC_PUSH_038,PASS,Verify if the ADF flows with bad data capture the correct count of bad/processed data and emails are triggered/,null
+TC_PUSH_039,PASS,Verify if the automatic error handling feature captures the respective error in the apt table of DB,null
+TC_PUSH_040,PASS,Verify for file with hyphenated names. E.g. claims_2024-09-13-12-43-54_EPIC.txt,null
+TC_PUSH_041,PASS,"Case Sensitivity - Check for file names with different casing. Like Claims, 'PayERS', 'DEVICES' etc. camel case, small, all caps, mixed. All should work in column and file names",null
+TC_PUSH_042,PASS,Check whether the dropped files land in the same folder in PB (sample/historic/periodic) as defined in the config,null
+TC_PUSH_043,FAIL,"Validate the 'preserve_archive' key in config. If enabled, all files dropped should have the re_run count mentioned in the folder name and archived",[PATH_NOT_FOUND] Path does not exist: dbfs:/mnt/data/qa/bronze/centura_daily_autotest/polishedbronze/periodic/archive/20240725/3/claims/1. SQLSTATE: 42K03
+TC_PUSH_044,PASS,"Ensure that for each completed feed, the E2E trigger happens . Check the Feed completion log as well as Event Grid details for it",null
+TC_PUSH_045,FAIL,Trigger 20 parallel ADF runs in QA environment with 20 individual files.,0 pipelines triggered in last 60 minutes
+TC_PUSH_046,PASS, Verify if multi part file support works end to end when dropped in a single zip folder,null
+TC_PUSH_047,PASS,SMOKE TEST : Verify if multi part file support works for parts which are more than what is defined in config,null
+TC_PUSH_048,PASS,Verify if output folder in PB is based Window Start date and cadence identification happens correctly for a file.,null
+TC_PUSH_049,PASS,Verify if FAV is triggered for every dropped file. Check for multipart file.,null
+TC_PUSH_050,FAIL,Check FAV report for file where the Rally ticket is created. Validate Rally details,No ticket numbers found or an error occurred.
+TC_PUSH_051,PASS,Validate the Data Remediation workflow in PUSH,null
+TC_PUSH_052,FAIL,Ensure workflow via PREPROCESSING folder and Databricks NOTEBOOK works fine (SPC),[PATH_NOT_FOUND] Path does not exist: dbfs:/mnt/data/qa/bronze/centura_daily_autotest/polishedbronze/periodic/current/20240903/claims/1. SQLSTATE: 42K03
+TC_PUSH_053,PASS,Ensure files with MMDDYY format are also processed along with normal YYYYMMDD files..,null

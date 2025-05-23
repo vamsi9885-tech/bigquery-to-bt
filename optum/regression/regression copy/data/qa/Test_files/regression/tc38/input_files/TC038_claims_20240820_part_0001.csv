@@ -1,0 +1,136 @@
+claim_DATE,CLAIM_ID,patient_id,PATIENT_NAME,ENCOUNTER,AMOUNT_CLAIMED,AMOUNT_APPROVED,CLAIM_DESCRIPTION
+True,896765619,5301908,Jeffrey Cohen,94951928,"8,718.00","7,846.00",Redrop -11. Cadence and Append Check  Fix Daily Sample Adhoc True
+2023-10-18 03:29:31,704913584,8076359,Christina Bates,484351347,"9,459.00","8,513.00",Hand ruptured Episode heart head.
+2023-12-22 11:15:15,28613750,5239289,Brian Patterson,174218269,"5,329.00","4,796.00",Hand broken high ruptured ruptured fracture fracture.
+2023-12-22 11:15:14,677851920,2739260,Derek Bishop,810107385,"9,921.00","8,928.00",Heart Episode heart broken hand glycemia.
+2023-12-22 11:15:13,16537063,7010902,Kenneth Wood,381214921,"4,589.00","4,130.00",Hand glycemia Episode kidney.
+2023-09-26 17:02:40,832529288,3531451,Christopher Smith,973627130,"5,492.00","4,942.00",High femur glycemia heart broken head ruptured.
+2023-12-05 14:36:13,445324218,1168333,Jeffery Manning,571602153,"5,840.00","5,256.00",Hand head Episode low Episode heart.
+2023-08-04 00:33:04,30328626,9092793,Jeffrey Jackson,522777090,"4,228.00","3,805.00",Glycemia femur hand fracture hand.
+2023-03-02 15:23:23,53655978,9930411,Stephen Harrington,725900825,"3,379.00","3,041.00",Low fracture cardiac ruptured heart glycemia femur.
+2023-09-26 12:28:58,12596384,9431956,Michael Smith,456187583,"4,314.00","3,882.00",Attack femur heart.
+2023-06-01 10:44:32,468673871,1896287,David Casey,420186134,"5,007.00","4,506.00",Femur ruptured cardiac.
+2023-09-17 16:56:13,377417477,9756533,Rachel Vasquez,724887502,"6,848.00","6,163.00",Kidney broken head attack heart low low.
+2023-01-07 10:12:40,501590658,7857701,Jennifer Cole,450811591,"3,709.00","3,338.00",Head Episode ruptured kidney attack cardiac glycemia head.
+2023-06-14 19:08:32,307198412,3938798,Melissa Mendez,514806821,"9,598.00","8,638.00",Hand heart high.
+2023-12-22 09:15:06,69887654,8582064,Kristina Pollard,631254048,922.00,829.00,Broken heart attack.
+2023-07-03 00:53:02,127124423,8783495,Amber Howard,524603125,"5,867.00","5,280.00",Attack fracture femur low.
+2023-06-02 16:23:06,18424011,6483334,Tyrone Gibbs,874779734,"3,232.00","2,908.00",Cardiac ruptured broken glycemia Episode.
+2023-11-10 02:23:02,601402012,3026976,Margaret Rodriguez,367134747,"3,620.00","3,258.00",Head head low cardiac.
+True,40320016,4159886,Jason Patterson,269748905,"4,692.00","4,222.00",Ruptured low attack Episode low high head femur.
+2023-03-30 01:50:06,387434989,1263624,Christopher Cooper,870030051,"2,692.00","2,422.00",Head attack kidney Episode.
+2023-09-08 06:42:21,475070527,145273,Brandy Ross,12156709,"9,867.00","8,880.00",Broken hand hand hand.
+2023-05-27 12:30:01,669057582,7532912,Michelle Simmons,420098533,"8,627.00","7,764.00",Broken fracture attack Episode.
+2023-02-11 00:50:04,941481491,5245013,Robert Miller,237256876,"9,050.00","8,145.00",Fracture broken Episode.
+2023-02-24 10:40:20,84242112,7947232,Brenda Brown,43575426,"8,683.00","7,814.00",Cardiac hand attack ruptured high.
+2023-12-02 03:17:29,537600357,4928332,Aaron Reed,14636648,"1,058.00",952.00,Fracture head low.
+2023-04-17 02:34:13,170225898,5192920,Sonya Harding,448110334,837.00,753.00,Head head fracture head ruptured.
+2023-11-16 19:32:14,19012660,8679539,William Schmidt,99931447,"7,830.00","7,047.00",Head Episode Episode Episode low low.
+2023-06-17 08:54:02,845905663,8928925,Jerry Moody,331750360,"4,176.00","3,758.00",Attack fracture hand fracture.
+2023-02-01 07:46:02,939334269,7331376,Megan Scott,321162254,"9,558.00","8,602.00",Attack head broken.
+2023-06-06 07:48:40,2921748,5675825,Sandra Morrison,52637006,"1,031.00",927.00,Attack attack femur hand kidney heart.
+2023-02-28 20:40:07,884827781,1565547,Omar Johnston,507023658,"6,397.00","5,757.00",Hand fracture Episode femur cardiac hand.
+2023-12-26 01:33:25,566755807,6917922,Courtney Moreno,251109014,"2,292.00","2,062.00",Cardiac attack kidney broken heart low glycemia.
+2023-11-12 19:01:16,570453430,1890631,Hunter Anderson,305981830,"6,558.00","5,902.00",High attack Episode high attack.
+2023-09-20 23:47:57,242904764,8141941,Patricia Winters,680111278,"9,771.00","8,793.00",Hand ruptured high femur Episode broken glycemia.
+2023-02-03 17:52:26,134044454,4618660,Mary Allen,539007211,"5,596.00","5,036.00",Heart hand femur broken.
+2023-05-15 18:32:06,13687255,2009367,James Cummings,960245465,"1,080.00",972.00,Head kidney cardiac glycemia fracture high.
+2023-07-06 07:46:26,9959519,9236122,Colton Jones,285589444,"4,930.00","4,437.00",Kidney ruptured fracture hand kidney cardiac high.
+2023-06-09 22:55:07,879118242,2039903,Megan Griffith,156030859,"5,836.00","5,252.00",Broken head low.
+2023-11-12 14:37:20,860489605,4074771,Jessica Wilson,75697472,"6,145.00","5,530.00",Glycemia femur fracture hand.
+2023-02-26 00:43:17,696075714,2793418,Nicholas West,547399347,"9,429.00","8,486.00",Low ruptured femur Episode attack.
+2023-11-22 20:17:23,167578879,6733182,Sharon Soto,474460227,"2,997.00","2,697.00",Hand Episode cardiac hand low fracture head.
+2023-02-22 04:57:08,683665360,3213607,Joseph White,888897686,"1,478.00","1,330.00",Hand hand broken femur high.
+2023-01-27 17:39:13,951233017,8748188,Lucas Butler,345049928,"5,154.00","4,638.00",Episode kidney attack ruptured.
+2023-08-20 18:16:50,791824004,5585865,Austin Sexton,130681968,"4,117.00","3,705.00",Attack high attack glycemia high.
+2023-07-07 05:50:19,642549067,6790468,Melissa Kirby,473323995,"4,269.00","3,842.00",Low low ruptured hand.
+2023-04-04 20:54:31,804910222,5399874,Jesus Gray,159700662,"9,527.00","8,574.00",Episode glycemia glycemia head femur broken kidney.
+2023-02-14 05:45:42,161000396,8677845,Bradley Jones,963200168,"4,163.00","3,746.00",Fracture fracture Episode high.
+2023-11-17 06:07:20,144105935,2102886,Amy Everett,618488720,"6,919.00","6,227.00",Episode ruptured heart broken cardiac kidney attack.
+2023-05-01 08:19:33,728097055,3563625,Gerald Brewer,382615296,"9,902.00","8,911.00",Fracture broken high cardiac.
+2023-02-24 22:12:13,852137941,7399273,Cindy Ray,427568359,"8,599.00","7,739.00",Cardiac femur kidney hand.
+2023-07-06 13:39:21,108381644,149419,Nicholas Sandoval,419914718,"5,649.00","5,084.00",Fracture low hand high ruptured cardiac.
+2023-01-25 10:36:11,259766177,2328492,Cristina Hernandez,641989477,214.00,192.00,Hand femur hand high femur femur.
+2023-04-15 08:46:03,121401374,7049663,Tanya Wood,616707015,"7,023.00","6,320.00",Heart ruptured fracture.
+2023-01-24 02:02:50,243764700,7613300,Denise Moreno,353268290,"3,613.00","3,251.00",Cardiac femur broken glycemia hand hand fracture.
+2023-04-25 07:24:50,197801729,8323488,Amber Thompson,561446261,"6,777.00","6,099.00",High Episode low cardiac.
+2023-04-09 05:19:57,923010510,5465220,Jason Williams,177522102,261.00,234.00,Kidney fracture fracture.
+2023-09-19 21:00:48,675492311,7118253,Ashley Lowe,282311937,"4,655.00","4,189.00",Episode Episode head cardiac.
+2023-06-30 04:17:59,936568245,7695165,Crystal Wolfe,705515970,"2,093.00","1,883.00",Broken fracture head kidney high glycemia.
+2023-07-01 14:44:21,311351252,1098539,Victor Santiago,680205928,"6,973.00","6,275.00",Femur low low broken hand ruptured broken.
+2023-01-09 23:12:01,336699599,2963176,Leslie Stanley,547120994,423.00,380.00,High ruptured fracture ruptured broken hand ruptured.
+2023-06-02 11:43:18,146828533,3225258,Ashley Lozano,625449757,"6,237.00","5,613.00",High high head fracture hand hand.
+2023-01-20 17:03:06,563735226,8394226,John Flores,311847528,"3,069.00","2,762.00",Heart broken glycemia femur kidney ruptured.
+2023-10-11 07:15:38,748669113,5347112,Melissa Craig,851815202,"1,962.00","1,765.00",Episode attack high.
+2023-12-27 08:01:55,873032406,9416675,Kaitlyn Barton,533323509,"4,871.00","4,383.00",Hand ruptured attack attack broken.
+2023-06-01 22:46:54,792637342,8967201,Nicole Contreras,702435662,"1,588.00","1,429.00",Hand attack fracture.
+2023-06-01 22:24:33,237059110,166160,Jennifer Turner,412652473,"2,490.00","2,241.00",Hand high cardiac high.
+2023-07-25 06:35:49,232944710,6474670,Nancy Klein,547937330,"8,117.00","7,305.00",Low heart hand hand cardiac fracture glycemia.
+2023-04-28 17:16:17,5557796,5593244,Lisa Murphy,616340827,"9,954.00","8,958.00",Episode hand cardiac.
+2023-05-05 10:13:09,130317403,1595012,Michael Lee,586462606,"9,183.00","8,264.00",Attack head high attack ruptured glycemia femur.
+2023-03-31 04:05:27,821954638,7477127,Tyler Clayton,500648907,"9,027.00","8,124.00",Glycemia femur high low hand.
+2023-09-06 16:29:45,712899142,6884385,Nina Berry,474404635,"8,999.00","8,099.00",Cardiac low fracture high.
+2023-02-11 06:14:57,459288331,2308845,John Cooper,144328919,"3,709.00","3,338.00",Broken glycemia low cardiac Episode.
+2023-08-01 05:26:32,317739744,6576481,Tammy Johnson,481229677,"8,194.00","7,374.00",Hand femur attack heart cardiac.
+2023-06-05 15:25:07,960991232,5808848,Kathleen Wong,320711232,"5,312.00","4,780.00",Kidney glycemia low ruptured hand.
+2023-10-10 07:35:26,897021885,9114876,James Wright,497479953,"9,716.00","8,744.00",Glycemia cardiac femur high.
+2023-02-23 13:38:08,984655357,612257,Regina Stanley,934172330,"1,103.00",992.00,High head attack femur.
+2023-10-24 07:10:44,555271125,8160877,Amanda Bean,403553505,"8,645.00","7,780.00",Fracture femur Episode broken kidney attack.
+2023-06-03 13:52:46,830370502,7100543,Melvin Bautista,920604990,"7,905.00","7,114.00",Femur broken low low attack fracture.
+2023-12-07 00:44:21,473944112,8526776,Thomas Duran,59255308,"2,910.00","2,619.00",Episode low heart Episode broken kidney.
+2023-03-13 02:31:28,955782614,5688786,Douglas Bautista,729302926,"5,233.00","4,709.00",Broken broken Episode fracture glycemia head Episode.
+2023-03-15 21:40:24,448219368,4689749,Anita Becker,360736245,"9,316.00","8,384.00",Femur femur heart head.
+2023-10-04 06:43:23,536559599,8568367,Faith Mathis,601132897,"3,627.00","3,264.00",Fracture cardiac head fracture ruptured fracture attack attack.
+2023-09-20 02:53:40,923996419,9285055,Penny Higgins,728528920,"3,615.00","3,253.00",Glycemia attack hand attack high head.
+2023-03-23 21:41:33,860904866,2720491,Chad Gonzalez,309722965,"4,891.00","4,401.00",Head glycemia head glycemia hand.
+2023-06-18 16:31:03,323734642,2995046,Jessica Monroe,609685353,"4,711.00","4,239.00",Low head broken high kidney cardiac.
+2023-06-23 23:02:29,52155157,5743141,Victor Villarreal,403195546,"4,096.00","3,686.00",Hand heart femur attack head.
+2023-05-24 19:15:41,263143896,4268909,Michael Mitchell,922259424,"6,193.00","5,573.00",Femur broken high Episode ruptured low femur.
+2023-01-16 08:31:59,512129403,8067688,Andrew Duffy,96716138,"8,473.00","7,625.00",Attack ruptured Episode high low head glycemia.
+2023-12-16 20:57:01,894569540,5858224,Marie Hansen,654596823,"1,297.00","1,167.00",Broken broken cardiac high fracture kidney glycemia.
+2023-02-14 06:02:31,637459739,6032163,Donald Mccullough,828592337,"1,627.00","1,464.00",Head broken glycemia ruptured cardiac femur.
+2023-08-06 06:47:05,749979758,2400929,Ronald Williams,289533913,"3,376.00","3,038.00",Femur femur attack attack kidney attack femur.
+2023-12-15 20:55:36,838413339,2874499,Jon Chen,55028871,"7,392.00","6,652.00",Glycemia Episode fracture attack.
+2023-01-30 20:28:59,81802425,8586650,Thomas Jones,597515892,"3,307.00","2,976.00",Kidney cardiac high glycemia kidney fracture.
+2023-02-01 11:16:42,459972673,6398372,Larry Smith,509350734,"4,983.00","4,484.00",Fracture cardiac fracture heart broken.
+2023-04-28 03:11:54,855406900,2396343,Melanie Cole,802943325,"1,262.00","1,135.00",Episode ruptured low cardiac broken high.
+2023-08-07 23:02:34,236255946,5505305,Sara Marquez,453208906,"7,299.00","6,569.00",Heart Episode glycemia Episode ruptured high glycemia.
+2023-09-05 21:55:19,489854897,8749761,Marie Chang,944669038,"2,189.00","1,970.00",Glycemia kidney broken cardiac femur.
+2023-09-19 17:56:22,539017818,3667174,James Nelson,284797167,"3,543.00","3,188.00",Attack ruptured broken fracture head femur glycemia fracture.
+2023-04-12 15:30:34,797100891,6931958,Michael White,385105209,"3,910.00","3,519.00",Attack cardiac heart ruptured.
+2023-11-23 01:03:33,367330212,3452883,William Monroe,389254611,"7,622.00","6,859.00",Kidney Episode hand attack.
+2023-03-05 01:33:12,994523563,5426642,Jeffery Morales,84951765,"6,399.00","5,759.00",Attack attack heart.
+2023-11-05 04:31:26,69738298,7221021,Blake Mckinney,691461425,"6,913.00","6,221.00",Heart low Episode.
+2023-04-07 21:23:02,4747611,3305079,Miss Stacy Vincent,167003359,"6,464.00","5,817.00",Femur hand broken low femur fracture.
+2023-05-21 03:22:42,656319378,948342,James Park,899299310,"9,078.00","8,170.00",Femur heart high low.
+2023-08-13 10:10:58,144744898,7745348,Michelle Thomas,251169604,"5,958.00","5,362.00",Hand kidney attack fracture Episode fracture.
+2023-08-01 00:15:17,650091915,3420955,Leslie Hicks,373100094,733.00,659.00,Head broken head kidney hand cardiac.
+2023-11-26 23:33:16,133553209,8036455,Jesus Foster,788769554,"7,051.00","6,345.00",Attack heart glycemia attack kidney.
+2023-03-05 15:41:06,469541739,5551944,Katherine Kramer,204085132,"5,498.00","4,948.00",Broken Episode kidney high attack.
+2023-11-13 00:12:47,774733625,9112734,Kelsey Rodgers,850260089,"8,381.00","7,542.00",Glycemia hand attack fracture kidney.
+2023-09-22 20:40:17,989100830,957638,Lauren Glover,836169172,"8,613.00","7,751.00",Episode cardiac hand ruptured high.
+2023-02-18 13:16:48,255807271,466597,Tiffany Wright,668778720,"5,251.00","4,725.00",Femur low cardiac ruptured.
+2023-10-08 01:50:15,13613054,3456592,Matthew Butler,368397516,"5,911.00","5,319.00",Ruptured head Episode high.
+2023-11-28 10:06:34,981147616,7525249,Joshua Goodman,420209623,305.00,274.00,Kidney low low cardiac.
+2023-02-26 06:21:04,824629362,410637,Michele Woods,819747471,"4,140.00","3,726.00",Glycemia femur kidney fracture fracture cardiac head.
+2023-08-07 07:55:58,236180192,8571551,Victoria Terrell,426026944,"2,644.00","2,379.00",Femur Episode fracture kidney.
+2023-07-12 15:42:30,387736936,3921559,Todd Adams,243078406,"1,409.00","1,268.00",Attack fracture broken heart hand hand attack.
+2023-10-04 22:07:57,630197454,4823516,Chris Oliver,497415279,"7,072.00","6,364.00",Heart low broken attack high femur heart.
+2023-05-30 01:45:58,475460825,8948996,Amy Schultz,18236710,"8,573.00","7,715.00",Hand femur ruptured heart.
+2023-12-02 12:06:01,619437964,4970836,Steven Holland,522259580,"3,151.00","2,835.00",Attack hand kidney kidney cardiac.
+2023-12-21 21:15:51,379243885,2475818,Daniel Hill,30845222,"1,257.00","1,131.00",Kidney heart fracture hand hand head cardiac.
+2023-07-10 22:53:12,786006300,4904114,Karen Martin,969087000,"5,391.00","4,851.00",Broken heart hand broken broken.
+2023-02-08 13:42:34,375046830,7256562,Scott Diaz,905911284,"8,400.00","7,560.00",Femur Episode broken cardiac low.
+2023-07-22 23:01:40,904013317,2917497,Stuart Patel,927431990,"2,389.00","2,150.00",Heart hand fracture fracture kidney femur.
+2023-11-10 04:23:32,667043443,1988786,Michael Jordan,111763723,"5,777.00","5,199.00",Heart femur hand broken fracture heart low.
+2023-05-05 12:13:05,602481373,5258129,Mitchell Ramirez,497956991,"7,080.00","6,372.00",Hand cardiac fracture hand head ruptured fracture.
+2023-10-26 17:27:19,473476825,6277525,Mary Smith,188745004,"2,959.00","2,663.00",Kidney cardiac femur cardiac kidney femur kidney.
+2023-01-30 21:17:50,509902413,3572806,Elizabeth Smith,215164170,"2,199.00","1,979.00",Heart heart heart broken.
+2023-06-21 12:26:21,837972931,525516,Dana Miller,971193679,"7,736.00","6,962.00",Heart femur femur femur.
+2023-04-15 07:17:07,827352735,5432389,Lindsey Gomez,787598248,"1,636.00","1,472.00",Hand ruptured broken Episode.
+2023-04-26 05:49:42,752341410,1599045,David Walsh PhD,145328553,"2,153.00","1,937.00",High attack broken glycemia.
+2023-02-08 21:09:03,507386648,3587781,Tammy Martinez,925483171,"5,945.00","5,350.00",Attack ruptured femur ruptured kidney.
+2023-10-02 15:15:56,587432360,4494406,William Allison,421901556,"9,873.00","8,885.00",Head cardiac glycemia high attack glycemia.
+2023-04-09 11:56:05,732587381,7501341,Marcus Hill,594449497,"9,870.00","8,883.00",High high cardiac kidney attack cardiac.
+2023-06-27 15:45:36,675992335,792394,Carol Riley,91611126,"7,220.00","6,498.00",Attack cardiac low hand.
+2023-01-13 16:30:12,569674388,6825433,Briana Cochran,307602004,"5,968.00","5,371.00",Heart high attack heart fracture.
