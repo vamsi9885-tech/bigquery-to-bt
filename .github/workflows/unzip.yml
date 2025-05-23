@@ -6,6 +6,8 @@ on:
 jobs:
   unzip_and_commit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
