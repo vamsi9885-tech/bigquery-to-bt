@@ -12,7 +12,7 @@ jobs:
 
       - name: Unzip specific file
         run: |
-          unzip ".optum/regression/regression copy.zip" -d .optum/regression/
+          unzip ".optum/regression copy.zip" -d .optum/regression/
 
       - name: Configure git
         run: |
