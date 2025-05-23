@@ -21,7 +21,7 @@ jobs:
 
       - name: Commit unzipped files
         run: |
-          git add ./PATH/TO/*
+          git add optum/regression/*
           git commit -m "Unzipped and committed files from YOUR_ZIP_FILENAME.zip" || echo "Nothing to commit"
           git push
         env:
