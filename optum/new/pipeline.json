@@ -1,0 +1,2711 @@
+{
+    "name": "hsodev-qa-DAP_ADF_Orchestration-etl-pipeline",
+    "properties": {
+        "activities": [
+            {
+                "name": "Move from Landed to Processing",
+                "description": "Move the landed file from landed to processing folder",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "deleteFilesAfterCompletion": true
+                        },
+                        "formatSettings": {
+                            "type": "BinaryReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBinaryDataSource_File",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "Container": {
+                                "value": "@pipeline().parameters.Container",
+                                "type": "Expression"
+                            },
+                            "Directory": {
+                                "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.LandedFeed_Files_Directory)",
+                                "type": "Expression"
+                            },
+                            "filename": {
+                                "value": "@pipeline().parameters.SourceFile",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBinaryDataSource_Folder",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "Container": {
+                                "value": "@pipeline().parameters.Container",
+                                "type": "Expression"
+                            },
+                            "Directory": {
+                                "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ProcessingFiles_Directory)",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "If Zip File",
+                "description": "If the landed file is a zip file",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "Set FeedFolder",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@endswith(pipeline().parameters.SourceFile,'.zip')",
+                        "type": "Expression"
+                    },
+                    "ifFalseActivities": [
+                        {
+                            "name": "Set IsUnzipSuccess for non-zip file",
+                            "description": "Setting this to false as it is an individual file. Which will be inserted into feed_master table.",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Copy from processing to extracted_files",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "IsUnzipSuccess",
+                                "value": {
+                                    "value": "@bool(0)",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set FileCount for non-zip file",
+                            "description": "File count is 1 for individual file",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set IsUnzipSuccess for non-zip file",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "FileCount",
+                                "value": 1
+                            }
+                        },
+                        {
+                            "name": "Set DataFileList for non-zip file",
+                            "description": "Set the landed file name as Data file name as it is an individual file ",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set FileCount for non-zip file",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "DataFileList",
+                                "value": {
+                                    "value": "@array(json(concat('{\"name\":\"', pipeline().parameters.SourceFile, '\"}')))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set landed file extension",
+                            "description": "Extract and set the landed file extension ",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set DataFileList for non-zip file",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "FileExt",
+                                "value": {
+                                    "value": "@split(pipeline().parameters.SourceFile, '.')[1]",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Copy from processing to extracted_files",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobStorageReadSettings",
+                                        "recursive": true,
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "DelimitedTextSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobStorageWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextWriteSettings",
+                                        "quoteAllText": true,
+                                        "fileExtension": ".txt"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBlobStorage",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "Container": {
+                                            "value": "@pipeline().parameters.Container",
+                                            "type": "Expression"
+                                        },
+                                        "Directory": {
+                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ProcessingFiles_Directory)",
+                                            "type": "Expression"
+                                        },
+                                        "FileName": {
+                                            "value": "@pipeline().parameters.SourceFile",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBlobStorage",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "Container": {
+                                            "value": "@pipeline().parameters.Container",
+                                            "type": "Expression"
+                                        },
+                                        "Directory": {
+                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                            "type": "Expression"
+                                        },
+                                        "FileName": {
+                                            "value": "@pipeline().parameters.SourceFile",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Append UnzipStatus",
+                            "type": "AppendVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set landed file extension",
+                                    "dependencyConditions": [
+                                        "Skipped",
+                                        "Completed"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "Errors",
+                                "value": {
+                                    "value": "@if(  \nequals(activity('Copy from processing to extracted_files').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('Copy from processing to extracted_files').error.message),'pass' )",
+                                    "type": "Expression"
+                                }
+                            }
+                        }
+                    ],
+                    "ifTrueActivities": [
+                        {
+                            "name": "Extract files in Extracted Folder",
+                            "description": "Extract the zip file content to feed folder.",
+                            "type": "Copy",
+                            "dependsOn": [
+                                {
+                                    "activity": "Delete Files from Extracted folder",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobStorageReadSettings",
+                                        "recursive": true,
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings",
+                                        "compressionProperties": {
+                                            "type": "ZipDeflateReadSettings",
+                                            "preserveZipFileNameAsFolder": false
+                                        }
+                                    }
+                                },
+                                "sink": {
+                                    "type": "DelimitedTextSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobStorageWriteSettings",
+                                        "copyBehavior": "PreserveHierarchy"
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextWriteSettings",
+                                        "quoteAllText": true,
+                                        "fileExtension": ".txt"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "dataIntegrationUnits": 0,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPDelimitedTextZipDeflate",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "ZipFileName": {
+                                            "value": "@pipeline().parameters.SourceFile",
+                                            "type": "Expression"
+                                        },
+                                        "Container": {
+                                            "value": "@pipeline().parameters.Container",
+                                            "type": "Expression"
+                                        },
+                                        "Directory": {
+                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ProcessingFiles_Directory)",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPDelimitedTextUnzippedFolder",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "Container": {
+                                            "value": "@pipeline().parameters.Container",
+                                            "type": "Expression"
+                                        },
+                                        "Directory": {
+                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "GetExtractedFileList",
+                            "description": "Get the extracted file count",
+                            "type": "GetMetadata",
+                            "dependsOn": [
+                                {
+                                    "activity": "Extract files in Extracted Folder",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "dataset": {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBinaryDataSource_Folder",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "Container": {
+                                            "value": "@pipeline().parameters.Container",
+                                            "type": "Expression"
+                                        },
+                                        "Directory": {
+                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "fieldList": [
+                                    "childItems"
+                                ],
+                                "storeSettings": {
+                                    "type": "AzureBlobFSReadSettings",
+                                    "recursive": true,
+                                    "enablePartitionDiscovery": false
+                                },
+                                "formatSettings": {
+                                    "type": "BinaryReadSettings"
+                                }
+                            }
+                        },
+                        {
+                            "name": "FilterManifestFile",
+                            "description": "Find the Manifest file from the list of extracted files.",
+                            "type": "Filter",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set FileCount",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "items": {
+                                    "value": "@activity('GetExtractedFileList').output.childItems",
+                                    "type": "Expression"
+                                },
+                                "condition": {
+                                    "value": "@and(equals(item().type,'File'),startswith(item().name,'Manifest_'))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set ManifestExist",
+                            "description": "Set this flag, if manifest exists based on the FilterManifestFile's output",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "FilterManifestFile",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "ManifestExists",
+                                "value": {
+                                    "value": "@if(greaterOrEquals(activity('FilterManifestFile').output.FilteredItemsCount,1),bool(1),bool(0))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set ManifestFileName for Pull flow",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set ManifestExist",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "ManifestFileName",
+                                "value": {
+                                    "value": "@if(variables('ManifestExists'),activity('FilterManifestFile').output.Value[0].name,'')",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set IsUnzipSuccess for zip file",
+                            "description": "is_unzip_success flag set to true. Which will be inserted into FeedMaster table",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "GetExtractedFileList",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "IsUnzipSuccess",
+                                "value": {
+                                    "value": "@bool(1)",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set FileCount",
+                            "description": "Set the total file count which are extracted from zip file. [Including Manifest and FeedStatus files]",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set IsUnzipSuccess for zip file",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "FileCount",
+                                "value": {
+                                    "value": "@length(activity('GetExtractedFileList').output.childItems)",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "FilterDataFiles",
+                            "description": "Find the data files from the list of extracted files",
+                            "type": "Filter",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set ManifestFileName for Pull flow",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "items": {
+                                    "value": "@activity('GetExtractedFileList').output.childItems",
+                                    "type": "Expression"
+                                },
+                                "condition": {
+                                    "value": "@and(equals(item().type,'File'),and(not(startswith(item().name,'Manifest_')), and(not(startswith(item().name, 'Schema_')), not(startswith(item().name, 'FeedStatus_')))))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set DataFileList",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "FilterDataFiles",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "DataFileList",
+                                "value": {
+                                    "value": "@activity('FilterDataFiles').output.Value",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Delete Files from Extracted folder",
+                            "description": "Delete the feed_folder directory under extracted_files, if it already present. ",
+                            "type": "Delete",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "dataset": {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBinaryDataSource_Folder",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "Container": {
+                                            "value": "@pipeline().parameters.Container",
+                                            "type": "Expression"
+                                        },
+                                        "Directory": {
+                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "enableLogging": false,
+                                "storeSettings": {
+                                    "type": "AzureBlobFSReadSettings",
+                                    "recursive": true,
+                                    "enablePartitionDiscovery": false
+                                }
+                            }
+                        },
+                        {
+                            "name": "FilterFeedStatusFile",
+                            "type": "Filter",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set DataFileList",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "items": {
+                                    "value": "@activity('GetExtractedFileList').output.childItems\n",
+                                    "type": "Expression"
+                                },
+                                "condition": {
+                                    "value": "@and(equals(item().type,'File'),startswith(item().name,'FeedStatus'))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set FeedStatusFileExists",
+                            "description": "Set this flag, if manifest exists based on the FilterManifestFile's output",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "FilterFeedStatusFile",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "FeedStatusFileExists",
+                                "value": {
+                                    "value": "@if(greaterOrEquals(activity('FilterFeedStatusFile').output.FilteredItemsCount,1),bool(1),bool(0))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Append ZipStatus",
+                            "type": "AppendVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set FeedStatusFileExists",
+                                    "dependencyConditions": [
+                                        "Skipped",
+                                        "Completed"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "Errors",
+                                "value": {
+                                    "value": "@if(  \nequals(activity('Delete Files from Extracted folder').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('Delete Files from Extracted folder').error.message),  \nif(  \nequals(activity('Extract files in Extracted Folder').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('Extract files in Extracted Folder').error.message),  \nif(  \nequals(activity('GetExtractedFileList').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('GetExtractedFileList').error.message),  \nif(  \nequals(activity('FilterManifestFile').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('FilterManifestFile').error.message),  \nif(  \nequals(activity('FilterDataFiles').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('FilterDataFiles').error.message),  \nif(  \nequals(activity('FilterFeedStatusFile').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('FilterFeedStatusFile').error.message),  \n'pass'  \n))))))\n\n",
+                                    "type": "Expression"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ForEachDataFile",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "Set ProcessingDate",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@variables('DataFileList')",
+                        "type": "Expression"
+                    },
+                    "isSequential": true,
+                    "activities": [
+                        {
+                            "name": "Set FileName",
+                            "description": "Set the current file name which is getting iterated.",
+                            "type": "SetVariable",
+                            "dependsOn": [],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "CurrentFileName",
+                                "value": {
+                                    "value": "@item().name",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set FileExt",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set FileName",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "FileExt",
+                                "value": {
+                                    "value": "@split(variables('CurrentFileName'), '.')[1]",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "DB Read Dataflow",
+                            "description": "Get the required values from DB",
+                            "type": "ExecuteDataFlow",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set FileExt",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "dataflow": {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DBReadDataFlow",
+                                    "type": "DataFlowReference",
+                                    "parameters": {
+                                        "FeedName": {
+                                            "value": "'@{pipeline().parameters.FeedName}'",
+                                            "type": "Expression"
+                                        },
+                                        "FileName": {
+                                            "value": "'@{variables('CurrentFileName')}'",
+                                            "type": "Expression"
+                                        },
+                                        "FileExt": {
+                                            "value": "'@{variables('FileExt')}'",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "compute": {
+                                    "coreCount": 8,
+                                    "computeType": "General"
+                                },
+                                "traceLevel": "None"
+                            }
+                        },
+                        {
+                            "name": "Get Metadata of DataFile",
+                            "type": "GetMetadata",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set Valid date",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "dataset": {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPDelimitedTextUnzippedFile",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "Container": {
+                                            "value": "@pipeline().parameters.Container",
+                                            "type": "Expression"
+                                        },
+                                        "Directory": {
+                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                            "type": "Expression"
+                                        },
+                                        "File": {
+                                            "value": "@variables('CurrentFileName')",
+                                            "type": "Expression"
+                                        },
+                                        "ColumnDelimiter": {
+                                            "value": "@activity('DB Read Dataflow').output.runStatus.output.Output.value[0].column_delimiter",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "fieldList": [
+                                    "size"
+                                ],
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageReadSettings",
+                                    "recursive": true,
+                                    "enablePartitionDiscovery": false
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextReadSettings"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set Valid date",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "DB Read Dataflow",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "ValidDate",
+                                "value": {
+                                    "value": "@formatDateTime(concat(substring(activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_date,0,4),'-',substring(activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_date,4,2),'-',substring(activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_date,6,2)))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Append PreprocessingStatus",
+                            "type": "AppendVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Switch",
+                                    "dependencyConditions": [
+                                        "Skipped",
+                                        "Completed"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "Errors",
+                                "value": {
+                                    "value": "@if(  \nequals(activity('DB Read Dataflow').Status, 'Failed'),  \nconcat(variables('CurrentFileName'),' || ','Dataflow failure:',string(json(activity('DB Read Dataflow').error.message).Message)),\nif(empty(activity('DB Read Dataflow').output.runStatus.output.Output.value),  \nconcat(variables('CurrentFileName'),' || ','User configuration issue'), \nif(  \nequals(activity('Set Valid date').Status, 'Failed'),  \nconcat(variables('CurrentFileName'),' || ','Invalid Datetime format : ', activity('Set Valid date').error.message),  \nif(  \nequals(activity('Get Metadata of DataFile').Status, 'Failed'),  \nconcat(variables('CurrentFileName'),' || ','File extraction failure: ', activity('Get Metadata of DataFile').error.message),     \n'pass'  \n))))\n\n\n",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set Extension",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Get Metadata of DataFile",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "Extension",
+                                "value": {
+                                    "value": "@if(contains(split('xls,xlsx,xlsm,xlsb,xltm,xltx,ods,numbers,wb2,wk1,wk2,wk3', ','), toLower(variables('FileExt'))),'excel' ,if(equals(toLower(variables('FileExt')),'ndjson'),'fhir','others'))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Switch",
+                            "type": "Switch",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set Extension",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "on": {
+                                    "value": "@variables('Extension')",
+                                    "type": "Expression"
+                                },
+                                "cases": [
+                                    {
+                                        "value": "excel",
+                                        "activities": [
+                                            {
+                                                "name": "Execute ExcelSourceProcessWithZip",
+                                                "type": "ExecutePipeline",
+                                                "dependsOn": [],
+                                                "policy": {
+                                                    "secureInput": false
+                                                },
+                                                "userProperties": [],
+                                                "typeProperties": {
+                                                    "pipeline": {
+                                                        "referenceName": "hsodev-qa-ExcelSourceProcessing-etl-pipeline",
+                                                        "type": "PipelineReference"
+                                                    },
+                                                    "waitOnCompletion": true,
+                                                    "parameters": {
+                                                        "Container": {
+                                                            "value": "@pipeline().parameters.Container",
+                                                            "type": "Expression"
+                                                        },
+                                                        "Directory": {
+                                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory, '/', variables('FeedFolder'))",
+                                                            "type": "Expression"
+                                                        },
+                                                        "FileName": {
+                                                            "value": "@variables('CurrentFileName')",
+                                                            "type": "Expression"
+                                                        },
+                                                        "ColumnDelimiter": {
+                                                            "value": "@activity('DB Read Dataflow').output.runStatus.output.Output.value[0].column_delimiter",
+                                                            "type": "Expression"
+                                                        },
+                                                        "DBReadDetails": {
+                                                            "value": "@{concat('{\"feed_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_name, '\",\"connector_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].connector_type, '\",\"logical_file_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].logical_file_name, '\",\"file_name_format\":\"', replace(activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_name_format, '\\', '\\\\'), '\",\"periodic_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].periodic_start_date, '\",\"column_delimiter\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].column_delimiter, '\",\"is_mandatory\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].is_mandatory, '\",\"lag_offset\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].lag_offset, '\",\"internal_email_recipients\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].internal_email_recipients, '\",\"extraction_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].extraction_type, '\",\"feed_completion_notification_enabled\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_completion_notification_enabled, '\",\"row_delimiter\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].row_delimiter, '\",\"run_status_notification_enabled\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].run_status_notification_enabled, '\",\"lag_tolerance\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].lag_tolerance, '\",\"file_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_date, '\",\"file_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_frequency, '\",\"notify_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].notify_type, '\",\"periodic_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].periodic_frequency, '\",\"is_adhoc_run\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].is_adhoc_run, '\",\"regex_date_group_number\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].regex_date_group_number, '\",\"feed_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_type, '\",\"external_email_recipients\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].external_email_recipients, '\",\"adhoc_end_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_end_date, '\",\"adhoc_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_frequency, '\",\"adhoc_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_start_date, '\",\"file_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_type, '\",\"window_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].window_start_date, '\",\"window_end_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].window_end_date, '\",\"output_folder_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].output_folder_name, '\",\"preserve_archives\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].preserve_archives, '\",\"re_run_count\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].re_run_count, '\",\"connection_setting_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].type, '\",\"client_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].client_name, '\",\"file_size\":\"', string(activity('Get Metadata of DataFile').output.size), '\"')}\n\n",
+                                                            "type": "Expression"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "name": "Set FileList using TempFileList",
+                                                "type": "SetVariable",
+                                                "dependsOn": [
+                                                    {
+                                                        "activity": "Set TempFileList",
+                                                        "dependencyConditions": [
+                                                            "Succeeded"
+                                                        ]
+                                                    }
+                                                ],
+                                                "policy": {
+                                                    "secureOutput": false,
+                                                    "secureInput": false
+                                                },
+                                                "userProperties": [],
+                                                "typeProperties": {
+                                                    "variableName": "FileList",
+                                                    "value": {
+                                                        "value": "@variables('TempFileList')",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "name": "Set TempFileList",
+                                                "type": "SetVariable",
+                                                "dependsOn": [
+                                                    {
+                                                        "activity": "Execute ExcelSourceProcessWithZip",
+                                                        "dependencyConditions": [
+                                                            "Succeeded"
+                                                        ]
+                                                    }
+                                                ],
+                                                "policy": {
+                                                    "secureOutput": false,
+                                                    "secureInput": false
+                                                },
+                                                "userProperties": [],
+                                                "typeProperties": {
+                                                    "variableName": "TempFileList",
+                                                    "value": {
+                                                        "value": "@union(variables('FileList'), activity('Execute ExcelSourceProcessWithZip').output.pipelineReturnValue.ExcelSheetListOut)",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "name": "Append ExcelPipelineStatus",
+                                                "type": "AppendVariable",
+                                                "dependsOn": [
+                                                    {
+                                                        "activity": "Set FileList using TempFileList",
+                                                        "dependencyConditions": [
+                                                            "Skipped",
+                                                            "Completed"
+                                                        ]
+                                                    }
+                                                ],
+                                                "userProperties": [],
+                                                "typeProperties": {
+                                                    "variableName": "Errors",
+                                                    "value": {
+                                                        "value": "@activity('Execute ExcelSourceProcessWithZip').output.pipelineReturnValue.ExcelError",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "value": "fhir",
+                                        "activities": [
+                                            {
+                                                "name": "Append FHIR FileList",
+                                                "type": "AppendVariable",
+                                                "dependsOn": [],
+                                                "userProperties": [],
+                                                "typeProperties": {
+                                                    "variableName": "FileList",
+                                                    "value": {
+                                                        "value": "@json(concat('{\"feed_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_name, '\",\"connector_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].connector_type, '\",\"logical_file_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].logical_file_name, '\",\"file_name_format\":\"', replace(activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_name_format, '\\', '\\\\'), '\",\"periodic_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].periodic_start_date, '\",\"column_delimiter\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].column_delimiter, '\",\"is_mandatory\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].is_mandatory, '\",\"lag_offset\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].lag_offset, '\",\"internal_email_recipients\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].internal_email_recipients, '\",\"extraction_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].extraction_type, '\",\"feed_completion_notification_enabled\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_completion_notification_enabled, '\",\"row_delimiter\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].row_delimiter, '\",\"run_status_notification_enabled\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].run_status_notification_enabled, '\",\"lag_tolerance\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].lag_tolerance, '\",\"file_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_date, '\",\"file_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_frequency, '\",\"notify_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].notify_type, '\",\"periodic_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].periodic_frequency, '\",\"is_adhoc_run\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].is_adhoc_run, '\",\"regex_date_group_number\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].regex_date_group_number, '\",\"feed_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_type, '\",\"external_email_recipients\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].external_email_recipients, '\",\"adhoc_end_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_end_date, '\",\"adhoc_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_frequency, '\",\"adhoc_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_start_date, '\",\"file_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_type, '\",\"window_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].window_start_date, '\",\"window_end_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].window_end_date, '\",\"file_name\":\"',item().name, '\",\"output_folder_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].output_folder_name, '\",\"preserve_archives\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].preserve_archives, '\",\"re_run_count\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].re_run_count, '\",\"connection_setting_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].type, '\",\"client_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].client_name, '\",\"file_size\":\"', string(activity('Get Metadata of DataFile').output.size), '\"}'))",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "value": "others",
+                                        "activities": [
+                                            {
+                                                "name": "HandleQuotes In Data",
+                                                "type": "ExecuteDataFlow",
+                                                "dependsOn": [],
+                                                "policy": {
+                                                    "timeout": "0.12:00:00",
+                                                    "retry": 0,
+                                                    "retryIntervalInSeconds": 30,
+                                                    "secureOutput": false,
+                                                    "secureInput": false
+                                                },
+                                                "userProperties": [],
+                                                "typeProperties": {
+                                                    "dataflow": {
+                                                        "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_HandleQuotesInFlatFile",
+                                                        "type": "DataFlowReference",
+                                                        "parameters": {
+                                                            "FileName": {
+                                                                "value": "'@{item().name}'",
+                                                                "type": "Expression"
+                                                            }
+                                                        },
+                                                        "datasetParameters": {
+                                                            "FlatFileSource": {
+                                                                "Container": {
+                                                                    "value": "@pipeline().parameters.Container",
+                                                                    "type": "Expression"
+                                                                },
+                                                                "Directory": {
+                                                                    "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                                                    "type": "Expression"
+                                                                },
+                                                                "FileName": {
+                                                                    "value": "@item().name",
+                                                                    "type": "Expression"
+                                                                },
+                                                                "ColumnDelimiter": {
+                                                                    "value": "@activity('DB Read Dataflow').output.runStatus.output.Output.value[0].column_delimiter",
+                                                                    "type": "Expression"
+                                                                }
+                                                            },
+                                                            "QuoteHandledFlatFile": {
+                                                                "Container": {
+                                                                    "value": "@pipeline().parameters.Container",
+                                                                    "type": "Expression"
+                                                                },
+                                                                "Directory": {
+                                                                    "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                                                    "type": "Expression"
+                                                                },
+                                                                "FileName": {
+                                                                    "value": "@item().name",
+                                                                    "type": "Expression"
+                                                                },
+                                                                "ColumnDelimiter": {
+                                                                    "value": "@activity('DB Read Dataflow').output.runStatus.output.Output.value[0].column_delimiter",
+                                                                    "type": "Expression"
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "compute": {
+                                                        "coreCount": 8,
+                                                        "computeType": "General"
+                                                    },
+                                                    "traceLevel": "Fine"
+                                                }
+                                            },
+                                            {
+                                                "name": "Append FileList",
+                                                "type": "AppendVariable",
+                                                "dependsOn": [
+                                                    {
+                                                        "activity": "HandleQuotes In Data",
+                                                        "dependencyConditions": [
+                                                            "Succeeded"
+                                                        ]
+                                                    }
+                                                ],
+                                                "userProperties": [],
+                                                "typeProperties": {
+                                                    "variableName": "FileList",
+                                                    "value": {
+                                                        "value": "@json(concat('{\"feed_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_name, '\",\"connector_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].connector_type, '\",\"logical_file_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].logical_file_name, '\",\"file_name_format\":\"', replace(activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_name_format, '\\', '\\\\'), '\",\"periodic_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].periodic_start_date, '\",\"column_delimiter\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].column_delimiter, '\",\"is_mandatory\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].is_mandatory, '\",\"lag_offset\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].lag_offset, '\",\"internal_email_recipients\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].internal_email_recipients, '\",\"extraction_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].extraction_type, '\",\"feed_completion_notification_enabled\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_completion_notification_enabled, '\",\"row_delimiter\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].row_delimiter, '\",\"run_status_notification_enabled\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].run_status_notification_enabled, '\",\"lag_tolerance\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].lag_tolerance, '\",\"file_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_date, '\",\"file_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_frequency, '\",\"notify_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].notify_type, '\",\"periodic_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].periodic_frequency, '\",\"is_adhoc_run\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].is_adhoc_run, '\",\"regex_date_group_number\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].regex_date_group_number, '\",\"feed_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].feed_type, '\",\"external_email_recipients\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].external_email_recipients, '\",\"adhoc_end_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_end_date, '\",\"adhoc_frequency\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_frequency, '\",\"adhoc_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].adhoc_start_date, '\",\"file_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].file_type, '\",\"window_start_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].window_start_date, '\",\"window_end_date\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].window_end_date, '\",\"file_name\":\"',item().name, '\",\"output_folder_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].output_folder_name, '\",\"preserve_archives\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].preserve_archives, '\",\"re_run_count\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].re_run_count, '\",\"connection_setting_type\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].type, '\",\"client_name\":\"', activity('DB Read Dataflow').output.runStatus.output.Output.value[0].client_name, '\",\"file_size\":\"', string(activity('Get Metadata of DataFile').output.size), '\"}'))",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "name": "Append DataFileStatus",
+                                                "type": "AppendVariable",
+                                                "dependsOn": [
+                                                    {
+                                                        "activity": "Append FileList",
+                                                        "dependencyConditions": [
+                                                            "Skipped",
+                                                            "Completed"
+                                                        ]
+                                                    }
+                                                ],
+                                                "userProperties": [],
+                                                "typeProperties": {
+                                                    "variableName": "Errors",
+                                                    "value": {
+                                                        "value": "@if(equals(activity('HandleQuotes In Data').Status, 'Failed'),  \nconcat(variables('CurrentFileName'),' || ','Dataflow Failure:',string(json(activity('HandleQuotes In Data').error.message).Message)),  \nif(  \nequals(activity('Append FileList').Status, 'Failed'),  \nconcat(variables('CurrentFileName'),' || ','File extraction failure: ', activity('Append FileList').error.message),\n'pass'  \n))",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Set FeedFolder",
+                "description": "Generate feed folder name to which the files to be placed inside extracted_files folder",
+                "type": "SetVariable",
+                "dependsOn": [
+                    {
+                        "activity": "Set FileDetails",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "variableName": "FeedFolder",
+                    "value": {
+                        "value": "@if(equals(pipeline().parameters.FeedType,'pull'),\n    substring(pipeline().parameters.SourceFile,0,lastIndexOf(pipeline().parameters.SourceFile, '.')),\n    concat(pipeline().parameters.FeedName,'_', formatDateTime(utcNow(), 'yyyyMMddHHmmss'),'_',activity('Set FileDetails').Output.value.FeedId))",
+                        "type": "Expression"
+                    }
+                }
+            },
+            {
+                "name": "For Each File in FileList",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "If not FHIR client",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@variables('FileList')",
+                        "type": "Expression"
+                    },
+                    "isSequential": true,
+                    "activities": [
+                        {
+                            "name": "If Manifest exists",
+                            "type": "IfCondition",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "expression": {
+                                    "value": "@variables('ManifestExists')",
+                                    "type": "Expression"
+                                },
+                                "ifTrueActivities": [
+                                    {
+                                        "name": "Filter Pull Manifest",
+                                        "type": "ExecuteDataFlow",
+                                        "dependsOn": [],
+                                        "policy": {
+                                            "timeout": "0.12:00:00",
+                                            "retry": 0,
+                                            "retryIntervalInSeconds": 30,
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "dataflow": {
+                                                "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_FilterPullManifest",
+                                                "type": "DataFlowReference",
+                                                "parameters": {
+                                                    "SourceLogicalFileName": {
+                                                        "value": "'@{item().logical_file_name}'",
+                                                        "type": "Expression"
+                                                    }
+                                                },
+                                                "datasetParameters": {
+                                                    "SourcePullManifest": {
+                                                        "Container": {
+                                                            "value": "@pipeline().parameters.Container",
+                                                            "type": "Expression"
+                                                        },
+                                                        "Directory": {
+                                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                                            "type": "Expression"
+                                                        },
+                                                        "FileName": {
+                                                            "value": "@variables('ManifestFileName')",
+                                                            "type": "Expression"
+                                                        },
+                                                        "ColumnDelimiter": {
+                                                            "value": ",",
+                                                            "type": "Expression"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "compute": {
+                                                "coreCount": 8,
+                                                "computeType": "General"
+                                            },
+                                            "traceLevel": "None"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "name": "Set Final FeedID",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "If ExtractionType is sample or historic",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "Final_FeedID",
+                                "value": {
+                                    "value": "@if(equals(toLower(pipeline().parameters.FeedType), 'push'), activity('Set FileDetails').Output.value.FeedId, if(and(equals(toLower(pipeline().parameters.FeedType), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Feed_Id,split(split(substring(pipeline().parameters.SourceFile, lastIndexOf(pipeline().parameters.SourceFile, '_'), sub(length(pipeline().parameters.SourceFile), lastIndexOf(pipeline().parameters.SourceFile, '_'))),'_')[1],'.')[0]))\n\n",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "SetExtractionType",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "If Manifest exists",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "ExtractionType",
+                                "value": {
+                                    "value": "@if(equals(toLower(item().feed_type), 'push'), item().extraction_type, if(and(equals(toLower(item().feed_type), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Extraction_Type,item().extraction_type))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Set CadenceOutputFolderName",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "SetExtractionType",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "CadenceOutputFolderName",
+                                "value": {
+                                    "value": "@if(equals(toLower(item().feed_type), 'push'), item().output_folder_name, if(and(equals(toLower(item().feed_type), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Output_Folder,item().output_folder_name))",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "If ExtractionType is sample or historic",
+                            "type": "IfCondition",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set CadenceOutputFolderName",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "expression": {
+                                    "value": "@or(equals(toLower(variables('ExtractionType')),'sample'),equals(toLower(variables('ExtractionType')),'historic'))",
+                                    "type": "Expression"
+                                },
+                                "ifFalseActivities": [
+                                    {
+                                        "name": "Set FolderPath in current for periodic",
+                                        "type": "SetVariable",
+                                        "dependsOn": [],
+                                        "policy": {
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "variableName": "FolderPath",
+                                            "value": {
+                                                "value": "@variables('CadenceOutputFolderName')",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "ifTrueActivities": [
+                                    {
+                                        "name": "Set FolderPath in current for sample and historical",
+                                        "type": "SetVariable",
+                                        "dependsOn": [
+                                            {
+                                                "activity": "Set ParentFolder Name",
+                                                "dependencyConditions": [
+                                                    "Succeeded"
+                                                ]
+                                            }
+                                        ],
+                                        "policy": {
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "variableName": "FolderPath",
+                                            "value": {
+                                                "value": "@concat(variables('ParentFolder'),'/',variables('CadenceOutputFolderName'))",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "Set ParentFolder Name",
+                                        "type": "SetVariable",
+                                        "dependsOn": [],
+                                        "policy": {
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "variableName": "ParentFolder",
+                                            "value": {
+                                                "value": "@if(and(\n    equals(toLower(item().feed_type), 'pull'),\n     not(equals(toLower(item().connection_setting_type),'ntfs'))),\n     replace(concat(activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Adhoc_Start_Date,'_',activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Adhoc_End_Date),'-',''),\n        replace(concat(item().adhoc_start_date,'_',item().adhoc_end_date),'-',''))",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "name": "If FHIR",
+                            "type": "IfCondition",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set Final FeedID",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "expression": {
+                                    "value": "@equals(variables('FileExt'),'ndjson')",
+                                    "type": "Expression"
+                                },
+                                "ifFalseActivities": [
+                                    {
+                                        "name": "Execute ProcessingPipeline",
+                                        "type": "ExecutePipeline",
+                                        "dependsOn": [],
+                                        "policy": {
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "pipeline": {
+                                                "referenceName": "hsodev-qa-DAP_ADF_Processing-etl-pipeline",
+                                                "type": "PipelineReference"
+                                            },
+                                            "waitOnCompletion": true,
+                                            "parameters": {
+                                                "ExtractionType": {
+                                                    "value": "@variables('ExtractionType')",
+                                                    "type": "Expression"
+                                                },
+                                                "CadenceOutputFolder": {
+                                                    "value": "@variables('CadenceOutputFolderName')",
+                                                    "type": "Expression"
+                                                },
+                                                "FolderPath": {
+                                                    "value": "@variables('FolderPath')",
+                                                    "type": "Expression"
+                                                },
+                                                "FeedName": {
+                                                    "value": "@pipeline().parameters.FeedName",
+                                                    "type": "Expression"
+                                                },
+                                                "LogicalFileName": {
+                                                    "value": "@item().logical_file_name",
+                                                    "type": "Expression"
+                                                },
+                                                "FileName": {
+                                                    "value": "@item().file_name",
+                                                    "type": "Expression"
+                                                },
+                                                "ColumnDelimiter": {
+                                                    "value": "@item().column_delimiter",
+                                                    "type": "Expression"
+                                                },
+                                                "FeedFolder": {
+                                                    "value": "@variables('FeedFolder')",
+                                                    "type": "Expression"
+                                                },
+                                                "PreserveArchives": {
+                                                    "value": "@item().preserve_archives",
+                                                    "type": "Expression"
+                                                },
+                                                "RerunCount": {
+                                                    "value": "@item().re_run_count",
+                                                    "type": "Expression"
+                                                },
+                                                "EmailRecipients": {
+                                                    "value": "@item().internal_email_recipients",
+                                                    "type": "Expression"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ],
+                                "ifTrueActivities": [
+                                    {
+                                        "name": "Set FHIR FileStatus",
+                                        "type": "SetVariable",
+                                        "dependsOn": [
+                                            {
+                                                "activity": "Lookup Counts",
+                                                "dependencyConditions": [
+                                                    "Skipped",
+                                                    "Completed"
+                                                ]
+                                            }
+                                        ],
+                                        "policy": {
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "variableName": "FHIRFileLevelErrors",
+                                            "value": {
+                                                "value": "@if(  \nequals(activity('FhirParquetConvertor').Status, 'Failed'),  \nconcat(item().file_name,' || ','Schema failure: ', activity('FhirParquetConvertor').error.message),\nif(  \nequals(activity('Lookup Counts').Status, 'Failed'),  \nconcat(item().file_name,' || ','Schema failure: ', activity('Lookup Counts').error.message),\n'pass'  \n))",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "FhirParquetConvertor",
+                                        "type": "DatabricksSparkJar",
+                                        "dependsOn": [],
+                                        "policy": {
+                                            "timeout": "0.12:00:00",
+                                            "retry": 0,
+                                            "retryIntervalInSeconds": 30,
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "mainClassName": "com.optum.dap.Main",
+                                            "parameters": [
+                                                "@concat(  \n    'AppName=StdParquetConversion,',  \n    concat('source_path=/mnt/',pipeline().parameters.Bronze_Directory_Path, '/', pipeline().parameters.FeedName, '/', pipeline().parameters.Source_Directory, '/', pipeline().parameters.ExtractedFiles_Directory, '/', variables('FeedFolder')),',',  \n    concat('file_name=',item().file_name),',',  \n    concat('destination_path=/mnt/',pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Destination_Directory, '/', variables('ExtractionType'), '/current/', variables('FolderPath')\n    ),',',  \n    concat('preserve_archives=',item().preserve_archives),',',\n    concat('logical_file_name=',item().logical_file_name),',',  \n    concat('archive_path=/mnt/',    \n            concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Destination_Directory, '/', variables('ExtractionType'), '/archive/',variables('CadenceOutputFolderName'), '/',item().re_run_count)  \n    )  \n)  "
+                                            ],
+                                            "libraries": [
+                                                {
+                                                    "jar": "@concat('dbfs:',pipeline().parameters.DapDataRegistryJarPath,'/dap-data-registry-',pipeline().parameters.DapDataRegistryJarBinaryVersion,'.jar')"
+                                                }
+                                            ]
+                                        },
+                                        "linkedServiceName": {
+                                            "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_adb-job-cluster",
+                                            "type": "LinkedServiceReference",
+                                            "parameters": {
+                                                "ADB_WORKSPACE_URL": {
+                                                    "value": "@pipeline().globalParameters.ADB_WORKSPACE_URL",
+                                                    "type": "Expression"
+                                                },
+                                                "WS_RESOURCE_ID": {
+                                                    "value": "@pipeline().globalParameters.WS_RESOURCE_ID",
+                                                    "type": "Expression"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "Lookup Counts",
+                                        "type": "Lookup",
+                                        "dependsOn": [
+                                            {
+                                                "activity": "FhirParquetConvertor",
+                                                "dependencyConditions": [
+                                                    "Succeeded"
+                                                ]
+                                            }
+                                        ],
+                                        "policy": {
+                                            "timeout": "0.12:00:00",
+                                            "retry": 0,
+                                            "retryIntervalInSeconds": 30,
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "source": {
+                                                "type": "DelimitedTextSource",
+                                                "storeSettings": {
+                                                    "type": "AzureBlobStorageReadSettings",
+                                                    "recursive": true,
+                                                    "enablePartitionDiscovery": false
+                                                },
+                                                "formatSettings": {
+                                                    "type": "DelimitedTextReadSettings"
+                                                }
+                                            },
+                                            "dataset": {
+                                                "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPDelimitedTextUnzippedFile",
+                                                "type": "DatasetReference",
+                                                "parameters": {
+                                                    "Container": {
+                                                        "value": "@pipeline().parameters.Container",
+                                                        "type": "Expression"
+                                                    },
+                                                    "Directory": {
+                                                        "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/', pipeline().parameters.FeedName, '/', pipeline().parameters.Source_Directory, '/', pipeline().parameters.ExtractedFiles_Directory, '/', variables('FeedFolder'),'/','output')",
+                                                        "type": "Expression"
+                                                    },
+                                                    "File": {
+                                                        "value": "output.csv",
+                                                        "type": "Expression"
+                                                    },
+                                                    "ColumnDelimiter": ","
+                                                }
+                                            },
+                                            "firstRowOnly": false
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "name": "Call write dataflow",
+                            "type": "ExecuteDataFlow",
+                            "dependsOn": [
+                                {
+                                    "activity": "If FHIR",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 3,
+                                "retryIntervalInSeconds": 180,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "dataflow": {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DBWriteDataFlow",
+                                    "type": "DataFlowReference",
+                                    "parameters": {
+                                        "FeedId": {
+                                            "value": "'@{variables('Final_FeedID')}'",
+                                            "type": "Expression"
+                                        },
+                                        "SourceFileName": {
+                                            "value": "'@{pipeline().parameters.SourceFile}'",
+                                            "type": "Expression"
+                                        },
+                                        "ADFRunId": {
+                                            "value": "'@{string(pipeline().RunId)}'",
+                                            "type": "Expression"
+                                        },
+                                        "IsUnzipSuccess": {
+                                            "value": "@variables('IsUnzipSuccess')",
+                                            "type": "Expression"
+                                        },
+                                        "IsADFSuccess": {
+                                            "value": "@bool(1)",
+                                            "type": "Expression"
+                                        },
+                                        "IsLanded": {
+                                            "value": "@bool(1)",
+                                            "type": "Expression"
+                                        },
+                                        "ExtractedFileCount": {
+                                            "value": "@variables('FileCount')",
+                                            "type": "Expression"
+                                        },
+                                        "ErrorSource": {
+                                            "value": "'@{string('vm||adf')}'",
+                                            "type": "Expression"
+                                        },
+                                        "ErrorMsg": {
+                                            "value": "'@{concat(if(equals(variables('FeedStatusFileExists'), true), if(empty(activity('Lookup FeedStatusFile').output.value[0].Errors), 'No Errors from VM', activity('Lookup FeedStatusFile').output.value[0].Errors), 'NA'), ' || ', '')}'",
+                                            "type": "Expression"
+                                        },
+                                        "FeedName": {
+                                            "value": "'@{pipeline().parameters.FeedName}'",
+                                            "type": "Expression"
+                                        },
+                                        "WindowStartDate": {
+                                            "value": "'@{item().window_start_date}'",
+                                            "type": "Expression"
+                                        },
+                                        "WindowEndDate": {
+                                            "value": "'@{item().window_end_date}'",
+                                            "type": "Expression"
+                                        },
+                                        "FeedType": {
+                                            "value": "'@{pipeline().parameters.FeedType}'",
+                                            "type": "Expression"
+                                        },
+                                        "ExtractionType": {
+                                            "value": "'@{variables('ExtractionType')}'",
+                                            "type": "Expression"
+                                        },
+                                        "LogicalFileName": {
+                                            "value": "'@{item().logical_file_name}'",
+                                            "type": "Expression"
+                                        },
+                                        "FileName": {
+                                            "value": "'@{item().file_name}'",
+                                            "type": "Expression"
+                                        },
+                                        "FileStartDate": {
+                                            "value": "'@{if(equals(toLower(pipeline().parameters.FeedType), 'push'), item().file_date, if(and(equals(toLower(pipeline().parameters.FeedType), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Start_Date,item().file_date))\n}'",
+                                            "type": "Expression"
+                                        },
+                                        "FileEndDate": {
+                                            "value": "'@{if(equals(toLower(pipeline().parameters.FeedType), 'push'), '', if(and(equals(toLower(pipeline().parameters.FeedType), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].End_Date,''))}'",
+                                            "type": "Expression"
+                                        },
+                                        "Connector": {
+                                            "value": "'@{item().connector_type}'",
+                                            "type": "Expression"
+                                        },
+                                        "ExtractScriptName": {
+                                            "value": "'@{if(equals(toLower(pipeline().parameters.FeedType), 'push'), 'NA', if(and(equals(toLower(pipeline().parameters.FeedType), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Extraction_Script_Name,'NA'))}'",
+                                            "type": "Expression"
+                                        },
+                                        "FileNameFormat": {
+                                            "value": "'@{replace(item().file_name_format, '\\', '\\\\')}'",
+                                            "type": "Expression"
+                                        },
+                                        "Part": {
+                                            "value": "@if(contains(toLower(item().file_name),'part_'),int(if(and(greaterOrEquals(length(split(split(toLower(replace(replace(item().file_name,'.','_'),'__','_')),'part_')[1],'_')[0]),1),less(length(split(split(toLower(replace(replace(item().file_name,'.','_'),'__','_')), 'part_')[1],'_')[0]),8)),split(split(toLower(replace(replace(item().file_name,'.','_'),'__','_')),'part_')[1],'_')[0],split(split(toLower(replace(replace(item().file_name,'.','_'),'__','_')),'part_')[2],'_')[0])),1)",
+                                            "type": "Expression"
+                                        },
+                                        "SourceRowCount": {
+                                            "value": "@if(equals(variables('FileExt'), 'ndjson'),int(activity('Lookup Counts').output.value[0].sourceRowCount) \n, activity('Execute ProcessingPipeline').output.pipelineReturnValue.SourceRowCount)",
+                                            "type": "Expression"
+                                        },
+                                        "ProcessedRowCount": {
+                                            "value": "@if(equals(variables('FileExt'), 'ndjson'), int(activity('Lookup Counts').output.value[0].processedRowCount) \n, activity('Execute ProcessingPipeline').output.pipelineReturnValue.ProcessedRowCount)\n",
+                                            "type": "Expression"
+                                        },
+                                        "FailedRowCount": {
+                                            "value": "@if(equals(variables('FileExt'), 'ndjson'),int(activity('Lookup Counts').output.value[0].failedRowCount)\n, activity('Execute ProcessingPipeline').output.pipelineReturnValue.FailedRowCount)\n",
+                                            "type": "Expression"
+                                        },
+                                        "IsTypeCastingSuccess": {
+                                            "value": "@if(equals(variables('FileExt'), 'ndjson'), bool(1)\n, activity('Execute ProcessingPipeline').output.pipelineReturnValue.IsTypeCastingSuccess)",
+                                            "type": "Expression"
+                                        },
+                                        "CreationTime": {
+                                            "value": "'@{if(equals(toLower(pipeline().parameters.FeedType), 'push'), activity('Set FileDetails').Output.value.CurrentDateTime, if(and(equals(toLower(pipeline().parameters.FeedType), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Creation_Time,activity('Set FileDetails').Output.value.CurrentDateTime))}'",
+                                            "type": "Expression"
+                                        },
+                                        "Filters": {
+                                            "value": "'@{'NA'}'",
+                                            "type": "Expression"
+                                        },
+                                        "IsExtractionSuccess": {
+                                            "value": "@if(equals(toLower(pipeline().parameters.FeedType), 'push'), bool(0), if(and(equals(toLower(pipeline().parameters.FeedType), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Is_Extraction_Success,bool(0)))",
+                                            "type": "Expression"
+                                        },
+                                        "FileSize": {
+                                            "value": "'@{string(item().file_size)}'",
+                                            "type": "Expression"
+                                        },
+                                        "IsAdhocRun": {
+                                            "value": "@if(equals(toLower(item().is_adhoc_run), 'true'), bool(1), bool(0))",
+                                            "type": "Expression"
+                                        },
+                                        "ArrivedFlag": {
+                                            "value": "@if(equals(variables('FileExt'), 'ndjson'),if(equals(activity('FhirParquetConvertor').Status,'Succeeded'),bool(1),bool(0)),activity('Execute ProcessingPipeline').output.pipelineReturnValue.ArrivedFlag)",
+                                            "type": "Expression"
+                                        },
+                                        "ArrivalDate": {
+                                            "value": "'@{formatDateTime(variables('ProcessingDate'),'yyyy-MM-dd')}'",
+                                            "type": "Expression"
+                                        },
+                                        "ReRunCount": {
+                                            "value": "@int(item().re_run_count)",
+                                            "type": "Expression"
+                                        },
+                                        "FileErrorSource": {
+                                            "value": "'@{string('vm||adf')}'",
+                                            "type": "Expression"
+                                        },
+                                        "FileErrorMessage": {
+                                            "value": "'@{concat(if(equals(variables('ManifestExists'), true), if(empty(activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Errors), 'No errors from VM', activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Errors),'NA'), ' || ', if(equals(variables('FileExt'), 'ndjson'), if(and(not(equals(variables('FHIRFileLevelErrors'), 'pass')), not(empty(variables('FHIRFileLevelErrors')))), replace(replace(replace(variables('FHIRFileLevelErrors'), '''', ''), '\"', ''), '/', ''), ''), if(and(not(equals(activity('Execute ProcessingPipeline').output.pipelineReturnValue.FileLevelErrors, 'pass')), not(empty(activity('Execute ProcessingPipeline').output.pipelineReturnValue.FileLevelErrors))), replace(replace(replace(activity('Execute ProcessingPipeline').output.pipelineReturnValue.FileLevelErrors, '''', ''), '\"', ''), '/', ''), '')))}'",
+                                            "type": "Expression"
+                                        },
+                                        "QueryStartDate": {
+                                            "value": "'@{if(equals(toLower(pipeline().parameters.FeedType), 'push'), '', if(and(equals(toLower(pipeline().parameters.FeedType), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Query_Start_Date,''))}'",
+                                            "type": "Expression"
+                                        },
+                                        "QueryEndDate": {
+                                            "value": "'@{if(equals(toLower(pipeline().parameters.FeedType), 'push'), '', if(and(equals(toLower(pipeline().parameters.FeedType), 'pull'), not(equals(toLower(item().connection_setting_type),'ntfs'))), activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Query_End_Date,''))}'",
+                                            "type": "Expression"
+                                        },
+                                        "ConnectionSettingType": {
+                                            "value": "'@{item().connection_setting_type}'",
+                                            "type": "Expression"
+                                        },
+                                        "CadenceOutputFolder": {
+                                            "value": "'@{if(or(equals(toLower(variables('ExtractionType')),'sample'),equals(toLower(variables('ExtractionType')),'historic')),\n      variables('ParentFolder'),\n      variables('CadenceOutputFolderName'))}'",
+                                            "type": "Expression"
+                                        },
+                                        "SplitBy": {
+                                            "value": "'@{if(and(\n    equals(toLower(item().feed_type), 'pull'),\n     not(equals(toLower(item().connection_setting_type),'ntfs'))),\n     activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].adhoc_frequency,\n        item().adhoc_frequency)}'",
+                                            "type": "Expression"
+                                        },
+                                        "AdhocStartDate": {
+                                            "value": "'@{if(and(\n    equals(toLower(item().feed_type), 'pull'),\n     not(equals(toLower(item().connection_setting_type),'ntfs'))),activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Adhoc_Start_Date,\n        item().adhoc_start_date)}'",
+                                            "type": "Expression"
+                                        },
+                                        "AdhocEndDate": {
+                                            "value": "'@{if(and(\n    equals(toLower(item().feed_type), 'pull'),\n     not(equals(toLower(item().connection_setting_type),'ntfs'))),activity('Filter Pull Manifest').output.runStatus.output.FilteredManifestDetails.value[0].Adhoc_End_Date,\n        item().adhoc_end_date)}'",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "compute": {
+                                    "coreCount": 8,
+                                    "computeType": "General"
+                                },
+                                "traceLevel": "None"
+                            }
+                        },
+                        {
+                            "name": "Set CadenceID",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Call write dataflow",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "CadenceID",
+                                "value": {
+                                    "value": "@activity('Call write dataflow').output.runStatus.output.CacheCadenceId.value[0].cadence_id",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "Append FileStatus",
+                            "type": "AppendVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "Set CadenceID",
+                                    "dependencyConditions": [
+                                        "Skipped",
+                                        "Completed"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "variableName": "Errors",
+                                "value": {
+                                    "value": "@if(equals(variables('FileExt'), 'ndjson'), if(and(not(equals(variables('FHIRFileLevelErrors'), 'pass')), not(empty(variables('FHIRFileLevelErrors')))), replace(replace(replace(variables('FHIRFileLevelErrors'), '''', ''), '\"', ''), '/', ''), ''), if(and(not(equals(activity('Execute ProcessingPipeline').output.pipelineReturnValue.FileLevelErrors, 'pass')), not(empty(activity('Execute ProcessingPipeline').output.pipelineReturnValue.FileLevelErrors))), replace(replace(replace(activity('Execute ProcessingPipeline').output.pipelineReturnValue.FileLevelErrors, '''', ''), '\"', ''), '/', ''), if(equals(activity('Call write dataflow').Status,'Failed'),concat(item().file_name,' || ','Dataflow Failure:',string(json(activity('Call write dataflow').error.message).Message)),'')))",
+                                    "type": "Expression"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Move Processing Files to Processed Folder",
+                "type": "Copy",
+                "dependsOn": [
+                    {
+                        "activity": "Trigger FAV",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "BinarySource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": true,
+                            "deleteFilesAfterCompletion": true
+                        },
+                        "formatSettings": {
+                            "type": "BinaryReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "BinarySink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBinaryDataSource_File",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "Container": {
+                                "value": "@pipeline().parameters.Container",
+                                "type": "Expression"
+                            },
+                            "Directory": {
+                                "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ProcessingFiles_Directory)",
+                                "type": "Expression"
+                            },
+                            "filename": {
+                                "value": "@pipeline().parameters.SourceFile",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBinaryDataSource_Folder",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "Container": {
+                                "value": "@pipeline().parameters.Container",
+                                "type": "Expression"
+                            },
+                            "Directory": {
+                                "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ProcessedFiles_Directory)",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Delete FeedFolder from extracted_files",
+                "type": "Delete",
+                "dependsOn": [
+                    {
+                        "activity": "Move Processing Files to Processed Folder",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBinaryDataSource_Folder",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "Container": {
+                                "value": "@pipeline().parameters.Container",
+                                "type": "Expression"
+                            },
+                            "Directory": {
+                                "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "enableLogging": false,
+                    "storeSettings": {
+                        "type": "AzureBlobFSReadSettings",
+                        "recursive": true,
+                        "enablePartitionDiscovery": false
+                    }
+                }
+            },
+            {
+                "name": "If FeedStatusFile",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "If Zip File",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@variables('FeedStatusFileExists')",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "Lookup FeedStatusFile",
+                            "type": "Lookup",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobStorageReadSettings",
+                                        "recursive": true,
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "dataset": {
+                                    "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DAPBlobStorage_FlatFile",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "Container": {
+                                            "value": "@pipeline().parameters.Container",
+                                            "type": "Expression"
+                                        },
+                                        "Directory": {
+                                            "value": "@concat(pipeline().parameters.Bronze_Directory_Path, '/',pipeline().parameters.FeedName,'/',pipeline().parameters.Source_Directory,'/',pipeline().parameters.ExtractedFiles_Directory,'/',variables('FeedFolder'))",
+                                            "type": "Expression"
+                                        },
+                                        "FileName": {
+                                            "value": "@activity('FilterFeedStatusFile').output.Value[0].name",
+                                            "type": "Expression"
+                                        },
+                                        "ColumnDelimiter": {
+                                            "value": ",",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "firstRowOnly": false
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Feed Level Entries",
+                "type": "ExecuteDataFlow",
+                "dependsOn": [
+                    {
+                        "activity": "For Each File in FileList",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataflow": {
+                        "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_FeedLevelEntries",
+                        "type": "DataFlowReference",
+                        "parameters": {
+                            "FeedName": {
+                                "value": "'@{pipeline().parameters.FeedName}'",
+                                "type": "Expression"
+                            },
+                            "CadenceID": {
+                                "value": "'@{variables('CadenceID')}'",
+                                "type": "Expression"
+                            },
+                            "ExtractionType": {
+                                "value": "'@{variables('ExtractionType')}'",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "compute": {
+                        "coreCount": 8,
+                        "computeType": "General"
+                    },
+                    "traceLevel": "Fine"
+                }
+            },
+            {
+                "name": "Set ProcessingDate",
+                "type": "SetVariable",
+                "dependsOn": [
+                    {
+                        "activity": "If FeedStatusFile",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "variableName": "ProcessingDate",
+                    "value": {
+                        "value": "@utcNow('yyyy-MM-dd')",
+                        "type": "Expression"
+                    }
+                }
+            },
+            {
+                "name": "Trigger FAV",
+                "description": "To trigger FAV function app",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    {
+                        "activity": "Feed Level Entries",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "hsodev-qa-TriggerFAV-etl-pipeline",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": false,
+                    "parameters": {
+                        "FAVFilelist": {
+                            "value": "@variables('FileList')",
+                            "type": "Expression"
+                        },
+                        "CadenceID": {
+                            "value": "@variables('CadenceID')",
+                            "type": "Expression"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "Append PipelineStatus",
+                "type": "AppendVariable",
+                "dependsOn": [
+                    {
+                        "activity": "Delete FeedFolder from extracted_files",
+                        "dependencyConditions": [
+                            "Skipped",
+                            "Completed"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "variableName": "Errors",
+                    "value": {
+                        "value": "@if(  \nequals(activity('Move from Landed to Processing').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('Move from Landed to Processing').error.message),\nif(  \nequals(activity('If FeedStatusFile').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('Lookup FeedStatusFile').error.message),\nif(  \nequals(activity('ForEachDataFile').Status, 'Failed'),  \n'pass',    \nif(  \nequals(activity('If not FHIR client').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: Invoking DVP pipeline failed'),  \nif(  \nequals(activity('For Each File in FileList').Status, 'Failed'),  \n'pass',  \nif(  \nequals(activity('Feed Level Entries').Status, 'Failed'),  \nif(contains(activity('Feed Level Entries').error.message,'(cadence_id)=()'),'pass',concat(pipeline().parameters.SourceFile,' || ','Dataflow failure:',string(json(activity('Feed Level Entries').error.message).Message))), \nif(  \nequals(activity('Trigger FAV').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: Trigger FAV pipeline failed'),  \nif(  \nequals(activity('Move Processing Files to Processed Folder').Status, 'Failed'),  \nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('Move Processing Files to Processed Folder').error.message),\nif(  \nor(equals(activity('Delete FeedFolder from extracted_files').Status, 'Failed'),equals(activity('Delete FeedFolder from extracted_files').Status, 'Skipped')),\nconcat(pipeline().parameters.SourceFile,' || ','File extraction failure: ', activity('Delete FeedFolder from extracted_files').error.message),  \n'pass'  \n)))))))))",
+                        "type": "Expression"
+                    }
+                }
+            },
+            {
+                "name": "ForEach Errors",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "Append PipelineStatus",
+                        "dependencyConditions": [
+                            "Skipped",
+                            "Completed"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@variables('Errors')",
+                        "type": "Expression"
+                    },
+                    "isSequential": true,
+                    "activities": [
+                        {
+                            "name": "If Errors",
+                            "type": "IfCondition",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "expression": {
+                                    "value": "@and(not(equals(item(),'pass')),not(empty(item())))",
+                                    "type": "Expression"
+                                },
+                                "ifTrueActivities": [
+                                    {
+                                        "name": "Call ADF Status Emailer",
+                                        "type": "AzureFunctionActivity",
+                                        "dependsOn": [],
+                                        "policy": {
+                                            "timeout": "0.12:00:00",
+                                            "retry": 0,
+                                            "retryIntervalInSeconds": 30,
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "functionName": "ADF_Status_Email",
+                                            "body": {
+                                                "value": "{\n    \"feed_name\" : \"@{pipeline().parameters.FeedName}\",\n    \"failed_file_status_json\" : @{array(json(concat('{','\"FeedName\":\"', pipeline().parameters.FeedName, '\", \"SourceFileName\":\"', pipeline().parameters.SourceFile, '\", \"ProcessedFileName\":\"',split(item(),'||')[0], '\", \"ADFRunId\":\"', pipeline().RunId, '\", \"ErrorMessage\":\"',replace(replace(split(item(),'||')[1],'''',''),'\"','') , '\"}')))}\n}",
+                                                "type": "Expression"
+                                            },
+                                            "method": "POST"
+                                        },
+                                        "linkedServiceName": {
+                                            "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_eipdb_dap_function_app",
+                                            "type": "LinkedServiceReference"
+                                        }
+                                    },
+                                    {
+                                        "name": "Update FeedLevelErrors To FeedMaster",
+                                        "type": "ExecuteDataFlow",
+                                        "dependsOn": [
+                                            {
+                                                "activity": "Call ADF Status Emailer",
+                                                "dependencyConditions": [
+                                                    "Succeeded"
+                                                ]
+                                            }
+                                        ],
+                                        "policy": {
+                                            "timeout": "0.12:00:00",
+                                            "retry": 0,
+                                            "retryIntervalInSeconds": 30,
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "dataflow": {
+                                                "referenceName": "eip_hsodev_qa_DAP_ADF_Orchestration_DBWriteErrorsToFeedMaster",
+                                                "type": "DataFlowReference",
+                                                "parameters": {
+                                                    "FeedId": {
+                                                        "value": "'@{if(equals(toLower(pipeline().parameters.FeedType), 'push'), activity('Set FileDetails').Output.value.FeedId, split(split(substring(pipeline().parameters.SourceFile, lastIndexOf(pipeline().parameters.SourceFile, '_'), sub(length(pipeline().parameters.SourceFile), lastIndexOf(pipeline().parameters.SourceFile, '_'))),'_')[1],'.')[0])}'",
+                                                        "type": "Expression"
+                                                    },
+                                                    "ADFRunId": {
+                                                        "value": "'@{string(pipeline().RunId)}'",
+                                                        "type": "Expression"
+                                                    },
+                                                    "IsUnzipSuccess": {
+                                                        "value": "@variables('IsUnzipSuccess')",
+                                                        "type": "Expression"
+                                                    },
+                                                    "IsADFSuccess": {
+                                                        "value": "@bool(0)",
+                                                        "type": "Expression"
+                                                    },
+                                                    "IsLanded": {
+                                                        "value": "@bool(1)",
+                                                        "type": "Expression"
+                                                    },
+                                                    "ExtractedFileCount": {
+                                                        "value": "@variables('FileCount')",
+                                                        "type": "Expression"
+                                                    },
+                                                    "ErrorSource": {
+                                                        "value": "'@{'adf'}'",
+                                                        "type": "Expression"
+                                                    },
+                                                    "ErrorMsg": {
+                                                        "value": "'@{concat(if(equals(variables('FeedStatusFileExists'), true), if(empty(activity('Lookup FeedStatusFile').output.value[0].Errors), 'No Errors from VM', activity('Lookup FeedStatusFile').output.value[0].Errors), 'NA'), ' || ', replace(replace(replace(split(item(),'||')[1],'''',''),'\"',''),'/',''))}'",
+                                                        "type": "Expression"
+                                                    },
+                                                    "FeedName": {
+                                                        "value": "'@{pipeline().parameters.FeedName}'",
+                                                        "type": "Expression"
+                                                    },
+                                                    "SourceFileName": {
+                                                        "value": "'@{pipeline().parameters.SourceFile}'",
+                                                        "type": "Expression"
+                                                    }
+                                                }
+                                            },
+                                            "compute": {
+                                                "coreCount": 8,
+                                                "computeType": "General"
+                                            },
+                                            "traceLevel": "Fine"
+                                        }
+                                    },
+                                    {
+                                        "name": "Pipeline Failure",
+                                        "type": "Fail",
+                                        "dependsOn": [
+                                            {
+                                                "activity": "Update FeedLevelErrors To FeedMaster",
+                                                "dependencyConditions": [
+                                                    "Succeeded",
+                                                    "Failed"
+                                                ]
+                                            }
+                                        ],
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "message": {
+                                                "value": "@if(equals(activity('Update FeedLevelErrors To FeedMaster').Status,'Failed'),activity('Update FeedLevelErrors To FeedMaster').error.message,concat('Pipeline failed due to ',item()))",
+                                                "type": "Expression"
+                                            },
+                                            "errorCode": {
+                                                "value": "Pipeline Failure",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "Set FileDetails",
+                "type": "SetVariable",
+                "dependsOn": [
+                    {
+                        "activity": "Move from Landed to Processing",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "variableName": "pipelineReturnValue",
+                    "value": [
+                        {
+                            "key": "CurrentDateTime",
+                            "value": {
+                                "type": "Expression",
+                                "content": "@formatDateTime(utcNow(), 'yyyyMMddHHmmss')"
+                            }
+                        },
+                        {
+                            "key": "FeedId",
+                            "value": {
+                                "type": "Expression",
+                                "content": "@if(equals(toLower(pipeline().parameters.FeedType),'push'),guid(),null)"
+                            }
+                        }
+                    ],
+                    "setSystemVariable": true
+                }
+            },
+            {
+                "name": "If not FHIR client",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "ForEachDataFile",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@not(equals(variables('FileExt'),'ndjson' ))",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "DVP_TB_Validation",
+                            "type": "ExecutePipeline",
+                            "dependsOn": [],
+                            "policy": {
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "pipeline": {
+                                    "referenceName": "hsodev-qa-InvokingDVP-etl-pipeline",
+                                    "type": "PipelineReference"
+                                },
+                                "waitOnCompletion": false,
+                                "parameters": {
+                                    "FeedName": {
+                                        "value": "@pipeline().parameters.FeedName",
+                                        "type": "Expression"
+                                    },
+                                    "FeedFolderOut": {
+                                        "value": "@variables('FeedFolder')",
+                                        "type": "Expression"
+                                    },
+                                    "ClientName": {
+                                        "value": "@pipeline().parameters.ClientName",
+                                        "type": "Expression"
+                                    },
+                                    "subscription_id": {
+                                        "value": "@substring(pipeline().globalParameters.WS_RESOURCE_ID,15,36)",
+                                        "type": "Expression"
+                                    },
+                                    "DVPFileList": {
+                                        "value": "@variables('FileList')",
+                                        "type": "Expression"
+                                    },
+                                    "ManifestExists": {
+                                        "value": "@variables('ManifestExists')",
+                                        "type": "Expression"
+                                    },
+                                    "ManifestFileName": {
+                                        "value": "@variables('ManifestFileName')",
+                                        "type": "Expression"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "concurrency": 35,
+        "parameters": {
+            "FeedName": {
+                "type": "string"
+            },
+            "SourceFile": {
+                "type": "string"
+            },
+            "LandedFeed_Files_Directory": {
+                "type": "string",
+                "defaultValue": "landed_feed_files"
+            },
+            "ExtractedFiles_Directory": {
+                "type": "string",
+                "defaultValue": "extracted_files"
+            },
+            "ProcessingFiles_Directory": {
+                "type": "string",
+                "defaultValue": "processing_files"
+            },
+            "Source_Directory": {
+                "type": "string",
+                "defaultValue": "tarnishedbronze"
+            },
+            "Bronze_Directory_Path": {
+                "type": "string",
+                "defaultValue": "data/qa/bronze"
+            },
+            "Container": {
+                "type": "string",
+                "defaultValue": "eip-hsodev-container"
+            },
+            "FeedType": {
+                "type": "string"
+            },
+            "ClientName": {
+                "type": "string"
+            },
+            "ProcessedFiles_Directory": {
+                "type": "string",
+                "defaultValue": "processed_files"
+            },
+            "Destination_Directory": {
+                "type": "string",
+                "defaultValue": "polishedbronze"
+            },
+            "BadRowData_Directory": {
+                "type": "string",
+                "defaultValue": "bad_row_data"
+            },
+            "DapDataRegistryJarPath": {
+                "type": "string",
+                "defaultValue": "/mnt/shared-files/artifacts/jars/qa/1.2.3"
+            },
+            "DapDataRegistryJarBinaryVersion": {
+                "type": "string",
+                "defaultValue": "1.0.2"
+            }
+        },
+        "variables": {
+            "FeedFolder": {
+                "type": "String"
+            },
+            "FeedId": {
+                "type": "String"
+            },
+            "IsUnzipSuccess": {
+                "type": "Boolean"
+            },
+            "FileCount": {
+                "type": "Integer"
+            },
+            "ManifestExists": {
+                "type": "Boolean"
+            },
+            "ManifestFileName": {
+                "type": "String"
+            },
+            "DataFileList": {
+                "type": "Array"
+            },
+            "FileExt": {
+                "type": "String"
+            },
+            "ExcelFileList": {
+                "type": "Array"
+            },
+            "CurrentFileName": {
+                "type": "String"
+            },
+            "FileList": {
+                "type": "Array"
+            },
+            "DBReadOutput": {
+                "type": "Array"
+            },
+            "LoopCount": {
+                "type": "Integer"
+            },
+            "LoopCountTemp": {
+                "type": "Integer"
+            },
+            "OutputFormatterArray": {
+                "type": "Array"
+            },
+            "FileName": {
+                "type": "String"
+            },
+            "ModifiedDate": {
+                "type": "String"
+            },
+            "FileSize": {
+                "type": "String"
+            },
+            "RowCount": {
+                "type": "String"
+            },
+            "OutputFormatter": {
+                "type": "String"
+            },
+            "IsPushFeed": {
+                "type": "Boolean"
+            },
+            "FinalFileList": {
+                "type": "Array"
+            },
+            "FinalDBOutput": {
+                "type": "Array"
+            },
+            "TempFileList": {
+                "type": "Array"
+            },
+            "CadenceOutputFolderName": {
+                "type": "String"
+            },
+            "ExtractionType": {
+                "type": "String"
+            },
+            "RecipientsList": {
+                "type": "String"
+            },
+            "BadRowJson": {
+                "type": "Array"
+            },
+            "RunStatusNotificationEnabled": {
+                "type": "Boolean"
+            },
+            "CurrentDateTime": {
+                "type": "String"
+            },
+            "SingleQuote": {
+                "type": "String",
+                "defaultValue": "'"
+            },
+            "IsTypeCastingSuccess": {
+                "type": "Boolean"
+            },
+            "FHIRFileLevelErrors": {
+                "type": "String"
+            },
+            "FeedStatusFileExists": {
+                "type": "Boolean"
+            },
+            "CadenceID": {
+                "type": "String"
+            },
+            "ValidDate": {
+                "type": "String"
+            },
+            "Final_FeedID": {
+                "type": "String"
+            },
+            "ProcessingDate": {
+                "type": "String"
+            },
+            "FolderPath": {
+                "type": "String"
+            },
+            "ParentFolder": {
+                "type": "String"
+            },
+            "Errors": {
+                "type": "Array"
+            },
+            "ParamList": {
+                "type": "Array"
+            },
+            "Extension": {
+                "type": "String"
+            }
+        },
+        "folder": {
+            "name": "EIP-COMMERCIAL-qa-PIPELINES"
+        },
+        "annotations": [],
+        "lastPublishTime": "2025-05-15T07:02:45Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}
