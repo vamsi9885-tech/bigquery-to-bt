@@ -1,0 +1,246 @@
+-- ************************************************************
+-- Customer Segmentation Based on Recency and Purchase Patterns
+-- Lookback over a historical window of dates to classify each
+-- customer on each date into lifecycle buckets (e.g., RETAINED,
+-- INACTIVE, NET NEW, etc.), across Total, Store, and MCOM channels.
+-- ************************************************************
+
+DECLARE LOOKBACK_DAYS INT64 DEFAULT 2500;  -- Lookback period (in days)
+DECLARE RUN_DATE DATE DEFAULT CURRENT_DATE;  -- Run-time date ("today")
+
+-- 1. Generate a continuous date range based on lookback window
+WITH date_range AS (
+    SELECT DISTINCT d AS greg_date
+    FROM UNNEST(GENERATE_DATE_ARRAY(DATE_SUB(RUN_DATE, INTERVAL LOOKBACK_DAYS DAY), RUN_DATE)) AS d
+),
+
+-- 2. Select distinct customer IDs with valid attributes from `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+customer_dates AS (
+    SELECT c.indiv_id, d.greg_date
+    FROM (
+        SELECT DISTINCT indiv_id
+        FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+        WHERE 
+            DATE(txn_dt) >= DATE_SUB(RUN_DATE, INTERVAL LOOKBACK_DAYS DAY)
+            AND prch_chnl_cd IN ('A','F')
+            AND fin_own_lease_ind = 'Y'
+            AND rtl_divn_nbr IN (71,77)
+            AND pdiv_id NOT IN (000, 065)
+            AND dept_vnd_cd IS NOT NULL
+            AND indiv_id IS NOT NULL
+            AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+            AND indiv_id != 1
+            AND vst_cd IS NOT NULL
+            AND indiv_id = 10018809
+    ) c
+    CROSS JOIN date_range d
+),
+
+-- 3. Extract and prepare base transaction records
+tx AS (
+    SELECT
+        indiv_id,
+        DATE(txn_dt) AS tx_date,
+        prch_chnl_cd,
+        'TOTAL' AS total_key
+    FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+    WHERE 
+        DATE(txn_dt) >= DATE_SUB(RUN_DATE, INTERVAL LOOKBACK_DAYS DAY)
+        AND prch_chnl_cd IN ('A', 'F')
+        AND fin_own_lease_ind = 'Y'
+        AND rtl_divn_nbr IN (71, 77)
+        AND pdiv_id NOT IN (000, 065)
+        AND dept_vnd_cd IS NOT NULL
+        AND indiv_id IS NOT NULL
+        AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+        AND indiv_id != 1
+        AND vst_cd IS NOT NULL
+        AND indiv_id = 10018809
+),
+
+-- 4. Compute FIRST, LAST, PREVIOUS, NEXT transaction dates and gaps (Total)
+identified_txn_dates_total AS (
+    SELECT 
+        indiv_id, 
+        LAG(tx_date) OVER w AS prv_tx_date,
+        tx_date,
+        COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt,
+        MIN(tx_date) OVER (PARTITION BY indiv_id) AS first_purchase,
+        MAX(tx_date) OVER (PARTITION BY indiv_id) AS last_purchase,
+        DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt,
+        DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv
+    FROM tx
+    WINDOW w AS (PARTITION BY indiv_id ORDER BY tx_date)
+),
+
+-- 5. Same as above, filtered to MCOM channel ('F')
+identified_txn_dates_mcom AS (
+    SELECT 
+        indiv_id,
+        LAG(tx_date) OVER w AS prv_tx_date_mcom,
+        tx_date AS tx_date_mcom,
+        COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt_mcom,
+        MIN(tx_date) OVER (PARTITION BY indiv_id) AS first_purchase_mcom,
+        MAX(tx_date) OVER (PARTITION BY indiv_id) AS last_purchase_mcom,
+        DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt_mcom,
+        DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv_mcom
+    FROM tx
+    WHERE prch_chnl_cd = 'F'
+    WINDOW w AS (PARTITION BY indiv_id ORDER BY tx_date)
+)
+,
+
+-- 6. Same as above, filtered to Store channel ('A')
+identified_txn_dates_store AS (
+    SELECT 
+        indiv_id,
+        LAG(tx_date) OVER w AS prv_tx_date_store,
+        tx_date AS tx_date_store,
+        COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt_store,
+        MIN(tx_date) OVER (PARTITION BY indiv_id) AS first_purchase_store,
+        MAX(tx_date) OVER (PARTITION BY indiv_id) AS last_purchase_store,
+        DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt_store,
+        DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv_store
+    FROM tx
+    WHERE prch_chnl_cd = 'A'
+    WINDOW w AS (PARTITION BY indiv_id ORDER BY tx_date)
+),
+
+-- 7. Roll-up all transaction information per customer-date
+roll AS (
+    SELECT
+        cd.indiv_id,
+        cd.greg_date,
+        tx.prv_tx_date,
+        tx.tx_date,
+        tx.nxt_tx_dt,
+        tx.first_purchase,
+        tx.last_purchase,
+        tx.months_between_txn_nxt,
+        tx.months_between_txn_prv,
+        tx_mcom.prv_tx_date_mcom,
+        tx_mcom.tx_date_mcom,
+        tx_mcom.nxt_tx_dt_mcom,
+        tx_mcom.first_purchase_mcom,
+        tx_mcom.last_purchase_mcom,
+        tx_mcom.months_between_txn_nxt_mcom,
+        tx_mcom.months_between_txn_prv_mcom,
+        tx_store.prv_tx_date_store ,
+        tx_store.tx_date_store ,
+        tx_store.nxt_tx_dt_store ,
+        tx_store.first_purchase_store ,
+        tx_store.last_purchase_store ,
+        tx_store.months_between_txn_nxt_store ,
+        tx_store.months_between_txn_prv_store    
+    FROM customer_dates cd
+    LEFT JOIN identified_txn_dates_total tx 
+        ON tx.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx.tx_date AND tx.nxt_tx_dt
+    LEFT JOIN identified_txn_dates_mcom tx_mcom 
+        ON tx_mcom.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx_mcom.tx_date_mcom AND tx_mcom.nxt_tx_dt_mcom
+    LEFT JOIN identified_txn_dates_store tx_store 
+        ON tx_store.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx_store.tx_date_store AND tx_store.nxt_tx_dt_store
+    WHERE cd.greg_date >= tx.first_purchase
+),
+
+-- 8. Assign Lifecycle Labels (NET NEW, RETAINED, etc.)
+labeled AS (
+    SELECT
+        indiv_id, greg_date, 
+        tx_date, tx_date_mcom,
+        tx_date AS last_purchase_dt_total,
+        tx_date_mcom AS last_purchase_dt_mcom,
+        tx_date_store AS last_purchase_dt_store,
+        months_between_txn_prv,
+        -- Total
+        CASE
+            WHEN first_purchase = greg_date THEN 'NET NEW'
+            WHEN months_between_txn_prv >= 24 AND tx_date = greg_date THEN 'NEW'
+            WHEN months_between_txn_prv BETWEEN 13 AND 24 AND tx_date = greg_date THEN 'REACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) BETWEEN 13 AND 24 AND tx_date <> greg_date THEN 'LAPSED'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) > 24 THEN 'INACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) <= 12 THEN 'RETAINED'
+        END AS total_cs,
+        -- MCOM
+        CASE
+            WHEN first_purchase_mcom = greg_date THEN 'NET NEW'
+            WHEN months_between_txn_prv_mcom >= 24 AND tx_date_mcom = greg_date THEN 'NEW'
+            WHEN months_between_txn_prv_mcom BETWEEN 13 AND 24 AND tx_date_mcom = greg_date THEN 'REACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date_mcom, MONTH) BETWEEN 13 AND 24 AND tx_date_mcom <> greg_date THEN 'LAPSED'
+            WHEN DATE_DIFF(greg_date, tx_date_mcom, MONTH) > 24 THEN 'INACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date_mcom, MONTH) <= 12 THEN 'RETAINED'
+        END AS mcom_cs,
+        -- Store
+        CASE
+            WHEN first_purchase_store = greg_date THEN 'NET NEW'
+            WHEN months_between_txn_prv_store >= 24 AND tx_date_store = greg_date THEN 'NEW'
+            WHEN months_between_txn_prv_store BETWEEN 13 AND 24 AND tx_date_store = greg_date THEN 'REACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date_store, MONTH) BETWEEN 13 AND 24 AND tx_date_store <> greg_date THEN 'LAPSED'
+            WHEN DATE_DIFF(greg_date, tx_date_store, MONTH) > 24 THEN 'INACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date_store, MONTH) <= 12 THEN 'RETAINED'
+        END AS store_cs
+    FROM roll
+    WHERE greg_date BETWEEN tx_date AND nxt_tx_dt
+),
+
+-- 9. Add product hierarchy and filter top-ranked label per day
+final_rows AS (
+    SELECT *
+    FROM (
+        SELECT
+            greg_date AS GREG_DATE,
+            indiv_id AS INDV_ID,
+            NULL AS RTL_DIVN_NBR,
+            'TOTAL' AS FILTER_TYPE,
+            'TOTAL' AS FILTER_LEVEL,
+            total_cs, mcom_cs, store_cs,
+            last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+            ROW_NUMBER() OVER (PARTITION BY indiv_id, greg_date 
+                               ORDER BY last_purchase_dt_total DESC, last_purchase_dt_mcom DESC, last_purchase_dt_store DESC) AS rnk
+        FROM labeled
+    )
+    WHERE rnk = 1
+),
+
+-- 10. Final filter for recent dates (last 2500 days)
+yearly_data AS (
+    SELECT 
+        GREG_DATE, INDV_ID, RTL_DIVN_NBR,
+        FILTER_TYPE, FILTER_LEVEL,
+        TOTAL_CS, MCOM_CS, STORE_CS,
+        last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+        0 as Attr_Flag,
+        'Is not WBR Report Hierarchy' as Flag_Desc
+    FROM final_rows
+    WHERE DATE_DIFF(RUN_DATE, GREG_DATE, DAY) <= 2500
+)
+
+-- Final output
+SELECT GREG_START_DT, GREG_END_DT, INDV_ID, RTL_DIVN_NBR,
+FILTER_TYPE, FILTER_LEVEL,
+TOTAL_CS, MCOM_CS, STORE_CS,
+last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+Attr_Flag,
+Flag_Desc
+FROM 
+(
+SELECT 
+MIN(GREG_DATE) OVER (PARTITION BY INDV_ID,TOTAL_CS,MCOM_CS,STORE_CS,last_purchase_dt_total ORDER BY last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store) AS GREG_START_DT,
+MAX(GREG_DATE) OVER (PARTITION BY INDV_ID,TOTAL_CS,MCOM_CS,STORE_CS,last_purchase_dt_total ORDER BY last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store) AS GREG_END_DT,
+INDV_ID,
+RTL_DIVN_NBR,
+FILTER_TYPE, FILTER_LEVEL,
+TOTAL_CS, MCOM_CS, STORE_CS,
+last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+Attr_Flag,
+Flag_Desc
+FROM yearly_data
+WHERE GREG_DATE >= last_purchase_dt_total 
+)
+WHERE GREG_START_DT >= last_purchase_dt_total 
+GROUP BY GREG_START_DT, GREG_END_DT, INDV_ID, RTL_DIVN_NBR,
+FILTER_TYPE, FILTER_LEVEL,
+TOTAL_CS, MCOM_CS, STORE_CS,
+last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+Attr_Flag,
+Flag_Desc 
+ORDER BY INDV_ID, RTL_DIVN_NBR, FILTER_TYPE, FILTER_LEVEL, GREG_START_DT, GREG_END_DT;
