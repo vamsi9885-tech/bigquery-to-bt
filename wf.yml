@@ -1,0 +1,37 @@
+jobs:
+  run_databricks_notebook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Databricks Notebook
+        id: run_notebook
+        run: |
+          # Simulate notebook output (replace with actual API/CLI call)
+          echo '{"test_case_report": {
+            "TC_PUSH_055": {
+              "description": "SMOKE TEST : Verify if multi part file support works...",
+              "result": "PASS",
+              "error": "null"
+            }
+          },
+          "adf_run_details": {
+            "TC055_appointments_20250309_part_05.txt": {
+              "id": "45b532d8-07a7-4904-a207-5fe0d9f20caf",
+              "run_status": "Succeeded",
+              "message": "",
+              "run_duration": 18.438933333333335
+            }
+          }}' > output.json
+
+          echo "notebook_output=$(cat output.json | jq -c)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate and Append Report to GitHub Summary
+        run: |
+          OUTPUT='${{ steps.run_notebook.outputs.notebook_output }}'
+
+          echo "### 🧪 Test Case Report" >> $GITHUB_STEP_SUMMARY
+          echo "$OUTPUT" | jq -r '.test_case_report | to_entries[] |
+            "* Test Case ID:* \(.key)\n- **Description:** \(.value.description)\n- **Result:** \(.value.result)\n- **Error:** \(.value.error)\n"' >> $GITHUB_STEP_SUMMARY
+
+          echo "### ⚙️ ADF Run Report" >> $GITHUB_STEP_SUMMARY
+          echo "$OUTPUT" | jq -r '.adf_run_details | to_entries[] |
+            "- **File Name:** \(.key)\n- **Run ID:** \(.value.id)\n- **Status:** \(.value.run_status)\n- **Message:** \(.value.message)\n- **Duration (min):** \(.value.run_duration)\n"' >> $GITHUB_STEP_SUMMARY
