@@ -725,3 +725,151 @@ END;
 
 -- One-time full load
 CALL `project.dataset.sp_customer_lifecycle_incremental`();
+
+
+
+-----------
+
+
+CREATE OR REPLACE PROCEDURE `project.dataset.sp_customer_lifecycle_incremental`()
+BEGIN
+
+  -- STEP 1: Create a temporary table that contains the new or updated customer lifecycle records
+  CREATE OR REPLACE TEMP TABLE recent_lifecycle_updates AS
+
+  -- STEP 1.1: Generate a list of dates for the past 30 days
+  WITH date_range AS (
+      SELECT DISTINCT d AS greg_date
+      FROM UNNEST(GENERATE_DATE_ARRAY(DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY), CURRENT_DATE())) AS d
+      -- Example: If today is 2025-05-29, this gives 2025-04-29 to 2025-05-29
+  ),
+
+  -- STEP 1.2: Get list of unique customer IDs and cross join with the 30-day date range
+  customer_dates AS (
+      SELECT c.indiv_id, d.greg_date
+      FROM (
+          SELECT DISTINCT indiv_id
+          FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+          WHERE 
+              DATE(txn_dt) >= DATE_SUB(CURRENT_DATE(), INTERVAL 2500 DAY) -- Only recent 2500 days (approx 6.8 years)
+              AND prch_chnl_cd IN ('A','F') -- Only in-store or financed channels
+              AND fin_own_lease_ind = 'Y' -- Must be financed purchases
+              AND rtl_divn_nbr IN (71,77) -- Specific retail divisions
+              AND pdiv_id NOT IN (000, 065) -- Exclude specific product divisions
+              AND dept_vnd_cd IS NOT NULL -- Must have department vendor
+              AND indiv_id IS NOT NULL -- Must have valid customer ID
+              AND LENGTH(CAST(indiv_id AS STRING)) >= 8 -- Length of customer ID must be 8 or more
+              AND indiv_id != 1 -- Filter out dummy ID
+              AND vst_cd IS NOT NULL -- Valid visit code required
+      ) c
+      CROSS JOIN date_range d
+      -- Example: If 1000 customers and 30 dates, this makes 30,000 records
+  ),
+
+  -- STEP 1.3: Pull relevant transactions for those customers from the last 2500 days
+  tx AS (
+      SELECT
+          indiv_id,
+          DATE(txn_dt) AS tx_date,
+          prch_chnl_cd,
+          'TOTAL' AS total_key -- Constant key if aggregation needed later
+      FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+      WHERE 
+          DATE(txn_dt) >= DATE_SUB(CURRENT_DATE(), INTERVAL 2500 DAY)
+          AND prch_chnl_cd IN ('A', 'F')
+          AND fin_own_lease_ind = 'Y'
+          AND rtl_divn_nbr IN (71, 77)
+          AND pdiv_id NOT IN (000, 065)
+          AND dept_vnd_cd IS NOT NULL
+          AND indiv_id IS NOT NULL
+          AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+          AND indiv_id != 1
+          AND vst_cd IS NOT NULL
+  ),
+
+  -- STEP 1.4: For each transaction, calculate previous and next transaction date and months between them
+  identified_txn_dates AS (
+      SELECT 
+          indiv_id, 
+          LAG(tx_date) OVER w AS prv_tx_date,
+          tx_date,
+          COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt,
+          MIN(tx_date) OVER (PARTITION BY indiv_id) AS first_purchase,
+          MAX(tx_date) OVER (PARTITION BY indiv_id) AS last_purchase,
+          DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt,
+          DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv
+      FROM tx
+      WINDOW w AS (PARTITION BY indiv_id ORDER BY tx_date)
+      -- Example: Customer A buys on Jan, Apr, and Dec
+      -- → Jan: prv=null, nxt=Apr, months_between_nxt=3
+      -- → Apr: prv=Jan, nxt=Dec, months_between_prv=3
+  ),
+
+  -- STEP 1.5: Join each customer-date combination with their most recent transaction period
+  roll AS (
+      SELECT
+          cd.indiv_id,
+          cd.greg_date,
+          tx.prv_tx_date,
+          tx.tx_date,
+          tx.nxt_tx_dt,
+          tx.first_purchase,
+          tx.last_purchase,
+          tx.months_between_txn_nxt,
+          tx.months_between_txn_prv
+      FROM customer_dates cd
+      LEFT JOIN identified_txn_dates tx 
+          ON tx.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx.tx_date AND tx.nxt_tx_dt
+      WHERE cd.greg_date >= tx.first_purchase
+      -- This gives us rolling snapshots of a customer's activity status each day
+  ),
+
+  -- STEP 1.6: Classify customer state based on transaction timing logic
+  labeled AS (
+      SELECT
+          indiv_id, greg_date, 
+          tx_date,
+          months_between_txn_prv,
+          CASE
+              WHEN first_purchase = greg_date THEN 'NET NEW' -- First ever transaction
+              WHEN months_between_txn_prv >= 24 AND tx_date = greg_date THEN 'NEW' -- Came back after 2 years
+              WHEN months_between_txn_prv BETWEEN 13 AND 24 AND tx_date = greg_date THEN 'REACTIVE' -- Came back after 1–2 years
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) BETWEEN 13 AND 24 AND tx_date <> greg_date THEN 'LAPSED' -- Hasn't transacted in 13–24 months
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) > 24 THEN 'INACTIVE' -- No transaction in last 2+ years
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) <= 12 THEN 'RETAINED' -- Active within 12 months
+          END AS customer_state
+      FROM roll
+      WHERE greg_date BETWEEN tx_date AND nxt_tx_dt
+      -- Each row now has a lifecycle label like NET NEW, REACTIVE, etc.
+  )
+
+  -- STEP 1.7: Select final records to insert/update into the target table
+  SELECT 
+      MIN(greg_date) AS GREG_START_DT, -- Start of lifecycle state
+      MAX(greg_date) AS GREG_END_DT,   -- End of lifecycle state
+      indiv_id,
+      customer_state,
+      0 as Attr_Flag,
+      'Is not WBR Report Hierarchy' as Flag_Desc
+  FROM labeled
+  GROUP BY indiv_id, customer_state, Attr_Flag, Flag_Desc;
+  -- Example: A customer can be 'RETAINED' from 2025-04-15 to 2025-05-29
+
+  -- STEP 2: Merge the results into the final persistent table
+
+  MERGE `project.dataset.customer_lifecycle_final` AS target
+  USING recent_lifecycle_updates AS source
+  ON target.indiv_id = source.indiv_id AND target.customer_state = source.customer_state
+
+  -- STEP 2.1: Update if record already exists but date ranges have changed
+  WHEN MATCHED AND (target.GREG_END_DT <> source.GREG_END_DT OR target.GREG_START_DT <> source.GREG_START_DT) THEN
+    UPDATE SET 
+        target.GREG_START_DT = source.GREG_START_DT,
+        target.GREG_END_DT = source.GREG_END_DT
+
+  -- STEP 2.2: Insert new records if there is no existing match
+  WHEN NOT MATCHED THEN
+    INSERT (GREG_START_DT, GREG_END_DT, indiv_id, customer_state, Attr_Flag, Flag_Desc)
+    VALUES (source.GREG_START_DT, source.GREG_END_DT, source.indiv_id, source.customer_state, source.Attr_Flag, source.Flag_Desc);
+
+END;
