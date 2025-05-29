@@ -460,3 +460,134 @@ SELECT
   FLAG_DESCRIPTION
 FROM final_rows
 ORDER BY INDV_ID, greg_strt_dt;
+
+
+qury1:
+
+-- Declare constants for lookback period and current date
+DECLARE LOOKBACK_DAYS INT64 DEFAULT 2500;
+DECLARE RUN_DATE DATE DEFAULT CURRENT_DATE;
+
+-- Generate a continuous date range based on the lookback window
+WITH date_range AS (
+    SELECT DISTINCT d AS greg_date
+    FROM UNNEST(GENERATE_DATE_ARRAY(DATE_SUB(RUN_DATE, INTERVAL LOOKBACK_DAYS DAY), RUN_DATE)) AS d
+),
+
+-- Select distinct customer IDs with valid attributes
+customer_dates AS (
+    SELECT c.indiv_id, d.greg_date
+    FROM (
+        SELECT DISTINCT indiv_id
+        FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+        WHERE 
+            DATE(txn_dt) >= DATE_SUB(RUN_DATE, INTERVAL LOOKBACK_DAYS DAY)
+            AND prch_chnl_cd IN ('A','F')
+            AND fin_own_lease_ind = 'Y'
+            AND rtl_divn_nbr IN (71,77)
+            AND pdiv_id NOT IN (000, 065)
+            AND dept_vnd_cd IS NOT NULL
+            AND indiv_id IS NOT NULL
+            AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+            AND indiv_id != 1
+            AND vst_cd IS NOT NULL
+            AND indiv_id = 10018809
+    ) c
+    CROSS JOIN date_range d
+),
+
+-- Extract and prepare base transaction records
+tx AS (
+    SELECT
+        indiv_id,
+        DATE(txn_dt) AS tx_date,
+        prch_chnl_cd,
+        'TOTAL' AS total_key
+    FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+    WHERE 
+        DATE(txn_dt) >= DATE_SUB(RUN_DATE, INTERVAL LOOKBACK_DAYS DAY)
+        AND prch_chnl_cd IN ('A', 'F')
+        AND fin_own_lease_ind = 'Y'
+        AND rtl_divn_nbr IN (71, 77)
+        AND pdiv_id NOT IN (000, 065)
+        AND dept_vnd_cd IS NOT NULL
+        AND indiv_id IS NOT NULL
+        AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+        AND indiv_id != 1
+        AND vst_cd IS NOT NULL
+        AND indiv_id = 10018809
+),
+
+-- Compute transaction dates and gaps
+identified_txn_dates AS (
+    SELECT 
+        indiv_id, 
+        LAG(tx_date) OVER w AS prv_tx_date,
+        tx_date,
+        COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt,
+        MIN(tx_date) OVER (PARTITION BY indiv_id) AS first_purchase,
+        MAX(tx_date) OVER (PARTITION BY indiv_id) AS last_purchase,
+        DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt,
+        DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv
+    FROM tx
+    WINDOW w AS (PARTITION BY indiv_id ORDER BY tx_date)
+),
+
+-- Roll-up transaction information per customer-date
+roll AS (
+    SELECT
+        cd.indiv_id,
+        cd.greg_date,
+        tx.prv_tx_date,
+        tx.tx_date,
+        tx.nxt_tx_dt,
+        tx.first_purchase,
+        tx.last_purchase,
+        tx.months_between_txn_nxt,
+        tx.months_between_txn_prv
+    FROM customer_dates cd
+    LEFT JOIN identified_txn_dates tx 
+        ON tx.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx.tx_date AND tx.nxt_tx_dt
+    WHERE cd.greg_date >= tx.first_purchase
+),
+
+-- Assign Lifecycle Labels
+labeled AS (
+    SELECT
+        indiv_id, greg_date, 
+        tx_date,
+        months_between_txn_prv,
+        CASE
+            WHEN first_purchase = greg_date THEN 'NET NEW'
+            WHEN months_between_txn_prv >= 24 AND tx_date = greg_date THEN 'NEW'
+            WHEN months_between_txn_prv BETWEEN 13 AND 24 AND tx_date = greg_date THEN 'REACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) BETWEEN 13 AND 24 AND tx_date <> greg_date THEN 'LAPSED'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) > 24 THEN 'INACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) <= 12 THEN 'RETAINED'
+        END AS customer_state
+    FROM roll
+    WHERE greg_date BETWEEN tx_date AND nxt_tx_dt
+),
+
+-- Final filter for recent dates
+yearly_data AS (
+    SELECT 
+        greg_date, indiv_id,
+        customer_state,
+        0 as Attr_Flag,
+        'Is not WBR Report Hierarchy' as Flag_Desc
+    FROM labeled
+    WHERE DATE_DIFF(RUN_DATE, greg_date, DAY) <= 2500
+)
+
+-- Final output
+SELECT 
+    MIN(greg_date) AS GREG_START_DT,
+    MAX(greg_date) AS GREG_END_DT,
+    indiv_id,
+    customer_state,
+    Attr_Flag,
+    Flag_Desc
+FROM yearly_data
+GROUP BY indiv_id, customer_state, Attr_Flag, Flag_Desc
+ORDER BY indiv_id, GREG_START_DT;
