@@ -591,3 +591,137 @@ SELECT
 FROM yearly_data
 GROUP BY indiv_id, customer_state, Attr_Flag, Flag_Desc
 ORDER BY indiv_id, GREG_START_DT;
+
+
+----
+CREATE OR REPLACE TABLE `project.dataset.customer_lifecycle_final` AS
+SELECT 
+    MIN(greg_date) AS GREG_START_DT,
+    MAX(greg_date) AS GREG_END_DT,
+    indiv_id,
+    customer_state,
+    0 as Attr_Flag,
+    'Is not WBR Report Hierarchy' as Flag_Desc
+FROM yearly_data
+GROUP BY indiv_id, customer_state, Attr_Flag, Flag_Desc;
+
+
+CREATE OR REPLACE PROCEDURE `project.dataset.sp_customer_lifecycle_incremental`()
+BEGIN
+
+  -- Step 1: Create a temporary table with new/updated results
+  CREATE OR REPLACE TEMP TABLE recent_lifecycle_updates AS
+  WITH date_range AS (
+      SELECT DISTINCT d AS greg_date
+      FROM UNNEST(GENERATE_DATE_ARRAY(DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY), CURRENT_DATE())) AS d
+  ),
+  customer_dates AS (
+      SELECT c.indiv_id, d.greg_date
+      FROM (
+          SELECT DISTINCT indiv_id
+          FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+          WHERE 
+              DATE(txn_dt) >= DATE_SUB(CURRENT_DATE(), INTERVAL 2500 DAY)
+              AND prch_chnl_cd IN ('A','F')
+              AND fin_own_lease_ind = 'Y'
+              AND rtl_divn_nbr IN (71,77)
+              AND pdiv_id NOT IN (000, 065)
+              AND dept_vnd_cd IS NOT NULL
+              AND indiv_id IS NOT NULL
+              AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+              AND indiv_id != 1
+              AND vst_cd IS NOT NULL
+      ) c
+      CROSS JOIN date_range d
+  ),
+  tx AS (
+      SELECT
+          indiv_id,
+          DATE(txn_dt) AS tx_date,
+          prch_chnl_cd,
+          'TOTAL' AS total_key
+      FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+      WHERE 
+          DATE(txn_dt) >= DATE_SUB(CURRENT_DATE(), INTERVAL 2500 DAY)
+          AND prch_chnl_cd IN ('A', 'F')
+          AND fin_own_lease_ind = 'Y'
+          AND rtl_divn_nbr IN (71, 77)
+          AND pdiv_id NOT IN (000, 065)
+          AND dept_vnd_cd IS NOT NULL
+          AND indiv_id IS NOT NULL
+          AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+          AND indiv_id != 1
+          AND vst_cd IS NOT NULL
+  ),
+  identified_txn_dates AS (
+      SELECT 
+          indiv_id, 
+          LAG(tx_date) OVER w AS prv_tx_date,
+          tx_date,
+          COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt,
+          MIN(tx_date) OVER (PARTITION BY indiv_id) AS first_purchase,
+          MAX(tx_date) OVER (PARTITION BY indiv_id) AS last_purchase,
+          DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt,
+          DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv
+      FROM tx
+      WINDOW w AS (PARTITION BY indiv_id ORDER BY tx_date)
+  ),
+  roll AS (
+      SELECT
+          cd.indiv_id,
+          cd.greg_date,
+          tx.prv_tx_date,
+          tx.tx_date,
+          tx.nxt_tx_dt,
+          tx.first_purchase,
+          tx.last_purchase,
+          tx.months_between_txn_nxt,
+          tx.months_between_txn_prv
+      FROM customer_dates cd
+      LEFT JOIN identified_txn_dates tx 
+          ON tx.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx.tx_date AND tx.nxt_tx_dt
+      WHERE cd.greg_date >= tx.first_purchase
+  ),
+  labeled AS (
+      SELECT
+          indiv_id, greg_date, 
+          tx_date,
+          months_between_txn_prv,
+          CASE
+              WHEN first_purchase = greg_date THEN 'NET NEW'
+              WHEN months_between_txn_prv >= 24 AND tx_date = greg_date THEN 'NEW'
+              WHEN months_between_txn_prv BETWEEN 13 AND 24 AND tx_date = greg_date THEN 'REACTIVE'
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) BETWEEN 13 AND 24 AND tx_date <> greg_date THEN 'LAPSED'
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) > 24 THEN 'INACTIVE'
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) <= 12 THEN 'RETAINED'
+          END AS customer_state
+      FROM roll
+      WHERE greg_date BETWEEN tx_date AND nxt_tx_dt
+  )
+  SELECT 
+      MIN(greg_date) AS GREG_START_DT,
+      MAX(greg_date) AS GREG_END_DT,
+      indiv_id,
+      customer_state,
+      0 as Attr_Flag,
+      'Is not WBR Report Hierarchy' as Flag_Desc
+  FROM labeled
+  GROUP BY indiv_id, customer_state, Attr_Flag, Flag_Desc;
+
+  -- Step 2: Merge into main table (Upsert logic)
+  MERGE `project.dataset.customer_lifecycle_final` AS target
+  USING recent_lifecycle_updates AS source
+  ON target.indiv_id = source.indiv_id AND target.customer_state = source.customer_state
+  WHEN MATCHED AND (target.GREG_END_DT <> source.GREG_END_DT OR target.GREG_START_DT <> source.GREG_START_DT) THEN
+    UPDATE SET 
+        target.GREG_START_DT = source.GREG_START_DT,
+        target.GREG_END_DT = source.GREG_END_DT
+  WHEN NOT MATCHED THEN
+    INSERT (GREG_START_DT, GREG_END_DT, indiv_id, customer_state, Attr_Flag, Flag_Desc)
+    VALUES (source.GREG_START_DT, source.GREG_END_DT, source.indiv_id, source.customer_state, source.Attr_Flag, source.Flag_Desc);
+
+END;
+
+
+-- One-time full load
+CALL `project.dataset.sp_customer_lifecycle_incremental`();
