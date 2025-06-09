@@ -873,3 +873,436 @@ BEGIN
     VALUES (source.GREG_START_DT, source.GREG_END_DT, source.indiv_id, source.customer_state, source.Attr_Flag, source.Flag_Desc);
 
 END;
+
+
+
+CREATE OR REPLACE TABLE `mtech-daas-transact-sdata.rfnd_sls.customer_lifecycle_final` AS
+SELECT 
+    MIN(greg_date) AS GREG_START_DT,
+    MAX(greg_date) AS GREG_END_DT,
+    indiv_id,
+    customer_state,
+    0 as Attr_Flag,
+    'Is not WBR Report Hierarchy' as Flag_Desc
+FROM yearly_data
+GROUP BY indiv_id, customer_state, Attr_Flag, Flag_Desc;
+
+
+CREATE OR REPLACE PROCEDURE `mtech-daas-transact-sdata.rfnd_sls.sp_customer_lifecycle_incremental`()
+BEGIN
+
+  -- Step 1: Create a temporary table with new/updated results
+  CREATE OR REPLACE TEMP TABLE recent_lifecycle_updates AS
+  WITH date_range AS (
+      SELECT DISTINCT d AS greg_date
+      FROM UNNEST(GENERATE_DATE_ARRAY(DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY), CURRENT_DATE())) AS d
+  ),
+  CUSTOMER_FIRST_TXN AS  
+(
+SELECT indiv_id,FIRST_TXN_DT FROM
+(
+SELECT indiv_id, MIN(TXN_DT) AS FIRST_TXN_DT
+FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+WHERE prch_chnl_cd IN ('A','F')
+AND fin_own_lease_ind = 'Y'
+AND rtl_divn_nbr IN (71,77)
+AND pdiv_id NOT IN (000, 065)
+AND mdiv_id IN (8,16,39,81,82,83,84,85)
+AND dept_vnd_cd IS NOT NULL
+AND indiv_id IS NOT NULL
+AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+AND indiv_id != 1
+AND indiv_id = 10018809
+AND vst_cd IS NOT NULL
+GROUP BY indiv_id
+)DRV
+WHERE DRV.FIRST_TXN_DT BETWEEN '2022-01-01' AND '2022-12-31' --To be Passed through Parameters / Tables
+),
+  customer_dates AS (
+      SELECT c.indiv_id, d.greg_date
+      FROM (
+          SELECT DISTINCT indiv_id
+          FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+          WHERE 
+              DATE(txn_dt) >= DATE_SUB(CURRENT_DATE(), INTERVAL 2500 DAY)
+              AND prch_chnl_cd IN ('A','F')
+              AND fin_own_lease_ind = 'Y'
+              AND rtl_divn_nbr IN (71,77)
+              AND pdiv_id NOT IN (000, 065)
+              AND dept_vnd_cd IS NOT NULL
+              AND indiv_id IS NOT NULL
+              AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+              AND indiv_id != 1
+              AND vst_cd IS NOT NULL
+      ) c
+      CROSS JOIN date_range d
+  ),
+-- 3. Extract and prepare base transaction records
+tx AS (
+    SELECT
+        MA.indiv_id,
+        MA.mdiv_id, 
+        MA.mdiv_nm,
+        MA.rtl_divn_nbr,
+        DATE(MA.txn_dt) AS tx_date,
+        MA.prch_chnl_cd,
+        'Prod_hier' AS total_key
+    FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`MA
+    INNER JOIN CUSTOMER_FIRST_TXN CT
+    ON MA.indiv_id = CT.indiv_id
+    WHERE MA.prch_chnl_cd IN ('A','F')
+    AND MA.fin_own_lease_ind = 'Y'
+    AND MA.rtl_divn_nbr IN (71,77)
+    AND MA.pdiv_id NOT IN (000, 065)
+    AND MA.dept_vnd_cd IS NOT NULL
+    AND MA.indiv_id IS NOT NULL
+    AND LENGTH(CAST(MA.indiv_id AS STRING)) >= 8
+    AND MA.indiv_id != 1
+    AND MA.indiv_id = 10018809
+    AND MA.vst_cd IS NOT NULL
+),
+-- 5. Same as above, filtered to MCOM channel ('F')
+identified_txn_dates_mcom AS (
+    SELECT 
+        indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr,
+        LAG(tx_date) OVER w AS prv_tx_date_mcom,
+        tx_date AS tx_date_mcom,
+        COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt_mcom,
+        MIN(tx_date) OVER (PARTITION BY indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr) AS first_purchase_mcom,
+        MAX(tx_date) OVER (PARTITION BY indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr) AS last_purchase_mcom,
+        DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt_mcom,
+        DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv_mcom
+    FROM tx
+    WHERE prch_chnl_cd = 'F'
+    WINDOW w AS (PARTITION BY indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr ORDER BY tx_date)
+)
+,
+
+-- 6. Same as above, filtered to Store channel ('A')
+identified_txn_dates_store AS (
+    SELECT 
+        indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr,
+        LAG(tx_date) OVER w AS prv_tx_date_store,
+        tx_date AS tx_date_store,
+        COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt_store,
+        MIN(tx_date) OVER (PARTITION BY indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr) AS first_purchase_store,
+        MAX(tx_date) OVER (PARTITION BY indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr) AS last_purchase_store,
+        DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt_store,
+        DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv_store
+    FROM tx
+    WHERE prch_chnl_cd = 'A'
+    WINDOW w AS (PARTITION BY indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr ORDER BY tx_date)
+),
+roll AS (
+    SELECT
+        cd.indiv_id,
+        cd.greg_date,
+        tx.mdiv_id, 
+        tx.mdiv_nm,
+        tx.rtl_divn_nbr,
+        tx.prv_tx_date,
+        tx.tx_date,
+        tx.nxt_tx_dt,
+        tx.first_purchase,
+        tx.last_purchase,
+        tx.months_between_txn_nxt,
+        tx.months_between_txn_prv,
+        tx_mcom.prv_tx_date_mcom,
+        tx_mcom.tx_date_mcom,
+        tx_mcom.nxt_tx_dt_mcom,
+        tx_mcom.first_purchase_mcom,
+        tx_mcom.last_purchase_mcom,
+        tx_mcom.months_between_txn_nxt_mcom,
+        tx_mcom.months_between_txn_prv_mcom,
+        tx_store.prv_tx_date_store ,
+        tx_store.tx_date_store ,
+        tx_store.nxt_tx_dt_store ,
+        tx_store.first_purchase_store ,
+        tx_store.last_purchase_store ,
+        tx_store.months_between_txn_nxt_store ,
+        tx_store.months_between_txn_prv_store    
+    FROM customer_dates cd
+    LEFT JOIN identified_txn_dates_total tx 
+        ON tx.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx.tx_date AND tx.nxt_tx_dt
+    LEFT JOIN identified_txn_dates_mcom tx_mcom 
+        ON tx_mcom.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx_mcom.tx_date_mcom AND tx_mcom.nxt_tx_dt_mcom
+        AND tx.mdiv_id = tx_mcom.mdiv_id AND tx.rtl_divn_nbr = tx_mcom.rtl_divn_nbr
+    LEFT JOIN identified_txn_dates_store tx_store 
+        ON tx_store.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx_store.tx_date_store AND tx_store.nxt_tx_dt_store
+        AND tx.mdiv_id = tx_store.mdiv_id AND tx.rtl_divn_nbr = tx_store.rtl_divn_nbr
+    WHERE cd.greg_date >= tx.first_purchase
+),
+-- 8. Assign Lifecycle Labels (NET NEW, RETAINED, etc.)
+labeled AS (
+    SELECT
+        indiv_id, greg_date, mdiv_id, mdiv_nm, rtl_divn_nbr,
+        tx_date, tx_date_mcom,
+        tx_date AS last_purchase_dt_total,
+        tx_date_mcom AS last_purchase_dt_mcom,
+        tx_date_store AS last_purchase_dt_store,
+        months_between_txn_prv,
+        -- Total
+        CASE
+            WHEN first_purchase = greg_date THEN 'NET NEW'
+            WHEN months_between_txn_prv >= 24 AND tx_date = greg_date THEN 'NEW'
+            WHEN months_between_txn_prv BETWEEN 13 AND 24 AND tx_date = greg_date THEN 'REACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) BETWEEN 13 AND 24 AND tx_date <> greg_date THEN 'LAPSED'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) > 24 THEN 'INACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date, MONTH) <= 12 THEN 'RETAINED'
+        END AS total_cs,
+        -- MCOM
+        CASE
+            WHEN first_purchase_mcom = greg_date THEN 'NET NEW'
+            WHEN months_between_txn_prv_mcom >= 24 AND tx_date_mcom = greg_date THEN 'NEW'
+            WHEN months_between_txn_prv_mcom BETWEEN 13 AND 24 AND tx_date_mcom = greg_date THEN 'REACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date_mcom, MONTH) BETWEEN 13 AND 24 AND tx_date_mcom <> greg_date THEN 'LAPSED'
+            WHEN DATE_DIFF(greg_date, tx_date_mcom, MONTH) > 24 THEN 'INACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date_mcom, MONTH) <= 12 THEN 'RETAINED'
+        END AS mcom_cs,
+        -- Store
+        CASE
+            WHEN first_purchase_store = greg_date THEN 'NET NEW'
+            WHEN months_between_txn_prv_store >= 24 AND tx_date_store = greg_date THEN 'NEW'
+            WHEN months_between_txn_prv_store BETWEEN 13 AND 24 AND tx_date_store = greg_date THEN 'REACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date_store, MONTH) BETWEEN 13 AND 24 AND tx_date_store <> greg_date THEN 'LAPSED'
+            WHEN DATE_DIFF(greg_date, tx_date_store, MONTH) > 24 THEN 'INACTIVE'
+            WHEN DATE_DIFF(greg_date, tx_date_store, MONTH) <= 12 THEN 'RETAINED'
+        END AS store_cs
+    FROM roll
+    WHERE greg_date BETWEEN tx_date AND nxt_tx_dt
+),
+  SELECT 
+      MIN(greg_date) AS GREG_START_DT,
+      MAX(greg_date) AS GREG_END_DT,
+      indiv_id,
+      customer_state,
+      0 as Attr_Flag,
+      'Is not WBR Report Hierarchy' as Flag_Desc
+  FROM labeled
+  GROUP BY indiv_id, customer_state, Attr_Flag, Flag_Desc;
+  final_rows AS (
+    SELECT *
+    FROM (
+        SELECT
+            greg_date AS GREG_DATE,
+            indiv_id AS INDV_ID,
+            rtl_divn_nbr AS RTL_DIVN_NBR,
+            'Prod_hier' AS FILTER_TYPE,
+            mdiv_nm AS FILTER_LEVEL,
+            total_cs, mcom_cs, store_cs,
+            last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+            1 as ATTR_FLAG,
+            'Is WBR Report Hierarchy' AS FLAG_DESC,                
+            ROW_NUMBER() OVER (PARTITION BY indiv_id, mdiv_id, mdiv_nm, rtl_divn_nbr, greg_date 
+                               ORDER BY last_purchase_dt_total DESC, last_purchase_dt_mcom DESC, last_purchase_dt_store DESC) AS rnk
+        FROM labeled
+    )
+    WHERE rnk = 1
+),
+
+-- 10. Final filter for recent dates
+yearly_data AS (
+    SELECT 
+        GREG_DATE, INDV_ID, RTL_DIVN_NBR,
+        FILTER_TYPE, FILTER_LEVEL,
+        TOTAL_CS, MCOM_CS, STORE_CS,
+        last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store, ATTR_FLAG, FLAG_DESC
+    FROM final_rows
+)
+-- Final output
+SELECT GREG_START_DT, GREG_END_DT, CAST(INDV_ID AS INT64) AS INDIV_ID, CAST(RTL_DIVN_NBR AS INT64) AS RTL_DIVN_NBR,
+FILTER_TYPE, FILTER_LEVEL,
+TOTAL_CS, MCOM_CS, STORE_CS,
+last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+CAST(Attr_Flag AS INT64) AS Attr_Flag,
+Flag_Desc
+FROM 
+(
+SELECT 
+MIN(GREG_DATE) OVER (PARTITION BY INDV_ID,FILTER_LEVEL,RTL_DIVN_NBR,TOTAL_CS,MCOM_CS,STORE_CS,last_purchase_dt_total ORDER BY last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store) AS GREG_START_DT,
+MAX(GREG_DATE) OVER (PARTITION BY INDV_ID,FILTER_LEVEL,RTL_DIVN_NBR,TOTAL_CS,MCOM_CS,STORE_CS,last_purchase_dt_total ORDER BY last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store) AS GREG_END_DT,
+INDV_ID,
+RTL_DIVN_NBR,
+FILTER_TYPE, FILTER_LEVEL,
+TOTAL_CS, MCOM_CS, STORE_CS,
+last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+Attr_Flag,
+Flag_Desc
+FROM yearly_data
+WHERE GREG_DATE >= last_purchase_dt_total 
+)
+WHERE GREG_START_DT >= last_purchase_dt_total 
+GROUP BY GREG_START_DT, GREG_END_DT, INDV_ID, RTL_DIVN_NBR,
+FILTER_TYPE, FILTER_LEVEL,
+TOTAL_CS, MCOM_CS, STORE_CS,
+last_purchase_dt_total, last_purchase_dt_mcom, last_purchase_dt_store,
+Attr_Flag,
+Flag_Desc
+order by FILTER_LEVEL, GREG_START_DT
+;
+
+  -- Step 2: Merge into main table (Upsert logic)
+  MERGE `mtech-daas-transact-sdata.rfnd_sls.customer_lifecycle_final` AS target
+  USING recent_lifecycle_updates AS source
+  ON target.indiv_id = source.indiv_id AND target.customer_state = source.customer_state
+  WHEN MATCHED AND (target.GREG_END_DT <> source.GREG_END_DT OR target.GREG_START_DT <> source.GREG_START_DT) THEN
+    UPDATE SET 
+        target.GREG_START_DT = source.GREG_START_DT,
+        target.GREG_END_DT = source.GREG_END_DT
+  WHEN NOT MATCHED THEN
+    INSERT (GREG_START_DT, GREG_END_DT, indiv_id, customer_state, Attr_Flag, Flag_Desc)
+    VALUES (source.GREG_START_DT, source.GREG_END_DT, source.indiv_id, source.customer_state, source.Attr_Flag, source.Flag_Desc);
+
+END;
+
+
+-- One-time full load
+CALL `mtech-daas-transact-sdata.rfnd_sls.sp_customer_lifecycle_incremental`();
+
+
+
+-----------
+
+
+CREATE OR REPLACE PROCEDURE `mtech-daas-transact-sdata.rfnd_sls.sp_customer_lifecycle_incremental`()
+BEGIN
+
+  -- STEP 1: Create a temporary table that contains the new or updated customer lifecycle records
+  CREATE OR REPLACE TEMP TABLE recent_lifecycle_updates AS
+
+  -- STEP 1.1: Generate a list of dates for the past 30 days
+  WITH date_range AS (
+      SELECT DISTINCT d AS greg_date
+      FROM UNNEST(GENERATE_DATE_ARRAY(DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY), CURRENT_DATE())) AS d
+      -- Example: If today is 2025-05-29, this gives 2025-04-29 to 2025-05-29
+  ),
+
+  -- STEP 1.2: Get list of unique customer IDs and cross join with the 30-day date range
+  customer_dates AS (
+      SELECT c.indiv_id, d.greg_date
+      FROM (
+          SELECT DISTINCT indiv_id
+          FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+          WHERE 
+              DATE(txn_dt) >= DATE_SUB(CURRENT_DATE(), INTERVAL 2500 DAY) -- Only recent 2500 days (approx 6.8 years)
+              AND prch_chnl_cd IN ('A','F') -- Only in-store or financed channels
+              AND fin_own_lease_ind = 'Y' -- Must be financed purchases
+              AND rtl_divn_nbr IN (71,77) -- Specific retail divisions
+              AND pdiv_id NOT IN (000, 065) -- Exclude specific product divisions
+              AND dept_vnd_cd IS NOT NULL -- Must have department vendor
+              AND indiv_id IS NOT NULL -- Must have valid customer ID
+              AND LENGTH(CAST(indiv_id AS STRING)) >= 8 -- Length of customer ID must be 8 or more
+              AND indiv_id != 1 -- Filter out dummy ID
+              AND vst_cd IS NOT NULL -- Valid visit code required
+      ) c
+      CROSS JOIN date_range d
+      -- Example: If 1000 customers and 30 dates, this makes 30,000 records
+  ),
+
+  -- STEP 1.3: Pull relevant transactions for those customers from the last 2500 days
+  tx AS (
+      SELECT
+          indiv_id,
+          DATE(txn_dt) AS tx_date,
+          prch_chnl_cd,
+          'TOTAL' AS total_key -- Constant key if aggregation needed later
+      FROM `mtech-daas-transact-sdata.rfnd_sls.merch_all`
+      WHERE 
+          DATE(txn_dt) >= DATE_SUB(CURRENT_DATE(), INTERVAL 2500 DAY)
+          AND prch_chnl_cd IN ('A', 'F')
+          AND fin_own_lease_ind = 'Y'
+          AND rtl_divn_nbr IN (71, 77)
+          AND pdiv_id NOT IN (000, 065)
+          AND dept_vnd_cd IS NOT NULL
+          AND indiv_id IS NOT NULL
+          AND LENGTH(CAST(indiv_id AS STRING)) >= 8
+          AND indiv_id != 1
+          AND vst_cd IS NOT NULL
+  ),
+
+  -- STEP 1.4: For each transaction, calculate previous and next transaction date and months between them
+  identified_txn_dates AS (
+      SELECT 
+          indiv_id, 
+          LAG(tx_date) OVER w AS prv_tx_date,
+          tx_date,
+          COALESCE(LEAD(tx_date) OVER w, DATE '3499-12-31') AS nxt_tx_dt,
+          MIN(tx_date) OVER (PARTITION BY indiv_id) AS first_purchase,
+          MAX(tx_date) OVER (PARTITION BY indiv_id) AS last_purchase,
+          DATE_DIFF(LEAD(tx_date) OVER w, tx_date, MONTH) AS months_between_txn_nxt,
+          DATE_DIFF(tx_date, LAG(tx_date) OVER w, MONTH) AS months_between_txn_prv
+      FROM tx
+      WINDOW w AS (PARTITION BY indiv_id ORDER BY tx_date)
+      -- Example: Customer A buys on Jan, Apr, and Dec
+      -- → Jan: prv=null, nxt=Apr, months_between_nxt=3
+      -- → Apr: prv=Jan, nxt=Dec, months_between_prv=3
+  ),
+
+  -- STEP 1.5: Join each customer-date combination with their most recent transaction period
+  roll AS (
+      SELECT
+          cd.indiv_id,
+          cd.greg_date,
+          tx.prv_tx_date,
+          tx.tx_date,
+          tx.nxt_tx_dt,
+          tx.first_purchase,
+          tx.last_purchase,
+          tx.months_between_txn_nxt,
+          tx.months_between_txn_prv
+      FROM customer_dates cd
+      LEFT JOIN identified_txn_dates tx 
+          ON tx.indiv_id = cd.indiv_id AND cd.greg_date BETWEEN tx.tx_date AND tx.nxt_tx_dt
+      WHERE cd.greg_date >= tx.first_purchase
+      -- This gives us rolling snapshots of a customer's activity status each day
+  ),
+
+  -- STEP 1.6: Classify customer state based on transaction timing logic
+  labeled AS (
+      SELECT
+          indiv_id, greg_date, 
+          tx_date,
+          months_between_txn_prv,
+          CASE
+              WHEN first_purchase = greg_date THEN 'NET NEW' -- First ever transaction
+              WHEN months_between_txn_prv >= 24 AND tx_date = greg_date THEN 'NEW' -- Came back after 2 years
+              WHEN months_between_txn_prv BETWEEN 13 AND 24 AND tx_date = greg_date THEN 'REACTIVE' -- Came back after 1–2 years
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) BETWEEN 13 AND 24 AND tx_date <> greg_date THEN 'LAPSED' -- Hasn't transacted in 13–24 months
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) > 24 THEN 'INACTIVE' -- No transaction in last 2+ years
+              WHEN DATE_DIFF(greg_date, tx_date, MONTH) <= 12 THEN 'RETAINED' -- Active within 12 months
+          END AS customer_state
+      FROM roll
+      WHERE greg_date BETWEEN tx_date AND nxt_tx_dt
+      -- Each row now has a lifecycle label like NET NEW, REACTIVE, etc.
+  )
+
+  -- STEP 1.7: Select final records to insert/update into the target table
+  SELECT 
+      MIN(greg_date) AS GREG_START_DT, -- Start of lifecycle state
+      MAX(greg_date) AS GREG_END_DT,   -- End of lifecycle state
+      indiv_id,
+      customer_state,
+      0 as Attr_Flag,
+      'Is not WBR Report Hierarchy' as Flag_Desc
+  FROM labeled
+  GROUP BY indiv_id, customer_state, Attr_Flag, Flag_Desc;
+  -- Example: A customer can be 'RETAINED' from 2025-04-15 to 2025-05-29
+
+  -- STEP 2: Merge the results into the final persistent table
+
+  MERGE `mtech-daas-transact-sdata.rfnd_sls.customer_lifecycle_final` AS target
+  USING recent_lifecycle_updates AS source
+  ON target.indiv_id = source.indiv_id AND target.customer_state = source.customer_state
+
+  -- STEP 2.1: Update if record already exists but date ranges have changed
+  WHEN MATCHED AND (target.GREG_END_DT <> source.GREG_END_DT OR target.GREG_START_DT <> source.GREG_START_DT) THEN
+    UPDATE SET 
+        target.GREG_START_DT = source.GREG_START_DT,
+        target.GREG_END_DT = source.GREG_END_DT
+
+  -- STEP 2.2: Insert new records if there is no existing match
+  WHEN NOT MATCHED THEN
+    INSERT (GREG_START_DT, GREG_END_DT, indiv_id, customer_state, Attr_Flag, Flag_Desc)
+    VALUES (source.GREG_START_DT, source.GREG_END_DT, source.indiv_id, source.customer_state, source.Attr_Flag, source.Flag_Desc);
+
+END;
