@@ -1306,3 +1306,49 @@ BEGIN
     VALUES (source.GREG_START_DT, source.GREG_END_DT, source.indiv_id, source.customer_state, source.Attr_Flag, source.Flag_Desc);
 
 END;
+
+
+
+
+Design Approach:
+
+(Per Alignment with Macys Stakeholders on 4th June' 25)
+ 
+1. Identify those Customers from merch_all table who made atleast one relevant transaction from 1st Jan' 2021 onwards.
+ 
+2. Create a table Customer_State_FIRST_TXN_DT and Identify the First Transactions for each Customer starting from 1st Jan 2021.
+
+This is the base of the Customers to be processed for one time history Load. Load the table.
+
+This table will have Two Columns Indiv_Id and First_Txn_Dt. This will be partitioned on First_Txn_Dt and Clustered on Indiv_Id
+ 
+3. Join Customer_State_FIRST_TXN_DT with Merch_All table on Indiv_id to fetch Releveant Customers and Transactions from Merch_All table.
+ 
+4. Create a CTE that can generate a continous Date Range starting from 1st Jan' 2021 until the processing date.
+ 
+5. Create a Table Customer_State_History_Load_Tracker with Columns Start_Date, End_Date, Load_Timestamp, Records_Processed, Processed_Flag_Y_N etc. 
+
+The Start and End Date column of this table will be populated starting from 1st Jan' 2021 having one entry in the table for each 
+
+start date and end date of the month.
+ 
+6. Create a Stored Procedure that runs iteratively with Start_Date and End_Date fetched from Customer_State_History_Load.
+
+The Purpose of this Stored Procedure is to fetch the Customer_State_History_Load Data for a month and then Generate the Customer Status History  
+
+(Statusof the Customer can be either "NET NEW","RETAIN","INACTIVE","REACTIVE", "LAPSED" AND "NEW") starting with First Transaction Date for each Customer on or after 1st Jan 2021 and then generate the Status History for that customer based on the transactions performed. 
+
+Only those customers will be processed whose First_Transaction_Date falls between Start Date and End Date of Customer_State_History_Load_Tracker.
+
+Once the Target table "Customer_State" is loaded with appropriate Customer Status, The record count and Load timestamp must be updated in Customer_State_History_Load_Tracker with Column Processed_Flag_Y_N to be set to 'Y'.
+ 
+7. This Stored procedure must run iterativey until all the entries in Customer_State_History_Load_Tracker are Exhausted with Processed_Flag_Y_N set at Y for all entries. This way, The History Load would be complete.
+ 
+This is my Design Approach and you have to make the Stored Procedure Build Accordingly.
+ 
+I have already sent thde design document to you.
+
+
+  SELECT * FROM mcy-mktg-custanlytcs-queries.customer_semantic_layer.Customer_State_FIRST_TXN_DT limit 10
+ 
+SELECT * FROM mcy-mktg-custanlytcs-queries.customer_semantic_layer.Customer_State_History_Load_Tracker
