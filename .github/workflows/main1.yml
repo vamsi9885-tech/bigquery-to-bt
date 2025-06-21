@@ -1,5 +1,9 @@
 name: Main Workflow (External Reusable Call)
 
+permissions:
+  actions: read
+  contents: read
+
 on:
   push:
     branches:
@@ -10,3 +14,5 @@ jobs:
     uses: vamsi9885-tech/optum_new_work/.github/workflows/reusable.yml@main  
     with:
       message: "Hello from Repo B!"
+    secrets:
+      token: ${{ secrets.REPO_ACCESS_TOKEN }}
