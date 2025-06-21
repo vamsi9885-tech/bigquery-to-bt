@@ -1,0 +1,12 @@
+name: Main Workflow (External Reusable Call)
+
+on:
+  push:
+    branches:
+      - main  # or main, or any branches you want
+
+jobs:
+  call-external-reusable:
+    uses: vamsi9885-tech/optum_new_work/.github/workflows/reusable.yml@main  
+    with:
+      message: "Hello from Repo B!"
