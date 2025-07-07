@@ -291,3 +291,100 @@ Left Join rank_unique_PolicyClaim
     AND myClaim_instid = rank_unique_PolicyClaim.oid_instid
     AND rank_unique_PolicyClaim = 1
     AND rank_unique_PolicyClaim._operation <> 'D');
+
+
+
+
+
+
+
+
+{
+    "DL_TIMTreatmentApplied": {
+        "part_fields": "date(_timestamp)",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp, oid_clsno, oid_instid, aUniqueId, aSessionsApproved, aSessionsRequested, aCompleted, aResponse, aServiceProvider, myType_clsno, myType_instid, aDateAdvised, aDateRequested, myClaimPlanInvestigation_clsno, myClaimPlanInvestigation_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "dl_TIMTreatment": {
+        "part_fields": "date(_timestamp)",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp, oid_clsno, oid_instid, aDescription",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "DL_TIMMedicalInvestigation": {
+        "part_fields": "date(_timestamp)",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp, oid_clsno, oid_instid, aDescription",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "dl_TIMClaimPlanInvestigation": {
+        "part_fields": "date(_timestamp)",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp, oid_clsno, oid_instid, aRehabPlanInitiatedBy, aTreatmentManager, myClaim_clsno, myClaim_instid, myMedicalCertificate_clsno, myMedicalCertificate_instid, myExpectedTreatmentPeriod_clsno, myExpectedTreatmentPeriod_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "dl_TIMPolicyClaim": {
+        "part_fields": "date(_timestamp)",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp, oid_clsno, oid_instid, aClaimNumber",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "transformations": {
+        "joins": [
+            {
+                "type": "left",
+                "table": "dl_TIMTreatment",
+                "condition": "DL_TIMTreatmentApplied.myType_clsno = dl_TIMTreatment.oid_clsno AND DL_TIMTreatmentApplied.myType_instid = dl_TIMTreatment.oid_instid"
+            },
+            {
+                "type": "left",
+                "table": "DL_TIMMedicalInvestigation",
+                "condition": "DL_TIMTreatmentApplied.myType_clsno = DL_TIMMedicalInvestigation.oid_clsno AND DL_TIMTreatmentApplied.myType_instid = DL_TIMMedicalInvestigation.oid_instid"
+            },
+            {
+                "type": "left",
+                "table": "dl_TIMClaimPlanInvestigation",
+                "condition": "DL_TIMTreatmentApplied.myClaimPlanInvestigation_clsno = dl_TIMClaimPlanInvestigation.oid_clsno AND DL_TIMTreatmentApplied.myClaimPlanInvestigation_instid = dl_TIMClaimPlanInvestigation.oid_instid"
+            },
+            {
+                "type": "left",
+                "table": "dl_TIMPolicyClaim",
+                "condition": "dl_TIMClaimPlanInvestigation.myClaim_clsno = dl_TIMPolicyClaim.oid_clsno AND dl_TIMClaimPlanInvestigation.myClaim_instid = dl_TIMPolicyClaim.oid_instid"
+            }
+        ],
+        "fields": {
+            "trtmt_no": "DL_TIMTreatmentApplied.aUniqueId",
+            "clm_no": "dl_TIMPolicyClaim.aClaimNumber",
+            "trtmt_no_of_sess_apprvd": "DL_TIMTreatmentApplied.aSessionsApproved",
+            "trtmt_no_of_sess_reqstd": "DL_TIMTreatmentApplied.aSessionsRequested",
+            "trtmt_care_completed": "DL_TIMTreatmentApplied.aCompleted",
+            "trtmt_care_respnse": "CASE DL_TIMTreatmentApplied.aResponse WHEN 1 THEN 'A' WHEN 2 THEN 'P' WHEN 3 THEN 'D' ELSE '' END",
+            "trtmt_care_servc_provider": "DL_TIMTreatmentApplied.aServiceProvider",
+            "trtmt_care_servc_type": "COALESCE(dl_TIMTreatment.aDescription, DL_TIMMedicalInvestigation.aDescription)",
+            "trtmt_care_advised_dt": "DL_TIMTreatmentApplied.aDateAdvised",
+            "trtmt_care_reqstd_dt": "DL_TIMTreatmentApplied.aDateRequested",
+            "trtmt_manager": "dl_TIMClaimPlanInvestigation.aTreatmentManager",
+            "trtmt_first_plan_intiated_by": "dl_TIMClaimPlanInvestigation.aRehabPlanInitiatedBy"
+        },
+        "primary_key": ["trtmt_no"],
+        "business_keys": ["trtmt_no"],
+        "complex_expr_keywords": ["CASE", "COALESCE"],
+        "function_replacements": {
+            "CAST(": "cast(",
+            " AS ": ".cast(",
+            "COALESCE": "coalesce",
+            "CASE": "CASE",
+            "WHEN": "WHEN",
+            "THEN": "THEN",
+            "ELSE": "ELSE",
+            "END": "END"
+        }
+    }
+}
+
