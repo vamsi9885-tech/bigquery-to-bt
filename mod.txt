@@ -1,3 +1,53 @@
+
+def selective_df(spark, db_table, column_list, start_date=None, end_date=None, delta_date_format=None):
+    """
+    :param spark: Spark session object
+    :param db_table: Table from which data is to be read
+    :param column_list: List of columns to be select from the entire table
+    :param start_date: start date of window
+    :param end_date: End date of window
+    :return: Data frame with selected columns and filter condition applied.
+    """
+    if isinstance(column_list, list):
+        df = spark.read.table(db_table)
+        return df.select(*column_list)
+    elif isinstance(column_list, str) and column_list.upper() == "ALL":
+        return spark.read.table(db_table)
+    elif isinstance(column_list, dict):
+        rnk_fields = column_list.get('rnk_fields')
+        sel_fields = column_list['sel_fields'].split(",")
+        df = spark.read.table(db_table).select(*sel_fields)
+        if column_list.get('FILTER_CONDITION', 0):
+            df = df.filter(column_list['FILTER_CONDITION'])
+        if start_date is not None:
+            delta_column = column_list.get('delta_column', '').strip()
+            if delta_date_format is not None:
+                filter_cond = "((to_timestamp(" + delta_column + ",'" + delta_date_format + "') >= to_timestamp('" + start_date + "','" + delta_date_format + "')) and   (to_timestamp(" + delta_column + ",'" + delta_date_format + "') < to_timestamp('" + end_date + "','" + delta_date_format + "') ))"
+                df = df.filter(filter_cond)
+            else:
+                df = df.filter((df[delta_column] >= lit(start_date)) & (df[delta_column] < lit(end_date)))
+        if start_date is None and end_date is not None:
+            delta_column = column_list.get('delta_column', '').strip()
+            df = df.filter(df[delta_column] < lit(end_date))
+        if rnk_fields is not None:
+            part_fields = column_list.get('part_fields')
+            part_concat_fields = column_list.get('part_concat_fields')
+            rnk_fields = rnk_fields.split(",")
+            order_fields = list(map(
+                lambda x: df[x.split(" ")[0]].asc() if x.__contains__("asc") else df[x.split(" ")[0]].desc(),
+                rnk_fields))
+            if part_fields is not None:
+                w = Window.partitionBy(*part_fields.split(",")).orderBy(order_fields)
+            else:
+                w = Window.partitionBy(sf.concat_ws('', *part_concat_fields.split(","))).orderBy(order_fields)
+            if column_list.get('row_num') is not None:
+                df = df.withColumn("rornk", sf.row_number().over(w)).filter("rornk=1").drop("rornk")
+            else:
+                df = df.withColumn("rnk", sf.rank().over(w)).filter("rnk=1").drop("rnk")
+            # Drop duplicates to remove exact duplicates
+            df = df.dropDuplicates()
+        return df
+
 {
     "dl_CTPAccident": {
         "part_fields": "date(_timestamp)",
