@@ -2,7 +2,9 @@ import argparse
 import logging
 import json
 import yaml
+import os
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import expr
 from utils import selective_df, add_audit_columns, get_active_date, get_rec_version, order_cols
 
 # Initialize logger
@@ -20,18 +22,32 @@ def load_dict_config(dict_path):
         return json.load(f)
 
 
-def main(config_path, dict_path, start_date, end_date):
-    config = load_yaml_config(config_path)
+def main(yaml_path, module_key, env_arg, start_date=None, end_date=None):
+    config = load_yaml_config(yaml_path)
+
+    if module_key not in config:
+        raise ValueError(f"Module {module_key} not found in YAML config")
+
+    env_mapping = {
+        "dev": "d",
+        "qa": "q",
+        "uat": "u",
+        "prod": "p"
+    }
+    env = env_mapping.get(env_arg.lower(), "d")
+
+    job_cfg = config[module_key]
+    dict_filename = job_cfg['CONFIG_DIC_FILE_NAME']
+    dict_dir = os.path.dirname(yaml_path)
+    dict_path = os.path.join(dict_dir, dict_filename)
     data_dict = load_dict_config(dict_path)
 
-    job_key = list(config.keys())[0]
-    job_cfg = config[job_key]
-    source_db = job_cfg['SOURCE_DB']
-    target_db = job_cfg['TARGET_DB']
+    source_db = job_cfg['SOURCE_DB'].format(env=env)
+    target_db = job_cfg['TARGET_DB'].format(env=env)
     target_tbl = job_cfg['TARGET_TBL']
     source_system = job_cfg['SOURCE_SYSTEM']
 
-    spark = SparkSession.builder.appName(job_key).enableHiveSupport().getOrCreate()
+    spark = SparkSession.builder.appName(module_key).enableHiveSupport().getOrCreate()
 
     dfs = {}
     logger.info("Creating DataFrames based on dictionary definitions.")
@@ -47,7 +63,8 @@ def main(config_path, dict_path, start_date, end_date):
 
     logger.info("Applying transformations and joins.")
     joins = data_dict['transformations']['joins']
-    result_df = dfs[joins[0]['table']]
+    base_table = joins[0]['table']
+    result_df = dfs[base_table]
 
     for join in joins[1:]:
         join_type = join['type']
@@ -73,9 +90,10 @@ def main(config_path, dict_path, start_date, end_date):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_file", required=True, help="Path to YAML config file")
-    parser.add_argument("--dict_file", required=True, help="Path to JSON dictionary file")
-    parser.add_argument("--start_date", required=False, help="Start date")
-    parser.add_argument("--end_date", required=False, help="End date")
+    parser.add_argument("--module_key", required=True, help="Module key to look up in YAML file")
+    parser.add_argument("--env", required=True, help="Environment (dev, qa, uat, prod)")
+    parser.add_argument("--start_date", required=False, default=None, help="Start date")
+    parser.add_argument("--end_date", required=False, default=None, help="End date")
     args = parser.parse_args()
 
-    main(args.config_file, args.dict_file, args.start_date, args.end_date)
+    main(args.config_file, args.module_key, args.env, args.start_date, args.end_date)
