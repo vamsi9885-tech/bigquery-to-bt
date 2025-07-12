@@ -1,83 +1,95 @@
-upload_files:
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+name: Upload Test Case Files to ADLS
 
-    - name: Install dependencies (jq)
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y jq
+on:
+  workflow_dispatch:  # You can also trigger on push/PR as needed
 
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+jobs:
+  upload_files:
+    runs-on: ubuntu-latest
 
-    - name: Upload test case files from GitHub to ADLS
-      env:
-        ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
-        CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER }}
-        ENV: dev  # Change to qa/stage if needed
-      run: |
-        CONFIG_FILE="config/test_config.json"
-        echo "📄 Reading config from $CONFIG_FILE"
+    env:
+      ENV: dev  # Change this to qa/stage/prod as needed
 
-        jq -c '.test_cases[] | select(.IsActive=="true")' "$CONFIG_FILE" | while read tc; do
-          id=$(echo "$tc" | jq -r '.ID')
-          feed=$(echo "$tc" | jq -r '.Feed_Name')
-          landed_path=$(echo "$tc" | jq -r '.Landed_Folder' | sed "s|{env}|$ENV|g")
-          tc_dir="regression/test_cases/tc${id}"
+    steps:
+      - name: 📦 Checkout Repository
+        uses: actions/checkout@v3
 
-          echo "=============================="
-          echo "⚙️ Processing Test Case ID: $id"
-          echo "📦 Feed: $feed"
-          echo "📁 Source folder: $tc_dir"
-          echo "📤 Target blob folder: $landed_path"
-          echo "=============================="
+      - name: 🛠️ Install Dependencies (jq)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
 
-          # Upload input_files
-          if [ -d "$tc_dir/input_files" ]; then
-            echo "📂 Found input_files folder."
-            find "$tc_dir/input_files" -type f | while read file; do
-              filename=$(basename "$file")
-              blob_name="${landed_path}/${filename}"
-              echo "🚚 Uploading input file:"
-              echo "   🔹 Source     : $file"
-              echo "   🔸 Destination: $blob_name"
-              az storage blob upload \
-                --account-name "$ACCOUNT_NAME" \
-                --container-name "$CONTAINER_NAME" \
-                --file "$file" \
-                --name "$blob_name" \
-                --overwrite \
-                --auth-mode login
-            done
-          else
-            echo "⚠️ No input_files folder found for $tc_dir — skipping input file upload."
-          fi
+      - name: 🔐 Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-          # Upload sql_files
-          if [ -d "$tc_dir/sql_files" ]; then
-            echo "📂 Found sql_files folder."
-            find "$tc_dir/sql_files" -type f | while read file; do
-              filename=$(basename "$file")
-              blob_name="${landed_path}/sql_files/${filename}"
-              echo "🚚 Uploading SQL file:"
-              echo "   🔹 Source     : $file"
-              echo "   🔸 Destination: $blob_name"
-              az storage blob upload \
-                --account-name "$ACCOUNT_NAME" \
-                --container-name "$CONTAINER_NAME" \
-                --file "$file" \
-                --name "$blob_name" \
-                --overwrite \
-                --auth-mode login
-            done
-          else
-            echo "⚠️ No sql_files folder found for $tc_dir — skipping SQL file upload."
-          fi
+      - name: 🚀 Upload Test Case Files to ADLS
+        env:
+          ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER }}
+        run: |
+          CONFIG_FILE="config/test_config.json"
+          echo "📄 Reading config from $CONFIG_FILE"
 
-          echo "✅ Finished uploading for Test Case ID: $id"
-          echo ""
-        done
+          jq -c '.test_cases[] | select(.IsActive=="true")' "$CONFIG_FILE" | while read tc; do
+            id=$(echo "$tc" | jq -r '.ID')
+            feed_name=$(echo "$tc" | jq -r '.Feed_Name')
+            tc_dir="regression/test_cases/tc${id}"
+
+            echo ""
+            echo "=============================="
+            echo "⚙️  Test Case ID: $id"
+            echo "📦 Feed Name: $feed_name"
+            echo "📁 Local Folder: $tc_dir"
+            echo "=============================="
+
+            # Upload input_files
+            if [ -d "$tc_dir/input_files" ]; then
+              echo "📂 Found input_files folder for TC$id"
+              find "$tc_dir/input_files" -type f | while read file; do
+                filename=$(basename "$file")
+                destination_blob="data/$ENV/bronze/${feed_name}/tarnishedbronze/landed_feed_files/${filename}"
+
+                echo "🚚 Uploading input file:"
+                echo "   🔹 Source     : $file"
+                echo "   🔸 Destination: $destination_blob"
+
+                az storage blob upload \
+                  --account-name "$ACCOUNT_NAME" \
+                  --container-name "$CONTAINER_NAME" \
+                  --file "$file" \
+                  --name "$destination_blob" \
+                  --overwrite \
+                  --auth-mode login
+              done
+            else
+              echo "⚠️  No input_files folder found for TC$id"
+            fi
+
+            # Upload sql_files
+            if [ -d "$tc_dir/sql_files" ]; then
+              echo "📂 Found sql_files folder for TC$id"
+              find "$tc_dir/sql_files" -type f | while read file; do
+                filename=$(basename "$file")
+                destination_blob="data/$ENV/bronze/${feed_name}/tarnishedbronze/landed_feed_files/sql_files/${filename}"
+
+                echo "🚚 Uploading SQL file:"
+                echo "   🔹 Source     : $file"
+                echo "   🔸 Destination: $destination_blob"
+
+                az storage blob upload \
+                  --account-name "$ACCOUNT_NAME" \
+                  --container-name "$CONTAINER_NAME" \
+                  --file "$file" \
+                  --name "$destination_blob" \
+                  --overwrite \
+                  --auth-mode login
+              done
+            else
+              echo "⚠️  No sql_files folder found for TC$id"
+            fi
+
+            echo "✅ Finished uploading for Test Case ID: $id"
+            echo ""
+          done
