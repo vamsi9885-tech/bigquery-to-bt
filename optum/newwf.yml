@@ -23,6 +23,44 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: 💾 Expand Specific Input Files to ~1GB In-Place
+  run: |
+    CONFIG_FILE="config/test_config.json"
+    echo "📄 Expanding only selected test cases from $CONFIG_FILE"
+
+    ids_to_expand=$(jq -r '.generate_1gb_for[]' "$CONFIG_FILE")
+
+    for id in $ids_to_expand; do
+      tc_dir="regression/test_cases/tc${id}/input_files"
+
+      if [ -d "$tc_dir" ]; then
+        echo "🔍 Expanding files in: $tc_dir"
+
+        for file in "$tc_dir"/*.csv; do
+          if [ -f "$file" ]; then
+            echo "📄 Expanding file: $file"
+
+            header=$(head -n 1 "$file")
+            tail_content=$(tail -n +2 "$file")
+
+            echo "$header" > "$file.tmp"
+
+            for i in $(seq 1 12); do
+              echo "   🔁 Appending chunk $i..."
+              echo "$tail_content" >> "$file.tmp"
+            done
+
+            mv "$file.tmp" "$file"
+            echo "✅ Expanded file size:"
+            du -h "$file"
+          else
+            echo "⚠️ No CSV files found in $tc_dir"
+          fi
+        done
+      else
+        echo "⚠️ No input_files folder found for TC$id"
+      fi
+    done
 
       - name: 🚀 Upload Test Case Files to ADLS
         env:
@@ -93,3 +131,5 @@ jobs:
             echo "✅ Finished uploading for Test Case ID: $id"
             echo ""
           done
+
+
