@@ -1,0 +1,55 @@
+name: Run Databricks Notebook from Current Branch
+
+on:
+  push:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+env:
+  DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+  DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+  REPO_ID: 123456              # 🔁 Replace with your actual Databricks Repo ID
+  NOTEBOOK_BASE_PATH: /Repos/you@example.com/your-repo  # 🔁 Adjust as needed
+
+jobs:
+  run-notebook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Branch Name
+        id: vars
+        run: echo "branch_name=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+
+      - name: Update Databricks Repo to Current Branch
+        run: |
+          echo "Switching Databricks repo to branch: ${{ steps.vars.outputs.branch_name }}"
+          curl -X PATCH "${DATABRICKS_HOST}/api/2.0/repos/${REPO_ID}" \
+            -H "Authorization: Bearer ${DATABRICKS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"branch\": \"${{ steps.vars.outputs.branch_name }}\"}"
+
+      - name: Refresh Databricks Repo
+        run: |
+          echo "Refreshing repo to pull latest code..."
+          curl -X POST "${DATABRICKS_HOST}/api/2.0/repos/refresh" \
+            -H "Authorization: Bearer ${DATABRICKS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"path\": \"${{ env.NOTEBOOK_BASE_PATH }}\"}"
+
+      - name: Run Databricks Notebook
+        run: |
+          echo "Triggering notebook run from branch: ${{ steps.vars.outputs.branch_name }}"
+          curl -X POST "${DATABRICKS_HOST}/api/2.1/jobs/runs/submit" \
+            -H "Authorization: Bearer ${DATABRICKS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"run_name\": \"GitHub CI Run - ${{ steps.vars.outputs.branch_name }}\",
+              \"new_cluster\": {
+                \"spark_version\": \"13.3.x-scala2.12\",
+                \"node_type_id\": \"Standard_DS3_v2\",
+                \"num_workers\": 2
+              },
+              \"notebook_task\": {
+                \"notebook_path\": \"${{ env.NOTEBOOK_BASE_PATH }}/path/to/notebook\"
+              }
+            }"
