@@ -37,6 +37,15 @@ def replace_non_numeric(column_to_replace):
     return PHNO_REPLACE_NON_NUMERIC
 
 
+
+def load_dict_config(dict_path):
+    with open(dict_path, 'r') as f:
+        return json.load(f)
+
+def get_rec_version(df, key_cols , order_dt):
+    window_spec = Window.partitionBy(*[col(key) for key in key_cols]).orderBy(col(order_dt))
+    return df.withColumn("record_version_no", rank().over(window_spec))
+
 def blank_as_null(df, list_of_colesce_null_columns):
     # list_of_colesce_null_columns = set(list_of_colesce_null_columns)
     # for i in list_of_colesce_null_columns:
@@ -115,7 +124,8 @@ def save_hive(spark, df, columns_obj, hive_db_name, hive_table_name, mode="appen
     :type partition_column:
     """
     try:
-        df = df.select(*columns_obj['TARGET'].split(","))
+        if columns_obj.get('TARGET'):
+            df = df.select(*columns_obj['TARGET'].split(","))
         df = df.dropDuplicates()
         df.persist(pyspark.StorageLevel(True, True, False, False, 1))
 
@@ -205,6 +215,9 @@ def nregex_find_check(element, json_obj):
     else:
         return True
 
+
+def order_cols(my_cols, tbl_cols):
+    return [col(c) if c in my_cols else lit(None).alias(c) for c in tbl_cols]
 
 def dob_operators(splitted_date, matcher, operator):
     """Condition for year in list"""
@@ -329,7 +342,6 @@ def delete_path(sc, path):
         print("Deleted the HDFS directory " + path)
     except:
         print("Error deleting HDFS path " + path)
-
 
 
 def selective_df(spark, db_table, column_list, start_date=None, end_date=None, delta_date_format=None):
