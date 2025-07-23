@@ -1,0 +1,16 @@
+DEV:
+  DDL_SCRIPT: pims_hub_script.ddl
+  HUB_DB_NAME: d_gi_hub_ctp
+  HUB_DB_LOC: /data/dev/gi/storage/retention/hub/d_gi_hub_ctp
+UAT:
+  DDL_SCRIPT: pims_hub_script.ddl
+  HUB_DB_NAME: u_gi_hub_ctp
+  HUB_DB_LOC: /data/uat/gi/storage/retention/hub/u_gi_hub_ctp
+QA:
+  DDL_SCRIPT: pims_hub_script.ddl
+  HUB_DB_NAME: q_gi_hub_ctp
+  HUB_DB_LOC: /data/qa/gi/storage/retention/hub/q_gi_hub_ctp
+PROD:
+  DDL_SCRIPT: pims_hub_script.ddl
+  HUB_DB_NAME: p_gi_hub_ctp
+  HUB_DB_LOC: /data/prod/gi/storage/retention/hub/p_gi_hub_ctp
