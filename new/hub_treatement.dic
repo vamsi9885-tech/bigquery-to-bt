@@ -1,0 +1,39 @@
+{
+    "dl_TIMTreatmentApplied": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aUniqueId,aSessionsApproved,aSessionsRequested,aCompleted,aResponse,aServiceProvider,myType_clsno,myType_instid,aDateAdvised,aDateRequested,myClaimPlanInvestigation_clsno,myClaimPlanInvestigation_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "dl_TIMTreatment": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aDescription",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "dl_TIMMedicalInvestigation": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aDescription",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "dl_TIMClaimPlanInvestigation": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aRehabPlanInitiatedBy,aTreatmentManager,myClaim_clsno,myClaim_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "dl_TIMPolicyClaim": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aClaimNumber",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "primary_key": ["trtmt_no", "clm_no"],
+    "business_keys": ["trtmt_no", "clm_no"]
+}
