@@ -1,0 +1,12 @@
+HUB_PIMSCTP_PARTICIPANT:
+    DEV:
+        CONFIG_DIC_FILE_NAME: 'hub_pimsctp_treatment.dic'
+        TABLE_NAME: 'hub_pimsctp_treatment'
+        SOURCE_DATABASE: 'd_gi_lak_pims'
+        TARGET_DATABASE: 'd_gi_hub_ctp'
+        target_db: 'd_gi_hub_ctp'
+        target_tbl: 'hub_pimsctp_treatment'
+        SOURCE_SYSTEM: 'PIMS'
+        source_type: 'PIMS'
+        active_dt: ''
+        input_feed: ''
