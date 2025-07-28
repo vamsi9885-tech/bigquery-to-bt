@@ -1694,3 +1694,167 @@ json_data = {"message": body,"subject": subject, "receiver":recipients, "from": 
 output = requests.post(dap_nonprod_emailer_URL, json=json_data)
 print(output.status_code)
 
+
+
+
+
+
+
+# Import necessary libraries
+import psycopg2
+import pandas as pd
+from datetime import datetime
+
+# --------- CONFIGURATION ---------
+client_name = 'regressinv1'
+feed_name = 'centuar_monthly_autitest'
+test_case_id = "TC_PUSH_ONCE_PER_CADENCE"
+test_case_desc = "Validate once-per-cadence email notification for centuar_monthly_autitest"
+current_date = datetime.today().date()
+
+# --------- DB CONNECTION ---------
+def get_postgres_connection():
+    return psycopg2.connect(
+        host="your_host",             # ⬅️ Replace with actual host
+        database="your_database",     # ⬅️ Replace with actual DB
+        user="your_user",             # ⬅️ Replace with actual username
+        password="your_password",     # ⬅️ Replace with actual password
+        port="5432"                   # ⬅️ Change if using non-default port
+    )
+
+# --------- FETCH FILE ARRIVAL DATA ---------
+def fetch_file_arrival_status(client_name, feed_name):
+    query = """
+        SELECT * FROM file_arrival_status 
+        WHERE client_name = %s 
+          AND feed_name = %s 
+          AND notify_type = 'once_per_cadence'
+    """
+    conn = get_postgres_connection()
+    df = pd.read_sql(query, conn, params=(client_name, feed_name))
+    conn.close()
+    return df
+
+# --------- VALIDATE EMAIL CONTENT ---------
+def validate_email(response_text, template):
+    if not response_text:
+        return False
+    for keyword in template.get("keywords", []):
+        if keyword.lower() not in response_text.lower():
+            return False
+    return True
+
+# --------- DUMMY EMAIL FETCH (REPLACE IN PROD) ---------
+def get_logicapp_email_response(client_name, feed_name):
+    # Replace with actual Logic App API / Log Analytics logic
+    data = {
+        "response": [
+            "Feed completion status: incomplete. is_missing: true. Missed_files: 3. Expectation_date: 2025-07-28. Feed_details: centuar_monthly_autitest. Arrival_date: 2025-07-28"
+        ]
+    }
+    return pd.DataFrame(data)
+
+# --------- RESULT LOGGER ---------
+def save_output(test_case_id, description, status, reason=None):
+    log = {
+        "TestCaseID": test_case_id,
+        "Description": description,
+        "Status": status,
+        "Reason": reason or ""
+    }
+    display(log)
+
+# --------- MAIN TEST CASE EXECUTION ---------
+try:
+    file_arrival_df = fetch_file_arrival_status(client_name, feed_name)
+
+    # Convert date columns
+    file_arrival_df['yellow_email_start_date'] = pd.to_datetime(file_arrival_df['yellow_email_start_date'], errors='coerce')
+    file_arrival_df['red_email_start_date'] = pd.to_datetime(file_arrival_df['red_email_start_date'], errors='coerce')
+
+    # Filter for today's date match
+    eligible_df = file_arrival_df[
+        (file_arrival_df['yellow_email_start_date'].dt.date == current_date) |
+        (file_arrival_df['red_email_start_date'].dt.date == current_date)
+    ]
+
+    if not eligible_df.empty:
+        print("✅ Eligible record(s) found. Proceeding to email validation...")
+
+        # Define expected email template
+        email_template = {
+            "keywords": [
+                "feed completion status", "incomplete", "is_missing",
+                "missed_files", "expectation_date", "feed_details", "arrival_date"
+            ]
+        }
+
+        logicapp_response_df = get_logicapp_email_response(client_name, feed_name)
+        response_text = logicapp_response_df["response"].iloc[0] if not logicapp_response_df.empty else ""
+
+        if validate_email(response_text, email_template):
+            save_output(test_case_id, test_case_desc, "PASS")
+        else:
+            save_output(test_case_id, test_case_desc, "FAIL", "Missing keyword(s) in email content")
+    else:
+        print("⏭️ No matching cadence for today's date. Test skipped.")
+        save_output(test_case_id, test_case_desc, "SKIPPED", "No matching cadence today")
+
+except Exception as e:
+    save_output(test_case_id, test_case_desc, "ERROR", str(e))
+
+
+
+def run_daily_email_check_test():
+    client_name = "regressinv1"
+    test_case_id = "TC_PUSH_YELLOW_RED_EMAIL"
+    test_case_desc = "Validate yellow and red emails for missing files"
+    current_date = datetime.today().date()
+
+    df = fetch_active_email_windows(client_name)
+
+    if df.empty:
+        save_output(test_case_id, test_case_desc, "SKIPPED", "No yellow/red window active today")
+        return
+
+    # Template for both email types
+    yellow_template = {
+        "keywords": ["incomplete", "missing", "expected", "yellow", "feed_name", "arrival_date"]
+    }
+    red_template = {
+        "keywords": ["escalation", "alert", "red", "critical", "feed_name", "arrival_date"]
+    }
+
+    yellow_pass, red_pass = True, True  # Default to True, fail only if triggered and not matched
+
+    # Check for yellow email window
+    yellow_df = df[
+        (df['yellow_email_start_date'].dt.date <= current_date) &
+        (df['yellow_email_end_date'].dt.date >= current_date)
+    ]
+    if not yellow_df.empty:
+        yellow_email_df = get_logicapp_email_response(client_name, "YELLOW")
+        yellow_response = yellow_email_df["response"].iloc[0] if not yellow_email_df.empty else ""
+        yellow_pass = validate_email(yellow_response, yellow_template)
+
+    # Check for red email window
+    red_df = df[
+        (df['red_email_start_date'].dt.date <= current_date) &
+        (df['red_email_end_date'].dt.date >= current_date)
+    ]
+    if not red_df.empty:
+        red_email_df = get_logicapp_email_response(client_name, "RED")
+        red_response = red_email_df["response"].iloc[0] if not red_email_df.empty else ""
+        red_pass = validate_email(red_response, red_template)
+
+    # Final decision
+    if yellow_pass and red_pass:
+        save_output(test_case_id, test_case_desc, "PASS")
+    else:
+        if not yellow_pass and not red_pass:
+            reason = "Both yellow and red email validation failed"
+        elif not yellow_pass:
+            reason = "Yellow email validation failed"
+        else:
+            reason = "Red email validation failed"
+        save_output(test_case_id, test_case_desc, "FAIL", reason)
