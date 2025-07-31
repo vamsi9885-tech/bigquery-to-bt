@@ -1,0 +1,66 @@
+
+
+def create_sha_field(df, column_name, included_columns=[], num_bits=256):
+    filtered_type = df.select(*included_columns).dtypes
+    return df.withColumn(column_name, sha2(concat_ws("|", *map(
+        lambda col_dtypes: flatten(df[col_dtypes[0]]) if "array<array" in col_dtypes[1] else col_dtypes[0],
+        filtered_type)), num_bits))
+final_load = (
+            create_sha_field(final_data,"rec_sha", final_data.columns)
+            .withColumn("active_dt", lit(active_dt))
+            .withColumn("active_ym", lit(active_ym))
+            .withColumn("load_dt", lit(dt_now))
+            .withColumn("source_system_cd", lit(source))
+        )
+
+        if self.args.get("load_type","inc").upper() == "HISTORY":
+            # For history load, we don't compare the results, we just set the rec_version to 1 and insert all the records.
+            # History load can be done in parallel for multiple active_dt values.
+            # Use the `src/run/hub_version_loader.py` script to update the rec_version, and remove the duplicate records.
+            final_load = final_load.withColumn("record_version_no", lit(1))
+        else:
+            # Version Logic
+            w = Window.partitionBy([col(key) for key in granularity_keys]).orderBy(
+                desc("active_dt"), desc("record_version_no")
+            )
+
+            # This reduces the amount of data processed in the window operation
+            history_data = (
+                self.hc.read.table(f"{target_db}.{target_table}")
+                .filter(
+                    (col("source_system_cd") == source) & (col("active_dt") <= lit(active_dt))
+                )
+                .select(*granularity_keys, "rec_sha", "record_version_no", "active_dt")
+                .withColumn("rnk", rank().over(w))
+                .filter(col("rnk") == 1)
+                .select(
+                    *[col(key).alias(f"src_{key}") for key in granularity_keys],
+                    col("rec_sha").alias("src_rec_sha"),
+                    col("record_version_no"),
+                )
+                .cache()
+            )
+
+            scd_data = final_load.alias("n").join(
+                history_data.alias("h"),
+                col("h.src_rec_sha") == col("n.rec_sha"),
+                "left_anti",
+            )
+
+            # Join to get the latest version number
+
+            join_cols = [
+                col(f"h.src_{key}") == col(f"n.{key}") for key in granularity_keys
+            ]
+            final_load = (
+                scd_data.alias("n")
+                .join(history_data.alias("h"), join_cols, "left_outer")
+                .select(
+                    [col("n." + c) for c in final_load.columns]
+                    + [
+                        (coalesce(col("h.record_version_no"), lit(0)) + lit(1)).alias(
+                            "record_version_no"
+                        )
+                    ]
+                )
+            )
