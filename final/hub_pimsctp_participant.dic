@@ -1,0 +1,128 @@
+{
+    "{db_env}_gi_lak_pims.dl_CTPParticipantCyclist": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aAccidentRoleOtherDetails,aUniqueId,aDrivingWhileSuspended,aType,aDriversLicenseExpiry,aIsInjured,aDriversLicenseUnknown,aUnlicensed,aDriversLicenseNumber,myPoliceFinding_clsno,myPoliceFinding_instid,myDriversLicenseState_clsno,myDriversLicenseState_instid,myDriversLicenceType_clsno,myDriversLicenceType_instid,myClaim_clsno,myClaim_instid,myAccident_clsno,myAccident_instid,myParticipant_clsno,myParticipant_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPParticipantOther": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aAccidentRoleOtherDetails,aUniqueId,aDrivingWhileSuspended,aType,aDriversLicenseExpiry,aIsInjured,aDriversLicenseUnknown,aUnlicensed,aDriversLicenseNumber,myPoliceFinding_clsno,myPoliceFinding_instid,myDriversLicenseState_clsno,myDriversLicenseState_instid,myDriversLicenceType_clsno,myDriversLicenceType_instid,myClaim_clsno,myClaim_instid,myAccident_clsno,myAccident_instid,myParticipant_clsno,myParticipant_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPParticipantPedestrian": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aAccidentRoleOtherDetails,aUniqueId,aDrivingWhileSuspended,aType,aDriversLicenseExpiry,aIsInjured,aDriversLicenseUnknown,aUnlicensed,aDriversLicenseNumber,myPoliceFinding_clsno,myPoliceFinding_instid,myDriversLicenseState_clsno,myDriversLicenseState_instid,myDriversLicenceType_clsno,myDriversLicenceType_instid,myClaim_clsno,myClaim_instid,myAccident_clsno,myAccident_instid,myParticipant_clsno,myParticipant_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPParticipantVehicleOwner": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aAccidentRoleOtherDetails,aUniqueId,aDrivingWhileSuspended,aType,aDriversLicenseExpiry,aIsInjured,aDriversLicenseUnknown,aUnlicensed,aDriversLicenseNumber,myPoliceFinding_clsno,myPoliceFinding_instid,myDriversLicenseState_clsno,myDriversLicenseState_instid,myDriversLicenceType_clsno,myDriversLicenceType_instid,myClaim_clsno,myClaim_instid,myAccident_clsno,myAccident_instid,myParticipant_clsno,myParticipant_instid,myVehicleOnAccident_clsno,myVehicleOnAccident_instid,mySeatingPosition_clsno,mySeatingPosition_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPParticipantVehiclePax": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aAccidentRoleOtherDetails,aUniqueId,aDrivingWhileSuspended,aType,aDriversLicenseExpiry,aIsInjured,aDriversLicenseUnknown,aUnlicensed,aDriversLicenseNumber,myPoliceFinding_clsno,myPoliceFinding_instid,myDriversLicenseState_clsno,myDriversLicenseState_instid,myDriversLicenceType_clsno,myDriversLicenceType_instid,myClaim_clsno,myClaim_instid,myAccident_clsno,myAccident_instid,myParticipant_clsno,myParticipant_instid,myVehicleOnAccident_clsno,myVehicleOnAccident_instid,mySeatingPosition_clsno,mySeatingPosition_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPParticipantVehiclePaxDriver": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aAccidentRoleOtherDetails,aUniqueId,aDrivingWhileSuspended,aType,aDriversLicenseExpiry,aIsInjured,aDriversLicenseUnknown,aUnlicensed,aDriversLicenseNumber,myPoliceFinding_clsno,myPoliceFinding_instid,myDriversLicenseState_clsno,myDriversLicenseState_instid,myDriversLicenceType_clsno,myDriversLicenceType_instid,myClaim_clsno,myClaim_instid,myAccident_clsno,myAccident_instid,myParticipant_clsno,myParticipant_instid,myVehicleOnAccident_clsno,myVehicleOnAccident_instid,mySeatingPosition_clsno,mySeatingPosition_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPParticipantWitness": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aAccidentRoleOtherDetails,aUniqueId,aDrivingWhileSuspended,aType,aDriversLicenseExpiry,aIsInjured,aDriversLicenseUnknown,aUnlicensed,aDriversLicenseNumber,myPoliceFinding_clsno,myPoliceFinding_instid,myDriversLicenseState_clsno,myDriversLicenseState_instid,myDriversLicenceType_clsno,myDriversLicenceType_instid,myClaim_clsno,myClaim_instid,myAccident_clsno,myAccident_instid,myParticipant_clsno,myParticipant_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPAccident": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aUniqueID",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPPoliceFinding": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aQuantityConsumed,aIsAlcoholTest,aBloodAnalysisTaken,aBloodAnalysisResult,aBreathAnalysisTaken,aBreathAnalysisResult,aDrugAnalysisTaken,aAlcoholConsumed,aFailToSubmit,aIncomeProtectionInsuranceAtTimeOfAcc,aWCClaimNumber,aWorkersCompEntitlement",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPDrugTest": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aResult,myDrugTestType_clsno,myDrugTestType_instid,myPoliceFinding_clsno,myPoliceFinding_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPDrugTestedType": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aDescription",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPDriversLicenceType": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aCode,aDescription",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMState": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aName,myCountry_clsno,myCountry_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMCountry": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aName",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPVehicleOnAccident": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aUniqueID",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPSeatingPosition": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aCode,aDescription",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMPolicyClaim": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aClaimNumber,myParticipant_clsno,myParticipant_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPContactTypeParticipant": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "oid_clsno,oid_instid,_operation,aKey",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    }
+}

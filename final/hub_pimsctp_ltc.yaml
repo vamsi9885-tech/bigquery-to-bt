@@ -1,0 +1,20 @@
+HUB_PIMSCTP_PARTICIPANT:
+    CONFIG_DIC_FILE_NAME: 'hub_pimsctp_participant.dic'
+    target_db: '{db_env}_gi_hub_ctp'
+    target_tbl: 'hub_pimsctp_participants'
+    source_type: 'PIMS'
+    active_dt: '9999-01-01'
+    input_feed: ''
+    load_type: ''
+    granularity_keys: 'acc_no,veh_no,pcpt_acc_veh,pcpt_role'
+    TARGET: 'acc_no,veh_no,pcpt_acc_role_oth_det,pcpt_alcoh_qty_consum,pcpt_alcoh_tested,pcpt_blood_analysis,pcpt_blood_result,pcpt_breath_analysis,pcpt_breath_result,pcpt_wc_clm_no,pcpt_acc_veh,pcpt_driv_while_susp,pcpt_drug_analysis,pcpt_drug_test,pcpt_drug_test_res,pcpt_drugs_alcoh_involv_flg,pcpt_fail_to_submit,pcpt_identfcn_expiry_dt,pcpt_identfcn_state_issud,pcpt_income_protcn_insur,pcpt_clmnt_paspt_cntry_of_issue,pcpt_overseas_identfcn,pcpt_role,pcpt_unknown_identfcn,pcpt_unlicenced,pcpt_wc_clm_lodged,pcpt_driv_flg,pcpt_driv_veh_no,pcpt_identfcn_no,pcpt_injur_party_acc_role,pcpt_injur_party_flg,pcpt_license_state,pcpt_mnging_insur_ctp_clm_no,pcpt_owner_flg,pcpt_owner_veh_no,pcpt_pass_flg,pcpt_pass_loc,pcpt_pass_veh_no,pcpt_type_identfcn,pcpt_witns_flg,pcpt_con_id,pcpt_motrcyc_rider_flg,pcpt_pillion_pass_flg,rec_sha,active_dt,active_ym,record_version_no,load_dt,source_system_cd'
+
+HUB_LTC_PROCESSOR:
+    DEV:
+        INITIATION: 'run'
+    UAT:
+        INITIATION: 'run'
+    QA:
+        INITIATION: 'run'
+    PROD:
+        INITIATION: 'run'
