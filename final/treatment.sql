@@ -140,3 +140,9 @@ Left Join rank_unique_PolicyClaim
     AND myClaim_instid = rank_unique_PolicyClaim.oid_instid
     AND rank_unique_PolicyClaim = 1
     AND rank_unique_PolicyClaim._operation <> 'D');
+
+sha2(concat_ws('||',
+                     trtmt_no, clm_no, trtmt_no_of_sess_apprvd, trtmt_no_of_sess_reqstd,
+                     trtmt_care_completed, trtmt_care_respnse, trtmt_care_servc_provider,
+                     trtmt_care_servc_type, trtmt_care_advised_dt, trtmt_care_reqstd_dt,
+                     trtmt_manager, trtmt_first_plan_intiated_by),256) AS rec_sha
