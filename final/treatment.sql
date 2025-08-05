@@ -146,3 +146,93 @@ sha2(concat_ws('||',
                      trtmt_care_completed, trtmt_care_respnse, trtmt_care_servc_provider,
                      trtmt_care_servc_type, trtmt_care_advised_dt, trtmt_care_reqstd_dt,
                      trtmt_manager, trtmt_first_plan_intiated_by),256) AS rec_sha
+
+
+
+
+-- STEP 1: Get the latest version per granularity key
+WITH history_data AS (
+    SELECT
+        trtmt_no,
+        clm_no,
+        rec_sha             AS src_rec_sha,
+        record_version_no   AS record_version_no,
+        ROW_NUMBER() OVER (
+            PARTITION BY trtmt_no, clm_no
+            ORDER BY active_dt DESC, record_version_no DESC
+        ) AS rnk
+    FROM hub_treatement
+    WHERE source_system_cd = '${source}'
+      AND active_dt <= '${active_dt}'
+),
+
+-- keep only the latest version per key
+latest_history AS (
+    SELECT
+        trtmt_no      AS src_trtmt_no,
+        clm_no        AS src_clm_no,
+        src_rec_sha,
+        record_version_no
+    FROM history_data
+    WHERE rnk = 1
+),
+
+-- STEP 2: compute SHA for the incoming (final_load) data
+src AS (
+    SELECT
+        trtmt_no,
+        clm_no,
+        trtmt_no_of_sess_apprvd,
+        trtmt_no_of_sess_reqstd,
+        trtmt_care_completed,
+        trtmt_care_respnse,
+        trtmt_care_servc_provider,
+        trtmt_care_servc_type,
+        trtmt_care_advised_dt,
+        trtmt_care_reqstd_dt,
+        trtmt_manager,
+        trtmt_first_plan_intiated_by,
+        sha2(concat_ws('||',
+                     trtmt_no, clm_no,
+                     trtmt_no_of_sess_apprvd, trtmt_no_of_sess_reqstd,
+                     trtmt_care_completed, trtmt_care_respnse,
+                     trtmt_care_servc_provider, trtmt_care_servc_type,
+                     trtmt_care_advised_dt, trtmt_care_reqstd_dt,
+                     trtmt_manager, trtmt_first_plan_intiated_by),256) AS rec_sha
+    FROM (<< your big SELECT >>) as final_data
+),
+
+-- STEP 3: anti-join to only include records whose SHA doesn't already exist
+scd_data AS (
+    SELECT s.*
+    FROM src s
+    LEFT JOIN latest_history h
+      ON s.rec_sha = h.src_rec_sha
+    WHERE h.src_rec_sha IS NULL
+)
+
+-- STEP 4: use left join on business keys to get latest version_no and bump it
+INSERT INTO hub_treatement
+SELECT
+    n.trtmt_no,
+    n.clm_no,
+    n.trtmt_no_of_sess_apprvd,
+    n.trtmt_no_of_sess_reqstd,
+    n.trtmt_care_completed,
+    n.trtmt_care_respnse,
+    n.trtmt_care_servc_provider,
+    n.trtmt_care_servc_type,
+    n.trtmt_care_advised_dt,
+    n.trtmt_care_reqstd_dt,
+    n.trtmt_manager,
+    n.trtmt_first_plan_intiated_by,
+    n.rec_sha,
+    current_date()                                                        AS active_dt,
+    cast(from_unixtime(unix_timestamp(current_date()), 'yyyyMM') AS INT)  AS active_ym,
+    now()                                                                 AS load_dt,
+    '${source}'                                                           AS source_system_cd,
+    COALESCE(h.record_version_no,0) + 1                                    AS record_version_no
+FROM scd_data n
+LEFT JOIN latest_history h
+  ON n.trtmt_no = h.src_trtmt_no AND n.clm_no = h.src_clm_no;
+
