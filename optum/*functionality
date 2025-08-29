@@ -8,6 +8,11 @@ Challenge: We cannot say “pending part numbers” in FAM mails.
 
 Solution: In FAM, we shift from pending parts → progress updates.
 
+Dynamic feed – No files received yet. Please ensure at least one file is shared before cutoff.
+
+Dynamic feed – <X> files received so far. If there are additional files, kindly share them before cutoff.
+
+
 📬 FAM Email Approach for *
 
 Scenario 1: No files received yet (before cutoff)
