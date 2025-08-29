@@ -1,0 +1,49 @@
+📌 Explanation for * (star) part count scenario
+
+Earlier: part count = integer (e.g. 3) → we knew exactly how many parts were pending → FAM mails listed pending parts.
+
+Now: part count = * → means “minimum 1, maximum any number” → we don’t know total expected parts.
+
+Challenge: We cannot say “pending part numbers” in FAM mails.
+
+Solution: In FAM, we shift from pending parts → progress updates.
+
+📬 FAM Email Approach for *
+
+Scenario 1: No files received yet (before cutoff)
+
+Dear Client,  
+We have not yet received any files for Feed <FeedName> on <Date>.  
+Please ensure at least one file is shared before the cutoff time.  
+
+
+Scenario 2: Some files received, more may come (before cutoff)
+
+Dear Client,  
+We have received <X> files so far for Feed <FeedName> on <Date>.  
+If there are additional files to be sent, kindly share them before the cutoff time.  
+
+
+Scenario 3: After cutoff – no files received → Feed Incompletion
+
+Dear Client,  
+We have not received any files for Feed <FeedName> on <Date>.  
+The feed has been marked as Incomplete.  
+
+
+Scenario 4: After cutoff – at least one file received → Feed Completion
+
+Dear Client,  
+We have successfully received files for Feed <FeedName> on <Date>.  
+The feed has been marked as Complete.  
+
+
+✅ Summary (easy to explain to manager & client):
+
+Before cutoff → FAM mails show “X files received so far.”
+
+After cutoff →
+
+If no file → send Incompletion mail.
+
+If at least 1 file → send Completion mail.
