@@ -1,3 +1,28 @@
+<TextInput
+  label={FILE_FORM.LABELS.PART_COUNT}
+  model="partCount"
+  validators={{
+    required: FILE_FORM.VALIDATION.PartCount_Required,
+    validate: {
+      validPartCount: (v: string) => {
+        if (v === "*") return true;  // ✅ accept asterisk
+        const num = Number(v);
+        return (
+          !isNaN(num) && num >= 1 || FILE_FORM.VALIDATION.PartCount_Positive
+        );
+      },
+    },
+  }}
+  helper={FILE_FORM.HELPERS.PART_COUNT}
+  data-testid="partcount-input"
+  isDisabled={disableEdit}
+/>
+
+
+
+
+
+
 "use client";
 import React, {  useEffect, useState } from 'react';
 import { FormProvider } from "@abyss/web/ui/FormProvider";
