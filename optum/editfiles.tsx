@@ -20,6 +20,227 @@
 
 
 
+in filedto.java
+
+   @NotNull(message = "partCount must not be null")
+    @Min(value = 1, message = "partCount must be at least 1")
+    private Integer partCount = 1;
+
+in file config.java
+
+
+    @JsonProperty("part_count")
+    private Integer partCount;
+
+in fileServieImpl.java
+
+  @Override
+    @Transactional
+    public void saveFiles(String clientId, String feedIdentifier, List<FileDto> files) {
+        String sanitizedClientId = Utils.sanitizeString(clientId);
+        String sanitizedFeedIdentifier = Utils.sanitizeString(feedIdentifier);
+        log.info("Saving files for clientId={}, feedIdentifier={}", sanitizedClientId, sanitizedFeedIdentifier);
+        try{
+        Feeds feed = getFeedOrThrow(feedIdentifier, clientId);
+        if (!feed.isActive()) {
+            throw new BadRequestException("Cannot save files: Feed is not active. Feed name:" + sanitizedFeedIdentifier);
+        }
+        if (files == null || files.isEmpty()) {
+            log.warn("No files provided for feed: {}", sanitizedFeedIdentifier);
+            throw new BadRequestException("No files provided for feed: " + feedIdentifier);
+        }
+        // Delegate all validation to validator
+        fileConfigValidator.validateCreateRequest(files, feed);
+        log.info("Successfully validated file creation request for feed: {} ", sanitizedFeedIdentifier);
+        for (FileDto dto : files) {
+            if (dto.getPartCount() == null || dto.getPartCount() < 1) {
+                dto.setPartCount(1);
+            }
+            if (dto.getPartStartSeq() == null || dto.getPartStartSeq() < 1) {
+                dto.setPartStartSeq(1);
+            }
+            String loggedInUser = Utils.getLoggedInUsername();
+            Files entity = fileTransformer.toEntity(dto, feed.getFeedIdentifier(), loggedInUser);
+            log.info("Successfully created file entity for feed: {} and logicalFile : {}", sanitizedFeedIdentifier, Utils.sanitizeString(dto.getLogicalFileName()));
+            auditService.logAudit( Constant.AuditType.FILE_CREATION,FILE_LABLE, entity, null, clientId, UUID.fromString(feedIdentifier));
+            fileRepository.save(entity);
+        }
+        log.info("Successfully saved files for feed: {}.", sanitizedFeedIdentifier);
+        }
+        catch (RecordAlreadyExistException e) {
+            log.error("File already exists for feed: {} and client {}, error: {}", sanitizedFeedIdentifier, sanitizedClientId, e);
+            throw new RecordAlreadyExistException("Given Logical File name already exists for feed: " + feedIdentifier);
+        } catch (BadRequestException e) {
+            log.error("Bad request while saving files for feed: {} and client {}, error: {}", sanitizedFeedIdentifier, sanitizedClientId, e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while saving files for feed: {} and clientid: {} , error {}", sanitizedFeedIdentifier, sanitizedClientId, e);
+            throw new UnExpectedException("An unexpected error occurred while saving files for feed: " + sanitizedFeedIdentifier, e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateFile(String clientId, String feedIdentifier, String logicalFileName, FileDto file) {
+        String sanitizedClientId = Utils.sanitizeString(clientId);
+        String sanitizedFeedIdentifier = Utils.sanitizeString(feedIdentifier);
+        String sanitizedLogicalFileName = Utils.sanitizeString(logicalFileName);
+        log.info("Updating file for clientId={}, feedIdentifier={}, logicalFileName={}", 
+                sanitizedClientId, 
+                sanitizedFeedIdentifier, 
+                sanitizedLogicalFileName);
+        try{
+        Feeds feed = getFeedOrThrow(feedIdentifier, clientId);
+        if (!feed.isActive()) {
+            throw new BadRequestException("Cannot update file: Feed is not active. Feed name:" + feedIdentifier);
+        }
+        Files fileDAO = fileRepository.findByFeedIdentifierAndLogicalFileName(feed.getFeedIdentifier(), logicalFileName)
+                .orElseThrow(() -> new RecordNotFoundException(FILE_NOT_FOUND + logicalFileName));
+        // Delegate all validation to validator
+        Files oldEntity = deepCopyUtil.deepCopy(fileDAO, Files.class);
+        fileConfigValidator.validateUpdateRequest(file, feed);
+        log.info("Successfully validated file update request for feed: {} and logical file name: {}", sanitizedFeedIdentifier, sanitizedLogicalFileName);
+        if (file.getPartCount() == null || file.getPartCount() < 1) {
+            file.setPartCount(1);
+        }
+        if (file.getPartStartSeq() == null || file.getPartStartSeq() < 1) {
+            file.setPartStartSeq(1);
+        }
+        String loggedInUser = Utils.getLoggedInUsername();
+        Files updated = fileTransformer.updateToEntity(fileDAO, file, feed.getFeedIdentifier(), loggedInUser);
+        fileRepository.save(updated);
+        log.info("Successfully updated file entity for feed: {} and logical file name: {}", sanitizedFeedIdentifier, sanitizedLogicalFileName);
+        auditService.logAudit( Constant.AuditType.FILE_UPDATE,FILE_LABLE, updated, oldEntity, clientId, UUID.fromString(feedIdentifier));
+    }
+    catch (RecordNotFoundException e) {
+            log.error("File not found for feed: {} and logical file name: {}", sanitizedFeedIdentifier, sanitizedLogicalFileName, e);
+            throw new RecordNotFoundException(FILE_NOT_FOUND + logicalFileName);
+        } catch (BadRequestException | RecordAlreadyExistException e) {
+            // RecordAlreadyExistException is caught here to handle cases where the logical file name already exists
+            log.error("Bad request  or Record already exist while updating file for feed: {} and logical file name: {}", sanitizedFeedIdentifier, sanitizedLogicalFileName, e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error while updating file for feed: {} and logical file name: {}", sanitizedFeedIdentifier, sanitizedLogicalFileName, e);
+            throw new UnExpectedException("An unexpected error occurred while updating file for feed: " + sanitizedFeedIdentifier, e);
+        }
+    }
+
+
+
+FileTransformer.java
+
+package com.optum.dap.api.transformer;
+
+import java.io.File;
+
+import com.optum.dap.api.dto.FileDto;
+import com.optum.dap.api.model.Feeds;
+import com.optum.dap.api.model.Files;
+
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import com.optum.dap.api.model.FileConfig;
+
+/**
+ * Transformer for FileConfig DTOs and Entity.
+ * Handles mapping between DTOs and Files, including JSONB serialization.
+ */
+@Component
+public class FileTransformer {
+
+    /**
+     * Converts Files to FileDto.
+     * @param entity Files
+     * @return FileDto
+     */
+    public FileDto toDto(Files entity) {
+        if (entity == null) return null;
+        FileDto dto = new FileDto();
+        dto.setLogicalFileName(entity.getLogicalFileName());
+        FileConfig fileConfig = entity.getFileConfig();
+        dto.setFileId(fileConfig.getFileId());
+        dto.setOrder(fileConfig.getOrder());
+        dto.setFileNameFormat(fileConfig.getFileNameFormat());
+        dto.setPartCount(fileConfig.getPartCount());
+        dto.setPartStartSeq(fileConfig.getPartStartSeq());
+        dto.setParameters(CommonTransformer.mapParametersToParameterDtos(fileConfig.getParameters()));
+        dto.setFilter(fileConfig.getFilter());
+        dto.setIsMandatory(fileConfig.getIsMandatory());
+
+         // sets both transient and json fields
+        return dto;
+    }
+
+    /**
+     * Converts FileDto to Files.
+     * @param dto FileDto
+     * @param feedIdentifier UUID of the feed
+     * @param user user performing the operation
+     * @return Files
+     */
+    public Files toEntity(FileDto dto, UUID feedIdentifier, String user) {
+        if (dto == null) return null;
+        Files entity = new Files();
+        entity.setFeedIdentifier(feedIdentifier);
+        entity.setLogicalFileName(dto.getLogicalFileName());
+        entity.setFileConfig(toFileConfig(dto , new FileConfig())); // sets both transient and json fields
+        entity.setActive(dto.getIsMandatory() != null ? dto.getIsMandatory() : true);
+        entity.setCreatedBy(user);
+        entity.setCreatedDate(LocalDateTime.now());
+        entity.setModifiedBy(user);
+        entity.setModifiedDate(LocalDateTime.now());
+        return entity;
+    }
+
+     /**
+     * Converts FileDto to Files.
+     * @param dto FileDto
+     * @param feedIdentifier UUID of the feed
+     * @param user user performing the operation
+     * @return Files
+     */
+    public Files updateToEntity(Files file,FileDto dto, UUID feedIdentifier, String user) {
+        if (dto == null || file == null) return null;
+        file.setFileConfig(toFileConfig(dto, file.getFileConfig())); // sets both transient and json fields
+        file.setActive(dto.getIsMandatory() != null ? dto.getIsMandatory() : true);
+        file.setModifiedBy(user);
+        file.setModifiedDate(LocalDateTime.now());
+        return file; // changed from entity to file
+    }
+    /**
+     * Converts FileDto to Files with Feeds reference.
+     * @param dto FileDto
+     * @param feed Feeds
+     *     * @param user user performing the operation
+     * @return Files
+     */
+    public Files toEntity(FileDto dto, Feeds feed, String user) {
+        if (dto == null || feed == null) return null;
+        Files entity = toEntity(dto, feed.getFeedIdentifier(), user);
+        entity.setFeed(feed);
+        return entity;
+    }
+
+    public FileConfig toFileConfig(FileDto dto,FileConfig fileConfig ) {
+        if (dto == null) return null;
+        fileConfig.setFileId(dto.getFileId());
+        fileConfig.setOrder(dto.getOrder());
+        fileConfig.setFileNameFormat(dto.getFileNameFormat());
+        fileConfig.setPartCount(dto.getPartCount());
+        fileConfig.setPartStartSeq(dto.getPartStartSeq());
+        fileConfig.setParameters(CommonTransformer.convertDtoListToEntityList(dto.getParameters()));
+        fileConfig.setFilter(dto.getFilter());
+        fileConfig.setIsMandatory(dto.getIsMandatory());
+        return fileConfig;
+    }
+
+}
+
+
+
 
 
 
