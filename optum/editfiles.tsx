@@ -1,3 +1,43 @@
+1. Update FileDto.java
+@NotNull(message = "partCount must not be null")
+@Pattern(regexp = "\\*|[1-9][0-9]*", message = "partCount must be '*' or a positive integer")
+private String partCount;   // change from Integer to String
+
+
+This allows either:
+
+"*"
+
+"1", "2", "3", etc.
+
+
+  2. Update FileConfig.java
+@JsonProperty("part_count")
+private String partCount;  // change from Integer to String
+
+
+3. Update FileServiceImpl.java
+
+Everywhere you check dto.getPartCount() < 1 you must handle string:
+
+String pc = dto.getPartCount();
+if (pc == null || (!pc.equals("*") && Integer.parseInt(pc) < 1)) {
+    dto.setPartCount("1");
+}
+
+
+And same for update:
+
+String pc = file.getPartCount();
+if (pc == null || (!pc.equals("*") && Integer.parseInt(pc) < 1)) {
+    file.setPartCount("1");
+}
+
+
+
+
+
+
 <TextInput
   label={FILE_FORM.LABELS.PART_COUNT}
   model="partCount"
