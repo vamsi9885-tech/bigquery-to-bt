@@ -1,3 +1,57 @@
+spring.application.name=api
+application.environment=local
+application.ui.port=3000
+server.servlet.session.timeout=30m
+DISABLE_AUTH=false
+springdoc.swagger-ui.path=/api/portal-api/swagger-ui
+#springdoc.api-docs.path=/portal-api/v3/api-docs
+HomePageURL=http://localhost:3000
+springdoc.api-docs.path=/api/v3/api-docs
+springdoc.api-docs.version=openapi_3_1
+spring.profiles.active=dev
+spring.flyway.enabled=true
+spring.flyway.baseline-on-migrate=true
+spring.flyway.baseline-version=0
+# spring.datasource.url=jdbc:postgresql://localhost:5432/Dap
+logging.level.org.springframework.security=DEBUG
+# spring.datasource.url=jdbc:postgresql://dap-nonprod-postgresql-pe.postgres.database.azure.com:5432/dev_dap_run_log
+# spring.datasource.username=eip_dap_admin
+spring.datasource.url=jdbc:postgresql://localhost:5432/daptest
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+spring.jpa.show-sql=true
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.session.store-type=jdbc
+# spring.jpa.hibernate.ddl-auto=none
+oidc.clientId=dap-dev
+oidc.clientSecret=bPlD7s37GlHVM12lE8z0qdudg8VfHQKK
+spring.jpa.properties.hibernate.temp.use_jdbc_metadata_defaults=false
+spring.jpa.hibernate.ddl-auto=none
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %logger{36} -[%X{correlationId}] -[%X{loggedInUsername}]- %msg%n
+server.servlet.session.cookie.secure=true
+server.servlet.session.cookie.http-only=true
+server.servlet.session.cookie.same-site=None
+oidc.issuerUri=https://idx-stage.linkhealth.com/auth/realms/developer-platform
+oidc.logoutEndpoint=https://idx-stage.linkhealth.com/auth/realms/developer-platform/protocol/openid-connect/logout
+oidc.userInfoEndpoint=https://idx-stage.linkhealth.com/auth/realms/developer-platform/protocol/openid-connect/userinfo
+oidc.tokenEndpoint=https://idx-stage.linkhealth.com/auth/realms/developer-platform/protocol/openid-connect/token
+oidc.authorizationEndpoint=https://idx-stage.linkhealth.com/auth/realms/developer-platform/protocol/openid-connect/auth
+oidc.jwkSetUri=https://idx-stage.linkhealth.com/auth/realms/developer-platform/protocol/openid-connect/certs
+m2moidc.clientWriteClaimName=MR_WriteClaim
+m2moidc.clientWriteClaimValue=c1ee643c-6bd6-463d-a867-37b63401aed0
+spring.mvc.throw-exception-if-no-handler-found=true
+spring.web.resources.add-mappings=false
+auth.required.ad.group=AZU_GHEC_OI_ANALYTICS_DAP_DATA_ACQUISITION_PLATFORM_WRITE
+auth.skip.authorization=false
+logging.pattern.level=%5p [${spring.application.name:},%X{correlationId}]
+logging.level.org.springframework.security.web.FilterChainProxy=INFO
+logging.level.org.springframework.security.web.context.HttpSessionSecurityContextRepository=OFF
+
+
+
+
+
 mvn archetype:generate -DgroupId=com.aexp.ngbd.testDataflow -DartifactId=CsvBigtableApp -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
 
 
