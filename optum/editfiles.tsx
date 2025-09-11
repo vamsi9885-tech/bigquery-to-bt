@@ -1,3 +1,34 @@
+WITH combined_file_arrival_status AS (
+            SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
+                is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder , part
+            FROM file_arrival_status
+            UNION ALL
+            SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
+                is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder , part
+            FROM adhoc_file_arrival_status
+        )
+        SELECT DISTINCT fas.feed_name,
+                        COALESCE(fas.expectation_date, fas.window_start_date),
+                        cm.cadence_completion_status_sent_date,
+                        fas.cutoff_date,
+                        fas.is_adhoc_run,
+                        fas.client_name,
+                        fas.feed_frequency,
+                        fas.extraction_type,
+                        fas.window_start_date,
+                        fas.output_folder,part 
+        FROM combined_file_arrival_status fas
+        JOIN cadence_master cm ON fas.cadence_id = cm.cadence_id
+        JOIN client_feed_config cfc ON fas.feed_name = cfc.feed_name
+        WHERE cm.cadence_completion_flag IS NULL
+        and cfc.feed_config->>'is_active' = 'true' and fas.client_name = 'regressionv1' ;
+
+
+
+
+
+
+
 1. Update FileDto.java
 @NotNull(message = "partCount must not be null")
 @Pattern(regexp = "\\*|[1-9][0-9]*", message = "partCount must be '*' or a positive integer")
