@@ -9,6 +9,77 @@ WITH combined_file_arrival_status AS (
            part, part_count
     FROM adhoc_file_arrival_status
 ),
+resolved_parts AS (
+    SELECT 
+        c.feed_name,
+        c.expectation_date,
+        c.window_start_date,
+        c.cadence_id,
+        c.cutoff_date,
+        c.is_adhoc_run,
+        c.client_name,
+        c.feed_frequency,
+        c.extraction_type,
+        c.output_folder,
+        -- Resolve part in one pass
+        CASE 
+            WHEN MAX(CASE WHEN c.part_count = '*' THEN 1 ELSE 0 END) = 1 
+                 THEN '*'
+            ELSE MIN(CASE WHEN c.part_count != '*' THEN c.part::int END)::text
+        END AS resolved_part
+    FROM combined_file_arrival_status c
+    GROUP BY c.feed_name, c.expectation_date, c.window_start_date, 
+             c.cadence_id, c.cutoff_date, c.is_adhoc_run,
+             c.client_name, c.feed_frequency, c.extraction_type, c.output_folder
+)
+SELECT 
+    rp.feed_name,
+    COALESCE(rp.expectation_date, rp.window_start_date) AS expectation_date,
+    cm.cadence_completion_status_sent_date,
+    rp.cutoff_date,
+    rp.is_adhoc_run,
+    rp.client_name,
+    rp.feed_frequency,
+    rp.extraction_type,
+    rp.window_start_date,
+    rp.output_folder,
+    rp.resolved_part AS part
+FROM resolved_parts rp
+JOIN cadence_master cm 
+     ON rp.cadence_id = cm.cadence_id
+JOIN client_feed_config cfc 
+     ON rp.feed_name = cfc.feed_name
+WHERE cm.cadence_completion_flag IS NULL
+  AND cfc.feed_config->>'is_active' = 'true'
+  AND rp.client_name = 'regressionv1';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+WITH combined_file_arrival_status AS (
+    SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
+           is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder,
+           part, part_count
+    FROM file_arrival_status
+    UNION ALL
+    SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
+           is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder,
+           part, part_count
+    FROM adhoc_file_arrival_status
+),
 feed_level_parts AS (
     SELECT 
         feed_name,
