@@ -604,3 +604,16 @@ def mrt_accident(spark, props, logger):
 
             # Drop temp table
             spark.sql("DROP TABLE IF EXISTS {}".format(props['TARGET_DB'] + "." + temp_table))
+
+
+
+MRT_PIMSCTP_LEGAL:
+  DEV:
+    SOURCE_DB: 'd_gi_hub_ctp'
+    SOURCE_TBL: hub_pimsctp_legal
+    TARGET_DB: 'd_gi_mrt_ctp'
+    TARGET_TBL: 'mrt_pimsctp_legal'
+    TARGET_DB_PATH: '/data/dev/gi/analytics/ctp/mart/d_gi_mrt_ctp'
+    CONFIG_DIC_FILE_NAME: 'mrt_pimsctp_legal.dic'
+    TARGET: 'legal_no,clm_no,acc_no,legal_case_no,legal_status,legal_type,legal_start_dt,legal_end_dt,legal_court_nm,legal_ref_no,legal_judge_nm,legal_lawyer_nm,legal_created_ts,legal_updated_ts,acc_dev_day,acc_dev_mth,acc_dev_qtr,hub_insert_ts,begin_dt,end_dt,active_dt,active_ym,load_dt,source_system_cd'
+
