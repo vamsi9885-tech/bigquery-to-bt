@@ -1,4 +1,66 @@
 WITH combined_file_arrival_status AS (
+    SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
+           is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder,
+           part, part_count
+    FROM file_arrival_status
+    UNION ALL
+    SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
+           is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder,
+           part, part_count
+    FROM adhoc_file_arrival_status
+),
+feed_level_parts AS (
+    SELECT 
+        feed_name,
+        cadence_id,
+        MAX(CASE WHEN part_count = '*' THEN 1 ELSE 0 END) AS has_star,
+        MIN(CASE WHEN part_count != '*' THEN part::int END) AS min_part
+    FROM combined_file_arrival_status
+    GROUP BY feed_name, cadence_id
+),
+resolved_parts AS (
+    SELECT c.*,
+           CASE 
+               WHEN f.has_star = 1 THEN '*'   -- if ANY file has *
+               ELSE f.min_part::text          -- otherwise lowest numeric part
+           END AS resolved_part
+    FROM combined_file_arrival_status c
+    JOIN feed_level_parts f
+      ON c.feed_name = f.feed_name 
+     AND c.cadence_id = f.cadence_id
+)
+SELECT DISTINCT
+       fas.feed_name,
+       COALESCE(fas.expectation_date, fas.window_start_date),
+       cm.cadence_completion_status_sent_date,
+       fas.cutoff_date,
+       fas.is_adhoc_run,
+       fas.client_name,
+       fas.feed_frequency,
+       fas.extraction_type,
+       fas.window_start_date,
+       fas.output_folder,
+       fas.resolved_part AS part
+FROM resolved_parts fas
+JOIN cadence_master cm 
+     ON fas.cadence_id = cm.cadence_id
+JOIN client_feed_config cfc 
+     ON fas.feed_name = cfc.feed_name
+WHERE cm.cadence_completion_flag IS NULL
+  AND cfc.feed_config->>'is_active' = 'true'
+  AND fas.client_name = 'regressionv1';
+
+
+
+
+
+
+
+
+
+
+
+WITH combined_file_arrival_status AS (
             SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
                 is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder , part
             FROM file_arrival_status
