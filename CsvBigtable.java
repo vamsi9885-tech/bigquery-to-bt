@@ -1,3 +1,6 @@
+"select distinct on (logical_file_name,part) FAS.logical_file_name, FAS.part, FAS.extraction_type, FAS.file_name_format, FAS.cadence_id from file_arrival_status as FAS where FAS.feed_name = '{$FeedName}' and not exists (select 1 from file_master AS FM  where FM.logical_file_name = FAS.logical_file_name AND FM.part = FAS.part AND FM.cadence_id = '{$CadenceID}')" 
+
+
 spring.application.name=api
 application.environment=local
 application.ui.port=3000
