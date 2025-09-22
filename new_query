@@ -1,0 +1,74 @@
+SELECT dfd.cadence_id,
+    dfmd.feed_id,
+    c.client_name,
+    c.feed_name,
+    c.feed_frequency,
+    c.is_adhoc_run,
+    c.notify_type,
+    c.window_start_date,
+    c.lag_offset,
+        CASE
+            WHEN c.is_adhoc_run IS TRUE THEN NULL::timestamp without time zone
+            WHEN c.feed_frequency = 'custom'::text AND c.red_email_date IS NOT NULL THEN c.red_email_date - '00:00:01'::interval
+            WHEN c.feed_frequency = 'daily'::text THEN c.window_start_date + '23:59:59'::interval
+            ELSE c.window_start_date + (c.lag_offset - 1)::double precision * '1 day'::interval + '23:59:59'::interval
+        END AS expectation_date,
+    c.lag_tolerance,
+        CASE
+            WHEN c.is_adhoc_run IS TRUE THEN NULL::timestamp without time zone
+            WHEN c.feed_frequency = 'custom'::text AND c.red_email_date IS NOT NULL THEN c.red_email_date - '00:00:01'::interval
+            WHEN c.feed_frequency = 'daily'::text THEN c.window_start_date + '23:59:59'::interval
+            ELSE c.window_start_date + (c.lag_offset + c.lag_tolerance - 1)::double precision * '1 day'::interval + '23:59:59'::interval
+        END AS cutoff_date,
+    c.window_end_date,
+        CASE
+            WHEN c.part = '*'::text THEN NULL::timestamp without time zone
+            WHEN c.notify_type = 'none'::text THEN NULL::timestamp without time zone
+            WHEN c.is_adhoc_run IS TRUE OR c.feed_frequency = 'custom'::text THEN NULL::timestamp without time zone
+            WHEN c.feed_frequency = 'daily'::text THEN NULL::timestamp without time zone
+            WHEN c.notify_type = 'once_post_window'::text THEN NULL::timestamp without time zone
+            WHEN c.notify_type = 'monthend'::text THEN NULL::timestamp without time zone
+            WHEN c.notify_type = 'once_per_cadence'::text AND (c.feed_frequency = ANY (ARRAY['monthly'::text, 'yearly'::text, 'quarterly'::text, 'halfyearly'::text])) THEN c.window_start_date + (c.lag_offset + c.lag_tolerance - 1)::double precision * '1 day'::interval
+            ELSE c.window_start_date + c.lag_offset::double precision * '1 day'::interval
+        END AS yellow_email_start_date,
+        CASE
+            WHEN c.part = '*'::text THEN NULL::timestamp without time zone
+            WHEN c.notify_type = 'none'::text THEN NULL::timestamp without time zone
+            WHEN c.is_adhoc_run IS TRUE OR c.feed_frequency = 'custom'::text THEN NULL::timestamp without time zone
+            WHEN c.feed_frequency = 'daily'::text THEN NULL::timestamp without time zone
+            WHEN c.notify_type = 'once_post_window'::text THEN NULL::timestamp without time zone
+            WHEN c.notify_type = 'monthend'::text THEN NULL::timestamp without time zone
+            WHEN c.notify_type = 'once_per_cadence'::text AND (c.feed_frequency = ANY (ARRAY['monthly'::text, 'yearly'::text, 'quarterly'::text, 'halfyearly'::text])) THEN c.window_start_date + (c.lag_offset + c.lag_tolerance - 1)::double precision * '1 day'::interval
+            ELSE c.window_start_date + (c.lag_offset + c.lag_tolerance - 1)::double precision * '1 day'::interval
+        END + '23:59:59'::interval AS yellow_email_end_date,
+        CASE
+            WHEN c.notify_type = 'none'::text THEN NULL::timestamp without time zone
+            WHEN c.is_adhoc_run IS TRUE THEN NULL::timestamp without time zone
+            WHEN c.feed_frequency = 'custom'::text AND c.red_email_date IS NOT NULL THEN c.red_email_date
+            WHEN c.feed_frequency = 'daily'::text THEN c.window_end_date + 2::double precision * '1 day'::interval
+            WHEN c.notify_type = 'once_post_window'::text THEN c.window_end_date + '1 day'::interval
+            WHEN c.notify_type = 'monthend'::text THEN c.window_end_date + 2::double precision * '1 day'::interval
+            WHEN c.notify_type = 'once_per_cadence'::text AND (c.feed_frequency = ANY (ARRAY['monthly'::text, 'yearly'::text, 'quarterly'::text, 'halfyearly'::text])) THEN c.window_start_date + (c.lag_offset + c.lag_tolerance * 2 - 1)::double precision * '1 day'::interval
+            ELSE c.window_start_date + (c.lag_offset + c.lag_tolerance)::double precision * '1 day'::interval
+        END AS red_email_start_date,
+        CASE
+            WHEN c.notify_type = 'none'::text THEN NULL::timestamp without time zone
+            WHEN c.is_adhoc_run IS TRUE THEN NULL::timestamp without time zone
+            WHEN c.feed_frequency = 'custom'::text AND c.red_email_date IS NOT NULL THEN date_trunc('day'::text, c.red_email_date)
+            WHEN c.feed_frequency = 'daily'::text THEN date_trunc('day'::text, date_trunc('month'::text, c.window_end_date) + '1 mon -1 days'::interval + '2 days'::interval)
+            WHEN c.notify_type = 'once_post_window'::text THEN date_trunc('day'::text, c.window_end_date + '1 day'::interval)
+            WHEN c.notify_type = 'monthend'::text THEN date_trunc('day'::text, date_trunc('month'::text, c.window_end_date) + '1 mon -1 days'::interval + '2 days'::interval)
+            WHEN c.notify_type = 'once_per_cadence'::text AND (c.feed_frequency = ANY (ARRAY['monthly'::text, 'yearly'::text, 'quarterly'::text, 'halfyearly'::text])) THEN date_trunc('day'::text, c.window_start_date + (c.lag_offset + c.lag_tolerance * 2 - 1)::double precision * '1 day'::interval)
+            ELSE date_trunc('day'::text, c.window_end_date)
+        END + '23:59:59'::interval AS red_email_end_date,
+    dfmd.file_name,
+    c.file_name_format,
+    c.logical_file_name,
+    c.is_mandatory,
+    c.extraction_type,
+    c.part,
+    c.output_folder,
+    c.source
+   FROM fas_cadence_calculator c
+     LEFT JOIN cadence_master dfd ON c.feed_name = dfd.feed_name AND dfd.feed_startdate >= c.window_start_date AND dfd.feed_startdate <= c.window_end_date AND c.extraction_type = dfd.extraction_type
+     LEFT JOIN file_master dfmd ON dfd.cadence_id = dfmd.cadence_id AND lower(dfmd.file_name) ~ lower(c.file_name_format) AND c.extraction_type = dfmd.extraction_type AND c.part = dfmd.part;
