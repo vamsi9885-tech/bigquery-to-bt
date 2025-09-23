@@ -1,3 +1,48 @@
+         Column          |            Type             | Collation | Nullable |      Default      | Storage  | Compression | Stats target | Description 
+-------------------------+-----------------------------+-----------+----------+-------------------+----------+-------------+--------------+-------------
+ cadence_id              | text                        |           | not null |                   | extended |             |              | 
+ feed_id                 | text                        |           |          |                   | extended |             |              | 
+ file_name               | text                        |           |          |                   | extended |             |              | 
+ start_date              | date                        |           |          |                   | plain    |             |              | 
+ end_date                | date                        |           |          |                   | plain    |             |              | 
+ connector               | text                        |           |          |                   | extended |             |              | 
+ extraction_script_name  | text                        |           |          |                   | extended |             |              | 
+ logical_file_name       | text                        |           |          |                   | extended |             |              | 
+ file_name_format        | text                        |           | not null |                   | extended |             |              | 
+ source_row_count        | bigint                      |           |          |                   | plain    |             |              | 
+ processed_row_count     | bigint                      |           |          |                   | plain    |             |              | 
+ failed_row_count        | bigint                      |           |          |                   | plain    |             |              | 
+ is_type_casting_success | boolean                     |           |          |                   | plain    |             |              | 
+ creation_time           | text                        |           |          |                   | extended |             |              | 
+ filters                 | text                        |           |          |                   | extended |             |              | 
+ is_extraction_success   | boolean                     |           |          |                   | plain    |             |              | 
+ file_size               | bigint                      |           |          |                   | plain    |             |              | 
+ is_adhoc_run            | boolean                     |           |          |                   | plain    |             |              | 
+ status                  | text                        |           |          |                   | extended |             |              | 
+ notification_sent_date  | date                        |           |          |                   | plain    |             |              | 
+ delay_reason            | text                        |           |          |                   | extended |             |              | 
+ disabled                | boolean                     |           |          |                   | plain    |             |              | 
+ disabled_until          | date                        |           |          |                   | plain    |             |              | 
+ arrived_flag            | boolean                     |           |          |                   | plain    |             |              | 
+ arrival_date            | date                        |           |          |                   | plain    |             |              | 
+ re_run_count            | bigint                      |           |          | 0                 | plain    |             |              | 
+ error_source            | text[]                      |           |          | '{}'::text[]      | extended |             |              | 
+ error_message           | text[]                      |           |          | '{}'::text[]      | extended |             |              | 
+ created_time_stamp      | timestamp without time zone |           |          | CURRENT_TIMESTAMP | plain    |             |              | 
+ modified_time_stamp     | timestamp without time zone |           |          |                   | plain    |             |              | 
+ modified_by             | text                        |           | not null | 'adf'::text       | extended |             |              | 
+ created_by              | text                        |           | not null | 'adf'::text       | extended |             |              | 
+ extraction_type         | text                        |           | not null | 'NONE'::text      | extended |             |              | 
+ part                    | text                        |           | not null |                   | extended |             |              | 
+ query_start_date        | date                        |           |          |                   | plain    |             |              | 
+ query_end_date          | date                        |           |          |                   | plain    |             |              | 
+ split_by                | text                        |           |          |                   | extended |             |              | 
+ adhoc_start_date        | date                        |           |          |                   | plain    |             |              | 
+ adhoc_end_date          | date                        |           |          |                   | plain    |             |              | 
+
+
+
+
 CREATE OR REPLACE VIEW file_master_view AS
 WITH latest_actual AS (
     SELECT DISTINCT ON (cadence_id, logical_file_name)
