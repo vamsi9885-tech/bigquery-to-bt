@@ -1,3 +1,45 @@
+CREATE OR REPLACE VIEW file_master_view AS
+WITH latest_actual AS (
+    SELECT DISTINCT ON (cadence_id, logical_file_name)
+           cadence_id,
+           logical_file_name,
+           feed_id,
+           file_name,
+           arrival_date
+    FROM file_master
+    WHERE part <> '*'   -- only real parts
+    ORDER BY cadence_id, logical_file_name, arrival_date DESC
+)
+SELECT
+    fm.cadence_id,
+    fm.logical_file_name,
+    fm.part,
+    fm.feed_id,
+    fm.file_name,
+    fm.arrival_date,
+    fm.file_name_format
+FROM file_master fm
+WHERE fm.part <> '*'   -- keep all actual part rows
+
+UNION ALL
+
+SELECT
+    fm.cadence_id,
+    fm.logical_file_name,
+    fm.part,  -- this will be '*'
+    la.feed_id,
+    la.file_name,       -- latest actual file
+    la.arrival_date,    -- arrival_date from latest actual
+    fm.file_name_format -- keep format from the '*' row
+FROM file_master fm
+JOIN latest_actual la
+  ON fm.cadence_id = la.cadence_id
+ AND fm.logical_file_name = la.logical_file_name
+WHERE fm.part = '*';
+
+
+
+
 SELECT dfd.cadence_id,
     dfmd.feed_id,
     c.client_name,
