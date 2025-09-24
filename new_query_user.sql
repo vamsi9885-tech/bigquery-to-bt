@@ -116,3 +116,45 @@ ers", "is_mandatory": true, "part_count": "1", "part_start_seq": 1}    | config
  regressionv1 | regressionv1 | new_UI_None_type  | push      | daily          |                      |                   | 2025-08-18          |          0 |             0 | standa
 rd    | 2025-08-01       | 2025-08-04     | f            | daily          | periodic        | {"file_name_format": "^.*(devices)_(\\d{8})_part_([0-9]+).*", "logical_file_name": "de
 vices", "is_mandatory": true, "part_count": "*", "part_start_seq": 10} | config
+
+
+
+
+WITH combined_file_arrival_status AS (
+    SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
+           is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder 
+    FROM file_arrival_status
+    UNION ALL
+    SELECT feed_name, expectation_date, window_start_date, cadence_id, cutoff_date,
+           is_adhoc_run, client_name, feed_frequency, extraction_type, output_folder 
+    FROM adhoc_file_arrival_status
+),
+feed_parts AS (
+    SELECT 
+        feed_name,
+        CASE 
+            WHEN bool_or(part_count = '*') THEN '*'
+            ELSE '1'
+        END AS part_count_flag
+    FROM fas_cadence_config
+    GROUP BY feed_name
+)
+SELECT DISTINCT fas.feed_name,
+       COALESCE(fas.expectation_date, fas.window_start_date) AS expectation_date,
+       cm.cadence_completion_status_sent_date,
+       fas.cutoff_date,
+       fas.is_adhoc_run,
+       fas.client_name,
+       fas.feed_frequency,
+       fas.extraction_type,
+       fas.window_start_date,
+       fas.output_folder,
+       cfc.feed_config->'extraction_settings'->>'e2e_custom_load_type' AS e2e_custom_load_type,
+       fp.part_count_flag
+FROM combined_file_arrival_status fas
+JOIN cadence_master cm ON fas.cadence_id = cm.cadence_id
+JOIN client_feed_config cfc ON fas.feed_name = cfc.feed_name
+JOIN feed_parts fp ON fas.feed_name = fp.feed_name
+WHERE cm.cadence_completion_flag IS NULL
+  AND cfc.feed_config->>'is_active' = 'true';
+
