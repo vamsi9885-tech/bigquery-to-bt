@@ -86,3 +86,33 @@ JOIN feed_parts fp ON fas.feed_name = fp.feed_name
 WHERE cm.cadence_completion_flag IS NULL
   AND cfc.feed_config->>'is_active' = 'true';
 
+
+
+
+
+
+dev_dap_run_log=> select * from fas_cadence_config where client_name = 'regressionv1' order by feed_name;
+  client_id   | client_name  |     feed_name     | feed_type | feed_frequency | window_cron_schedule | fam_cron_schedule | periodic_start_date | lag_offset | lag_tolerance | notify
+_type | adhoc_start_date | adhoc_end_date | is_adhoc_run | adhoc_split_by | extraction_type |                                                                         file_details  
+                                                                       | source 
+--------------+--------------+-------------------+-----------+----------------+----------------------+-------------------+---------------------+------------+---------------+-------
+------+------------------+----------------+--------------+----------------+-----------------+---------------------------------------------------------------------------------------
+-----------------------------------------------------------------------+--------
+ regressionv1 | regressionv1 | new_none_type     | push      | monthly        |                      |                   | 2025-08-14          |          5 |            10 | standa
+rd    | 2025-08-01       | 2025-08-10     | f            | monthly        | periodic        | {"file_name_format": "^.*(devices)_(\\d{8})_part_([0-9]+).*", "logical_file_name": "de
+vices", "is_mandatory": true, "part_count": "10", "part_start_seq": 1} | config
+ regressionv1 | regressionv1 | new_notify_type   | push      | quarterly      |                      |                   | 2025-08-18          |          2 |            10 | standa
+rd    | 2025-07-01       | 2025-07-31     | f            | quarterly      | periodic        | {"file_name_format": "^.*(devices)_(\\d{8})_part_([0-9]+).*", "logical_file_name": "de
+vices", "is_mandatory": true, "part_count": "*", "part_start_seq": 1}  | config
+ regressionv1 | regressionv1 | new_notify_type   | push      | quarterly      |                      |                   | 2025-08-18          |          2 |            10 | standa
+rd    | 2025-07-01       | 2025-07-31     | f            | quarterly      | periodic        | {"file_name_format": "^.*(claims)_(\\d{8})_part_([0-9]+).*", "logical_file_name": "cla
+ims", "is_mandatory": true, "part_count": "2", "part_start_seq": 1}    | config
+ regressionv1 | regressionv1 | new_notify_type_1 | push      | weekly         |                      |                   | 2025-08-04          |          4 |             3 | standa
+rd    | 2025-07-01       | 2025-07-31     | f            | weekly         | periodic        | {"file_name_format": "^.*(devices)_(\\d{8})_part_([0-9]+).*", "logical_file_name": "de
+vices", "is_mandatory": true, "part_count": "*", "part_start_seq": 1}  | config
+ regressionv1 | regressionv1 | new_UI_None_type  | push      | daily          |                      |                   | 2025-08-18          |          0 |             0 | standa
+rd    | 2025-08-01       | 2025-08-04     | f            | daily          | periodic        | {"file_name_format": "^.*(payers)_(\\d{8})_part_([0-9]+).*", "logical_file_name": "pay
+ers", "is_mandatory": true, "part_count": "1", "part_start_seq": 1}    | config
+ regressionv1 | regressionv1 | new_UI_None_type  | push      | daily          |                      |                   | 2025-08-18          |          0 |             0 | standa
+rd    | 2025-08-01       | 2025-08-04     | f            | daily          | periodic        | {"file_name_format": "^.*(devices)_(\\d{8})_part_([0-9]+).*", "logical_file_name": "de
+vices", "is_mandatory": true, "part_count": "*", "part_start_seq": 10} | config
