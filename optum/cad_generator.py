@@ -28,3 +28,33 @@
         
         logging.info(f"cadence_id generated from hash", extra={"properties":{'cadence_id': cadence_id, 'feed_name': feed_name, 'feed_startdate': window_start_date, 'feed_extraction_type': feed_extraction_type}})
         return cadence_id
+
+
+
+
+
+self.utils_obj.run_insert_query(f"""
+    INSERT INTO file_master (cadence_id, file_name_format, logical_file_name, extraction_type, part) 
+    WITH extraction_details AS (
+        SELECT json_array_elements(feed_config->'extraction_details')::json AS e
+        FROM client_feed_config
+        WHERE feed_name = '{feed_name}'
+    )
+    SELECT 
+        md5(concat('{feed_name}','{feed_extraction_type}',replace(replace(replace('{window_start_date}','-',''),':',''),' ',''))) AS cadence_id,
+        e ->> 'file_name_format' AS file_name_format,
+        e ->> 'logical_file_name' AS logical_file_name,
+        '{feed_extraction_type}' AS extraction_type,
+        CASE 
+            WHEN e ->> 'part_count' = '*' 
+                THEN (e ->> 'part_start_seq')::int
+            ELSE gs.part
+        END AS part
+    FROM extraction_details e
+    CROSS JOIN LATERAL (
+        SELECT generate_series(
+            COALESCE((e ->> 'part_start_seq')::int, 1),
+            (COALESCE((e ->> 'part_start_seq')::int, 1) - 1) + COALESCE(NULLIF(e ->> 'part_count','*')::int, 1)
+        ) AS part
+    ) gs;
+""")
