@@ -1,3 +1,87 @@
+CREATE OR REPLACE VIEW public.FAS_cadence_calculator AS
+(
+    SELECT 
+        cfc.client_name,
+        cfc.feed_name,
+        cfc.feed_frequency,
+        false AS is_adhoc_run,
+        'periodic' AS extraction_type,
+        cfc.notify_type,
+        CASE
+            WHEN c_1.frequency = 'daily'::text THEN cfc.periodic_start_date + (c_1.entry_id - 1) * c_1.time_interval_in_days
+            WHEN c_1.frequency = 'monthly'::text THEN date(cfc.periodic_start_date + '1 mon'::interval * (c_1.entry_id - 1)::double precision)
+            WHEN c_1.frequency = 'semimonthly'::text THEN
+                date(CASE WHEN extract(day from cfc.periodic_start_date) <= 15 THEN
+                    CASE WHEN mod(c_1.entry_id, 2) = 1 THEN
+                        date_trunc('month', cfc.periodic_start_date) + '1 mon'::interval * ((c_1.entry_id - 1) / 2)::double precision
+                    ELSE
+                        date_trunc('month', cfc.periodic_start_date) + '1 mon'::interval * ((c_1.entry_id - 1) / 2)::double precision + '15 days'::interval
+                    END
+                ELSE
+                    CASE WHEN mod(c_1.entry_id, 2) = 1 THEN
+                        date_trunc('month', cfc.periodic_start_date) + '1 mon'::interval * ((c_1.entry_id - 1) / 2)::double precision + '15 days'::interval
+                    ELSE
+                        date_trunc('month', cfc.periodic_start_date) + '1 mon'::interval * (c_1.entry_id / 2)::double precision
+                    END
+                END)
+            WHEN c_1.frequency = 'quarterly'::text THEN date(cfc.periodic_start_date + '3 mon'::interval * (c_1.entry_id - 1)::double precision)
+            WHEN c_1.frequency = 'halfyearly'::text THEN date(cfc.periodic_start_date + '6 mon'::interval * (c_1.entry_id - 1)::double precision)
+            ELSE cfc.periodic_start_date + (c_1.entry_id - 1) * c_1.time_interval_in_days
+        END AS window_start_date,
+        cfc.lag_offset,
+        cfc.lag_tolerance,
+        CASE
+            WHEN c_1.frequency = 'daily'::text THEN cfc.periodic_start_date + (c_1.entry_id - 1) * c_1.time_interval_in_days
+            WHEN c_1.frequency = 'monthly'::text THEN date(cfc.periodic_start_date + '1 mon'::interval * c_1.entry_id::double precision + '1 day'::interval * (c_1.entry_id - (c_1.entry_id + 1))::double precision)
+            WHEN c_1.frequency = 'semimonthly'::text THEN
+                date(CASE WHEN extract(day from cfc.periodic_start_date) <= 15 THEN
+                    CASE WHEN mod(c_1.entry_id, 2) = 1 THEN
+                        date_trunc('month', cfc.periodic_start_date) + '1 mon'::interval * ((c_1.entry_id - 1) / 2)::double precision + '14 days'::interval
+                    ELSE
+                        date_trunc('month', cfc.periodic_start_date) + '1 mon'::interval * ((c_1.entry_id - 1) / 2)::double precision + '1 mon'::interval - '1 day'::interval
+                    END
+                ELSE
+                    CASE WHEN mod(c_1.entry_id, 2) = 1 THEN
+                        date_trunc('month', cfc.periodic_start_date) + '1 mon'::interval * ((c_1.entry_id - 1) / 2)::double precision + '1 mon'::interval - '1 day'::interval
+                    ELSE
+                        date_trunc('month', cfc.periodic_start_date) + '1 mon'::interval * (c_1.entry_id / 2)::double precision + '14 days'::interval
+                    END
+                END)
+            WHEN c_1.frequency = 'quarterly'::text THEN date(cfc.periodic_start_date + '3 mon'::interval * c_1.entry_id::double precision - '1 day'::interval)
+            WHEN c_1.frequency = 'halfyearly'::text THEN date(cfc.periodic_start_date + '6 mon'::interval * c_1.entry_id::double precision - '1 day'::interval)
+            ELSE cfc.periodic_start_date + c_1.entry_id * (c_1.time_interval_in_days - 1) + (c_1.entry_id - 1)
+        END::timestamp + INTERVAL '23 hours 59 minutes 59 seconds' AS window_end_date,
+        replace(TRIM(BOTH '"' FROM (cfc.file_details -> 'file_name_format')::text), '\\', '\') AS file_name_format,
+        TRIM(BOTH '"' FROM (cfc.file_details -> 'logical_file_name')::text) AS logical_file_name,
+        TRIM(BOTH '"' FROM (cfc.file_details -> 'is_mandatory')::text)::boolean AS is_mandatory,
+
+        CASE 
+            WHEN TRIM(BOTH '"' FROM (cfc.file_details ->> 'part')) = '*' THEN
+                COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_start_seq')), ''), '1')::integer
+            ELSE 
+                gs.part
+        END AS part,
+
+        NULL AS output_folder,
+        cfc.source,
+        NULL AS red_email_date
+    FROM FAS_cadence_config cfc
+    JOIN cadence_details c_1 
+        ON cfc.feed_frequency = c_1.frequency 
+       AND cfc.is_adhoc_run IS FALSE 
+       AND cfc.feed_frequency != 'custom'
+    LEFT JOIN LATERAL (
+        SELECT generate_series(
+            COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_start_seq')), ''), '1')::integer,
+            ((COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_start_seq')), ''), '1')::integer -1) +
+            COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_count')), ''), '1')::integer)
+        ) AS part
+    ) gs ON TRIM(BOTH '"' FROM (cfc.file_details ->> 'part')) != '*'
+)
+
+
+
+
 CASE
     WHEN TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_count')) = '*' THEN
         COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_start_seq')), ''), '1')::integer
