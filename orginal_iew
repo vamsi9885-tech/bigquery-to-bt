@@ -9,6 +9,15 @@ CASE
         )
 END AS part,
 
+
+ERROR:  set-returning functions are not allowed in CASE
+LINE 60:                 generate_series(
+                         ^
+HINT:  You might be able to move the set-returning function into a LATERAL FROM item.
+dev_dap_run_log=> 
+
+
+
 CREATE OR REPLACE VIEW public.FAS_cadence_calculator AS
 (   
     SELECT cfc.client_name,
