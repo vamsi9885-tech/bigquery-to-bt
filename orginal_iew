@@ -1,3 +1,14 @@
+CASE
+    WHEN TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_count')) = '*' THEN
+        COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_start_seq')), ''), '1')::integer
+    ELSE
+        generate_series(
+            COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_start_seq')), ''), '1')::integer,
+            ((COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_start_seq')), ''), '1')::integer -1) +
+            COALESCE(NULLIF(TRIM(BOTH '"' FROM (cfc.file_details ->> 'part_count')), ''), '1')::integer)
+        )
+END AS part,
+
 CREATE OR REPLACE VIEW public.FAS_cadence_calculator AS
 (   
     SELECT cfc.client_name,
