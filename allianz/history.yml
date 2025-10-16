@@ -1,0 +1,7 @@
+HUB_PIMSCTP_WORKFLOW_HISTORY_NO_DEDUP:
+  CONFIG_DIC_FILE_NAME: 'hub_pimsctp_workflow_history_no_dedup.dic'
+  target_db: '{db_env}_gi_hub_ctp'
+  target_tbl: 'hub_pimsctp_workflow_history_no_dedup'
+  source_type: 'PIMS'
+  load_type: ''
+  TARGET: 'wrkflw_no,clm_no,hist_id,wrkflw_hist_type,wrkflw_hist_time_dt,wrkflw_hist_user,wrkflw_hist_frm_stat,wrkflw_hist_to_stat,wrkflw_hist_rs'
