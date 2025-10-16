@@ -1,8 +1,7 @@
 vamsi
 {
-    "{db_env}_gi_lak_pims.dl_TIMWflProcess": {
+    "{db_env}_gi_lak_kondu.dl_TIMWflProcess": {
         "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aUniqueID,myClaim_clsno,myClaim_instid",
-        "filter_con": "_operation <> 'D'"
     },
     "{db_env}_gi_lak_pims.dl_TIMPolicyClaim": {
         "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aClaimNumber,myAccident_clsno,myAccident_instid,myPolicy_clsno,myPolicy_instid",
