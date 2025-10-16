@@ -1,0 +1,86 @@
+{
+    "{db_env}_gi_lak_pims.dl_TIMPolicyClaim": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,myCaseManager_clsno,myCaseManager_instid,myIMA_clsno,myIMA_instid,myInjuredWorker_clsno,myInjuredWorker_instid,myProcessingCentre_clsno,myProcessingCentre_instid,myAccident_clsno,myAccident_instid,myLiabilityRejectReason_clsno,myLiabilityRejectReason_instid,myWCInsurer_clsno,myWCInsurer_instid,myPolicy_clsno,myPolicy_instid,myReasonForDecline_clsno,myReasonForDecline_instid,myClaimStatus_clsno,myClaimStatus_instid,myClaimProfile_clsno,myClaimProfile_instid,aDateLimitationExtendedTo,aAIFRequestedDate,aHasClaimFormEntryAssistance,aClaimNumber,aDateClaimFormsReceived,aDateNOACFirstReported,aDoesS5Apply,aDateIniialConsultGP,aDateInitialConsultSolicitor,aDateANFReported,aIsEscalatedClaim,aDateTimeEntered,aCareType,aDescription,aLimitationExtendedBy,aNOACS39FollowUpStatus,aNominalDefendantPerc,aNominalDefendantReference,aIsNotableAndSignificantClaim,aDateFirstFinalised,aClaimStatusDate,aDateReopened,aIsUnreasonableContact,aDateNOACFirstResponse,aANFAtFault,aDateClaimSatisfied,aDateNOACSatisfied,aDateS110,aNOACFirstResponseCode,aWorkcoverSOCRECDate,aDateLastContClaimant,aS84AHardshipPayment,aS84AHardshipRequestDate,aInterimPayments,aLateClaimAcceptedDate,aClaimFormEntryAssistantName,aDatePrescribedAuthoritySigned,aIsPrescribedAuthority,aDatePrescribedAuthorityValidTo,aClaimFormEntryAssistanceReason,aSatisfactoryAIFRecvDate,aWorkcoverRecovery",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMPolicy": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aPolicyNumber,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMReasonForDecline": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aDescription,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMAddress": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aPostCode,aStreetName,myState_clsno,myState_instid,aStreetNumber,myStreetType_clsno,myStreetType_instid,mySuburb_clsno,mySuburb_instid,aUnitNumber,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMState": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aName,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMProfileHistoryStatus": {
+        "part_fields": "myClaim_clsno,myClaim_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,myClaim_clsno,myClaim_instid,myStatusChangeReason_clsno,myStatusChangeReason_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMClaimStatusHistoryReopen": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aCode,aDescription,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMClaimStatusHistoryFinalise": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aDescription,aCode,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMClaimStatus": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aDescription,aCode,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CARClaimProfileCode": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aDescription,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPAccident": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aUniqueID,oid_instid,oid_clsno,aDateTimeOfAccident,myAccidentLocation_clsno,myAccidentLocation_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMLiabilityRejectReason": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,aDescription,oid_clsno,oid_instid",
+        "filter_con": "_operation != 'D'",
+        "active_field": "_timestamp"
+    }
+}
