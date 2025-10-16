@@ -1,0 +1,7 @@
+HUB_PIMSCTP_WORKFLOW_ACTIVITY_DETAILS:
+  CONFIG_DIC_FILE_NAME: 'hub_pimsctp_workflow_activity_details.dic'
+  target_db: '{db_env}_gi_hub_ctp'
+  target_tbl: 'hub_pimsctp_workflow_activity_details'
+  source_type: 'PIMS'
+  load_type: ''
+  TARGET: 'conev_id,clm_no,acc_no,pol_no,user_id,conev_acc_comm_dt,conev_acc_comm_frm,conev_acc_comms_to,conev_acc_comm_subj,conev_acc_comm_doc_type,conev_acc_comm_meth,conev_acc_comm_reason,conev_acc_comm_status,conev_acc_comm_type,conev_acc_comm_dist_not_verfd,conev_acc_comm_frm_user_team'
