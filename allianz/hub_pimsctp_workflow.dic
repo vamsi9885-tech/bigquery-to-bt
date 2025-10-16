@@ -1,0 +1,72 @@
+{
+    "{db_env}_gi_lak_pims.dl_TIMContactEvent": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aUniqueID,aDateTime,aHeader,myAccident_clsno,myAccident_instid,myContactEventMethod_clsno,myContactEventMethod_instid,myContactEventReason_clsno,myContactEventReason_instid,myContactEventType_clsno,myContactEventType_instid,myContactEventStatus_clsno,myContactEventStatus_instid,myUser_clsno,myUser_instid,myContactToFrom_clsno,myContactToFrom_instid",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMPolicyClaim": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aClaimNumber,myAccident_clsno,myAccident_instid,myPolicy_clsno,myPolicy_instid",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMPolicy": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aPolicyNumber",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_CTPAccident": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aUniqueId",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMContactEventMethod": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aDescription",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMContactEventReason": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aDescription",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMContactEventType": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aDescription",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMContactEventStatus": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aDescription",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMContactIndividual": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aUniqueID",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMContactTypeUser": {
+        "part_fields": "oid_clsno,oid_instid",
+        "rnk_fields": "_timestamp desc",
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aUserID,aKey",
+        "filter_con": "_operation <> 'D'",
+        "active_field": "_timestamp"
+    }
+}
