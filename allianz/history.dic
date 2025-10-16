@@ -1,3 +1,4 @@
+kondu
 {
     "{db_env}_gi_lak_pims.dl_TIMWflProcess": {
         "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aUniqueID,myClaim_clsno,myClaim_instid",
