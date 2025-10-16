@@ -1,0 +1,38 @@
+{
+    "{db_env}_gi_lak_pims.dl_TIMWflProcess": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aUniqueID,myClaim_clsno,myClaim_instid",
+        "filter_con": "_operation <> 'D'"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMPolicyClaim": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aClaimNumber,myAccident_clsno,myAccident_instid,myPolicy_clsno,myPolicy_instid",
+        "filter_con": "_operation <> 'D'"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMWflActivity": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aUniqueID,myWflProcess_clsno,myWflProcess_instid",
+        "filter_con": "_operation <> 'D'"
+    },
+    "{db_env}_gi_lak_pims.dl_CONWflForwardHistoryUpdate": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,myHistoriedComponent_clsno,myHistoriedComponent_instid,myCreatedBy_clsno,myCreatedBy_instid,aPrevReferStatus,aNewReferStatus,myChangeReason_clsno,myChangeReason_instid",
+        "filter_con": "_operation <> 'D'"
+    },
+    "{db_env}_gi_lak_pims.dl_CONWflReferralChangeReason": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aName",
+        "filter_con": "_operation <> 'D'"
+    },
+    "{db_env}_gi_lak_pims.dl_CONWflStateHistoryUpdate": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aLastModified,myHistoriedComponent_clsno,myHistoriedComponent_instid,myCreatedBy_clsno,myCreatedBy_instid,myPreviousState_clsno,myPreviousState_instid,myNewState_clsno,myNewState_instid,myChangeReason_clsno,myChangeReason_instid",
+        "filter_con": "_operation <> 'D'"
+    },
+    "{db_env}_gi_lak_pims.dl_CONWflProcessState": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aName",
+        "filter_con": "_operation <> 'D'"
+    },
+    "{db_env}_gi_lak_pims.dl_CONWflStateChangeReason": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aName",
+        "filter_con": "_operation <> 'D'"
+    },
+    "{db_env}_gi_lak_pims.dl_TIMContactTypeUser": {
+        "sel_fields": "_timestamp,oid_clsno,oid_instid,_operation,aKey",
+        "filter_con": "_operation <> 'D'"
+    }
+}
