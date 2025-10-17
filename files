@@ -5571,3 +5571,581 @@ class GetServerConn(GetSecrets):
             raise establish_postgres
 
 server_conn.py
+
+==========
+
+Log events 
+
+Actions
+Start tailing
+Create metric filter
+You can use the filter bar below to search for and match terms, phrases, or values in your log events. Learn more about filter patterns 
+
+Clear
+1m
+30m
+1h
+12h
+
+Custom
+
+UTC timezone
+Display
+
+Timestamp
+	
+Message
+
+Timestamp
+	
+Message
+
+No older events at this moment. 
+Retry
+2025-10-15T17:28:39.458Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.456800\", \"message\": \"IDA Module Detected\", \"caller\": \"redshift_dynamodb.py::<module>\"}",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.456800\", \"message\": \"IDA Module Detected\", \"caller\": \"redshift_dynamodb.py::<module>\"}","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.458Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.457074\", \"message\": \"Not Bestow Module\", \"caller\": \"redshift_dynamodb.py::<module>\"}",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.457074\", \"message\": \"Not Bestow Module\", \"caller\": \"redshift_dynamodb.py::<module>\"}","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.458Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.457848\", \"message\": \"MRAS Module Detected\", \"caller\": \"redshift_dynamodb.py::<module>\"}",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.457848\", \"message\": \"MRAS Module Detected\", \"caller\": \"redshift_dynamodb.py::<module>\"}","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.459Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.458162\", \"message\": \"Not Common Module\", \"caller\": \"redshift_dynamodb.py::<module>\"}",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.458162\", \"message\": \"Not Common Module\", \"caller\": \"redshift_dynamodb.py::<module>\"}","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.459Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.458860\", \"message\": \"Agent Sync Module Detected\", \"caller\": \"redshift_dynamodb.py::<module>\"}",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.458860\", \"message\": \"Agent Sync Module Detected\", \"caller\": \"redshift_dynamodb.py::<module>\"}","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.803Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.802028\", \"message\": \"init framework None\", \"caller\": \"__init__.py::init\"}",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.802028\", \"message\": \"init framework None\", \"caller\": \"__init__.py::init\"}","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.804Z
+{
+    "message": "PDS_CUSTOM_DELETE",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"PDS_CUSTOM_DELETE","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.804Z
+{
+    "message": "DELETE",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"DELETE","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.804Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.803675\", \"message\": \"Entering PDS data load main\", \"caller\": \"streaming_main.py::<module>\"}",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.803675\", \"message\": \"Entering PDS data load main\", \"caller\": \"streaming_main.py::<module>\"}","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.804Z
+{
+    "message": "Entering PDS data load main",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"Entering PDS data load main","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:28:39.879Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.878362\", \"message\": \"generate_spark_context :: Generating Spark Context Start\", \"caller\": \"get_spark_context.py::generate_spark_context\"}",
+    "time": "2025-10-15T17:28:39+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:28:39.878362\", \"message\": \"generate_spark_context :: Generating Spark Context Start\", \"caller\": \"get_spark_context.py::generate_spark_context\"}","time":"2025-10-15T17:28:39+00:00"}
+2025-10-15T17:29:12.454Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.453452\", \"message\": \"generate_spark_context :: Generating Spark Context End\", \"caller\": \"get_spark_context.py::generate_spark_context\"}",
+    "time": "2025-10-15T17:29:12+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.453452\", \"message\": \"generate_spark_context :: Generating Spark Context End\", \"caller\": \"get_spark_context.py::generate_spark_context\"}","time":"2025-10-15T17:29:12+00:00"}
+2025-10-15T17:29:12.454Z
+{
+    "message": "DELETE",
+    "time": "2025-10-15T17:29:12+00:00"
+}
+
+{"message":"DELETE","time":"2025-10-15T17:29:12+00:00"}
+2025-10-15T17:29:12.528Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.527335\", \"message\": \"generate_spark_context :: Generating Spark Context Start\", \"caller\": \"get_spark_context.py::generate_spark_context\"}",
+    "time": "2025-10-15T17:29:12+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.527335\", \"message\": \"generate_spark_context :: Generating Spark Context Start\", \"caller\": \"get_spark_context.py::generate_spark_context\"}","time":"2025-10-15T17:29:12+00:00"}
+2025-10-15T17:29:12.645Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.644351\", \"message\": \"generate_spark_context :: Generating Spark Context End\", \"caller\": \"get_spark_context.py::generate_spark_context\"}",
+    "time": "2025-10-15T17:29:12+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.644351\", \"message\": \"generate_spark_context :: Generating Spark Context End\", \"caller\": \"get_spark_context.py::generate_spark_context\"}","time":"2025-10-15T17:29:12+00:00"}
+2025-10-15T17:29:12.645Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.644776\", \"message\": \"generate_spark_context :: Generating Spark Context Start\", \"caller\": \"get_spark_context.py::generate_spark_context\"}",
+    "time": "2025-10-15T17:29:12+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.644776\", \"message\": \"generate_spark_context :: Generating Spark Context Start\", \"caller\": \"get_spark_context.py::generate_spark_context\"}","time":"2025-10-15T17:29:12+00:00"}
+2025-10-15T17:29:12.749Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.746265\", \"message\": \"generate_spark_context :: Generating Spark Context End\", \"caller\": \"get_spark_context.py::generate_spark_context\"}",
+    "time": "2025-10-15T17:29:12+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.746265\", \"message\": \"generate_spark_context :: Generating Spark Context End\", \"caller\": \"get_spark_context.py::generate_spark_context\"}","time":"2025-10-15T17:29:12+00:00"}
+2025-10-15T17:29:12.749Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.746778\", \"message\": \"pds_load_main :: Load PDS to Redshift for table   Start\", \"caller\": \"pds_dataload.py::pds_load_main\"}",
+    "time": "2025-10-15T17:29:12+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:12.746778\", \"message\": \"pds_load_main :: Load PDS to Redshift for table Start\", \"caller\": \"pds_dataload.py::pds_load_main\"}","time":"2025-10-15T17:29:12+00:00"}
+2025-10-15T17:29:30.390Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:30.343974\", \"message\": \"Thread Started for table: REFD_CO_LU_MVIEW\", \"caller\": \"pds_dataload.py::perform\"}",
+    "time": "2025-10-15T17:29:30+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:30.343974\", \"message\": \"Thread Started for table: REFD_CO_LU_MVIEW\", \"caller\": \"pds_dataload.py::perform\"}","time":"2025-10-15T17:29:30+00:00"}
+2025-10-15T17:29:30.390Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:30.344195\", \"message\": \"properties for table: REFD_CO_LU_MVIEW\", \"caller\": \"pds_dataload.py::perform\"}",
+    "time": "2025-10-15T17:29:30+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:30.344195\", \"message\": \"properties for table: REFD_CO_LU_MVIEW\", \"caller\": \"pds_dataload.py::perform\"}","time":"2025-10-15T17:29:30+00:00"}
+2025-10-15T17:29:30.390Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:30.344321\", \"message\": \"Running DELTA load for table: REFD_CO_LU_MVIEW\", \"caller\": \"pds_dataload.py::perform\"}",
+    "time": "2025-10-15T17:29:30+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:30.344321\", \"message\": \"Running DELTA load for table: REFD_CO_LU_MVIEW\", \"caller\": \"pds_dataload.py::perform\"}","time":"2025-10-15T17:29:30+00:00"}
+2025-10-15T17:29:30.390Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:30.344485\", \"message\": \"read query from hive ::select max(job_run_time) from ta_individual_datalake_dev_controls_db.job_audit where lake_table_name='AFP_REFD_REFD_CO_LU_MVIEW' and job_run_time != 'None'\", \"caller\": \"read_write_db.py::pds_oracle_tmp\"}",
+    "time": "2025-10-15T17:29:30+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:29:30.344485\", \"message\": \"read query from hive ::select max(job_run_time) from ta_individual_datalake_dev_controls_db.job_audit where lake_table_name='AFP_REFD_REFD_CO_LU_MVIEW' and job_run_time != 'None'\", \"caller\": \"read_write_db.py::pds_oracle_tmp\"}","time":"2025-10-15T17:29:30+00:00"}
+2025-10-15T17:31:11.035Z
+{
+    "message": "None",
+    "time": "2025-10-15T17:31:11+00:00"
+}
+
+{"message":"None","time":"2025-10-15T17:31:11+00:00"}
+2025-10-15T17:31:11.035Z
+{
+    "message": "(select * from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) pds",
+    "time": "2025-10-15T17:31:11+00:00"
+}
+
+{"message":"(select * from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) pds","time":"2025-10-15T17:31:11+00:00"}
+2025-10-15T17:31:11.035Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:11.025567\", \"message\": \"read_oracle_without_partition :: Running Oracle Query without partition for table (select * from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) pds  Start\", \"caller\": \"read_write_db.py::read_oracle_without_partition\"}",
+    "time": "2025-10-15T17:31:11+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:11.025567\", \"message\": \"read_oracle_without_partition :: Running Oracle Query without partition for table (select * from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) pds Start\", \"caller\": \"read_write_db.py::read_oracle_without_partition\"}","time":"2025-10-15T17:31:11+00:00"}
+2025-10-15T17:31:11.048Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:11.046568\", \"message\": \"fetch_obj :: Accessing Secrets ta-individual-apps-dev-common to Generate Secrets Obj\", \"caller\": \"secrets_conn.py::fetch_objs\"}",
+    "time": "2025-10-15T17:31:11+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:11.046568\", \"message\": \"fetch_obj :: Accessing Secrets ta-individual-apps-dev-common to Generate Secrets Obj\", \"caller\": \"secrets_conn.py::fetch_objs\"}","time":"2025-10-15T17:31:11+00:00"}
+2025-10-15T17:31:12.968Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:12.967600\", \"message\": \"read_oracle_without_partition :: Running Oracle Query without partition for table   End\", \"caller\": \"read_write_db.py::read_oracle_without_partition\"}",
+    "time": "2025-10-15T17:31:12+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:12.967600\", \"message\": \"read_oracle_without_partition :: Running Oracle Query without partition for table End\", \"caller\": \"read_write_db.py::read_oracle_without_partition\"}","time":"2025-10-15T17:31:12+00:00"}
+2025-10-15T17:31:13.274Z
+{
+    "message": "select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.274Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:13.257160\", \"message\": \"get_count_from_oracle_pds :: Get total count from PDS oracle server for table   Start\", \"caller\": \"read_write_db.py::get_count_from_oracle_pds\"}",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:13.257160\", \"message\": \"get_count_from_oracle_pds :: Get total count from PDS oracle server for table Start\", \"caller\": \"read_write_db.py::get_count_from_oracle_pds\"}","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.730Z
+{
+    "message": "{\"level\": \"ERROR\", \"@timestamp\": \"2025-10-15 12:31:13.728872\", \"message\": \"get_count_from_oracle_pds :: While Getting total count from PDS oracle server for table   : An error occurred while calling o903.load.\\n: java.sql.SQLDataException: ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494)\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446)\\n\\tat oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054)\\n\\tat oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623)\\n\\tat oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252)\\n\\tat oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:226)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:59)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeForDescribe(T4CPreparedStatement.java:747)\\n\\tat oracle.jdbc.driver.OracleStatement.executeMaybeDescribe(OracleStatement.java:904)\\n\\tat oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1082)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3780)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeInternal(T4CPreparedStatement.java:1343)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeQuery(OraclePreparedStatement.java:3822)\\n\\tat oracle.jdbc.driver.OraclePreparedStatementWrapper.executeQuery(OraclePreparedStatementWrapper.java:1165)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRDD$.resolveTable(JDBCRDD.scala:61)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRelation$.getSchema(JDBCRelation.scala:226)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider.createRelation(JdbcRelationProvider.scala:35)\\n\\tat org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:354)\\n\\tat org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:326)\\n\\tat org.apache.spark.sql.DataFrameReader.$anonfun$load$3(DataFrameReader.scala:308)\\n\\tat scala.Option.getOrElse(Option.scala:189)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:308)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:226)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:498)\\n\\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)\\n\\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)\\n\\tat py4j.Gateway.invoke(Gateway.java:282)\\n\\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)\\n\\tat py4j.commands.CallCommand.execute(CallCommand.java:79)\\n\\tat py4j.GatewayConnection.run(GatewayConnection.java:238)\\n\\tat java.lang.Thread.run(Thread.java:750)\\nCaused by: Error : 1841, Position : 94, Sql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, OriginalSql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, Error Msg = ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498)\\n\\t... 34 more\\n\", \"caller\": \"read_write_db.py::get_count_from_oracle_pds\"}",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"{\"level\": \"ERROR\", \"@timestamp\": \"2025-10-15 12:31:13.728872\", \"message\": \"get_count_from_oracle_pds :: While Getting total count from PDS oracle server for table : An error occurred while calling o903.load.\\n: java.sql.SQLDataException: ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494)\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446)\\n\\tat oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054)\\n\\tat oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623)\\n\\tat oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252)\\n\\tat oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:226)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:59)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeForDescribe(T4CPreparedStatement.java:747)\\n\\tat oracle.jdbc.driver.OracleStatement.executeMaybeDescribe(OracleStatement.java:904)\\n\\tat oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1082)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3780)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeInternal(T4CPreparedStatement.java:1343)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeQuery(OraclePreparedStatement.java:3822)\\n\\tat oracle.jdbc.driver.OraclePreparedStatementWrapper.executeQuery(OraclePreparedStatementWrapper.java:1165)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRDD$.resolveTable(JDBCRDD.scala:61)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRelation$.getSchema(JDBCRelation.scala:226)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider.createRelation(JdbcRelationProvider.scala:35)\\n\\tat org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:354)\\n\\tat org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:326)\\n\\tat org.apache.spark.sql.DataFrameReader.$anonfun$load$3(DataFrameReader.scala:308)\\n\\tat scala.Option.getOrElse(Option.scala:189)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:308)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:226)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:498)\\n\\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)\\n\\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)\\n\\tat py4j.Gateway.invoke(Gateway.java:282)\\n\\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)\\n\\tat py4j.commands.CallCommand.execute(CallCommand.java:79)\\n\\tat py4j.GatewayConnection.run(GatewayConnection.java:238)\\n\\tat java.lang.Thread.run(Thread.java:750)\\nCaused by: Error : 1841, Position : 94, Sql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, OriginalSql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, Error Msg = ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498)\\n\\t... 34 more\\n\", \"caller\": \"read_write_db.py::get_count_from_oracle_pds\"}","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.730Z
+{
+    "message": "{\"level\": \"ERROR\", \"@timestamp\": \"2025-10-15 12:31:13.729354\", \"message\": \"Error during DELTA\", \"caller\": \"pds_dataload.py::perform\"}",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"{\"level\": \"ERROR\", \"@timestamp\": \"2025-10-15 12:31:13.729354\", \"message\": \"Error during DELTA\", \"caller\": \"pds_dataload.py::perform\"}","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.730Z
+{
+    "message": "{\"level\": \"ERROR\", \"@timestamp\": \"2025-10-15 12:31:13.729638\", \"message\": \"error in perform function for ntable REFD_CO_LU_MVIEW\", \"caller\": \"pds_dataload.py::perform\"}",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"{\"level\": \"ERROR\", \"@timestamp\": \"2025-10-15 12:31:13.729638\", \"message\": \"error in perform function for ntable REFD_CO_LU_MVIEW\", \"caller\": \"pds_dataload.py::perform\"}","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.730Z
+{
+    "message": "{\"level\": \"ERROR\", \"@timestamp\": \"2025-10-15 12:31:13.730115\", \"message\": \"pds_load_main :: Failed to load PDS to Redshift for table : An error occurred while calling o903.load.\\n: java.sql.SQLDataException: ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494)\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446)\\n\\tat oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054)\\n\\tat oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623)\\n\\tat oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252)\\n\\tat oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:226)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:59)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeForDescribe(T4CPreparedStatement.java:747)\\n\\tat oracle.jdbc.driver.OracleStatement.executeMaybeDescribe(OracleStatement.java:904)\\n\\tat oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1082)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3780)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeInternal(T4CPreparedStatement.java:1343)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeQuery(OraclePreparedStatement.java:3822)\\n\\tat oracle.jdbc.driver.OraclePreparedStatementWrapper.executeQuery(OraclePreparedStatementWrapper.java:1165)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRDD$.resolveTable(JDBCRDD.scala:61)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRelation$.getSchema(JDBCRelation.scala:226)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider.createRelation(JdbcRelationProvider.scala:35)\\n\\tat org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:354)\\n\\tat org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:326)\\n\\tat org.apache.spark.sql.DataFrameReader.$anonfun$load$3(DataFrameReader.scala:308)\\n\\tat scala.Option.getOrElse(Option.scala:189)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:308)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:226)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:498)\\n\\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)\\n\\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)\\n\\tat py4j.Gateway.invoke(Gateway.java:282)\\n\\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)\\n\\tat py4j.commands.CallCommand.execute(CallCommand.java:79)\\n\\tat py4j.GatewayConnection.run(GatewayConnection.java:238)\\n\\tat java.lang.Thread.run(Thread.java:750)\\nCaused by: Error : 1841, Position : 94, Sql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, OriginalSql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, Error Msg = ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498)\\n\\t... 34 more\\n\", \"caller\": \"pds_dataload.py::pds_load_main\"}",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"{\"level\": \"ERROR\", \"@timestamp\": \"2025-10-15 12:31:13.730115\", \"message\": \"pds_load_main :: Failed to load PDS to Redshift for table : An error occurred while calling o903.load.\\n: java.sql.SQLDataException: ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494)\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446)\\n\\tat oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054)\\n\\tat oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623)\\n\\tat oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252)\\n\\tat oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:226)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:59)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeForDescribe(T4CPreparedStatement.java:747)\\n\\tat oracle.jdbc.driver.OracleStatement.executeMaybeDescribe(OracleStatement.java:904)\\n\\tat oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1082)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3780)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeInternal(T4CPreparedStatement.java:1343)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeQuery(OraclePreparedStatement.java:3822)\\n\\tat oracle.jdbc.driver.OraclePreparedStatementWrapper.executeQuery(OraclePreparedStatementWrapper.java:1165)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRDD$.resolveTable(JDBCRDD.scala:61)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRelation$.getSchema(JDBCRelation.scala:226)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider.createRelation(JdbcRelationProvider.scala:35)\\n\\tat org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:354)\\n\\tat org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:326)\\n\\tat org.apache.spark.sql.DataFrameReader.$anonfun$load$3(DataFrameReader.scala:308)\\n\\tat scala.Option.getOrElse(Option.scala:189)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:308)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:226)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:498)\\n\\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)\\n\\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)\\n\\tat py4j.Gateway.invoke(Gateway.java:282)\\n\\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)\\n\\tat py4j.commands.CallCommand.execute(CallCommand.java:79)\\n\\tat py4j.GatewayConnection.run(GatewayConnection.java:238)\\n\\tat java.lang.Thread.run(Thread.java:750)\\nCaused by: Error : 1841, Position : 94, Sql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, OriginalSql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, Error Msg = ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498)\\n\\t... 34 more\\n\", \"caller\": \"pds_dataload.py::pds_load_main\"}","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.730Z
+{
+    "message": "StreamingQueryException OCCURED... Rtrying the job",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"StreamingQueryException OCCURED... Rtrying the job","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.730Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:13.730380\", \"message\": \"StreamingQueryException OCCURED... Rtrying the job\", \"caller\": \"streaming_main.py::<module>\"}",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:13.730380\", \"message\": \"StreamingQueryException OCCURED... Rtrying the job\", \"caller\": \"streaming_main.py::<module>\"}","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "An error occurred while calling o903.load.",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"An error occurred while calling o903.load.","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": ": java.sql.SQLDataException: ORA-01841: (full) year must be between -4713 and +9999, and not be 0",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":": java.sql.SQLDataException: ORA-01841: (full) year must be between -4713 and +9999, and not be 0","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:226)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:226)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:59)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:59)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CPreparedStatement.executeForDescribe(T4CPreparedStatement.java:747)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CPreparedStatement.executeForDescribe(T4CPreparedStatement.java:747)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.OracleStatement.executeMaybeDescribe(OracleStatement.java:904)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.OracleStatement.executeMaybeDescribe(OracleStatement.java:904)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1082)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1082)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3780)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3780)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CPreparedStatement.executeInternal(T4CPreparedStatement.java:1343)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CPreparedStatement.executeInternal(T4CPreparedStatement.java:1343)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.OraclePreparedStatement.executeQuery(OraclePreparedStatement.java:3822)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.OraclePreparedStatement.executeQuery(OraclePreparedStatement.java:3822)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.OraclePreparedStatementWrapper.executeQuery(OraclePreparedStatementWrapper.java:1165)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.OraclePreparedStatementWrapper.executeQuery(OraclePreparedStatementWrapper.java:1165)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRDD$.resolveTable(JDBCRDD.scala:61)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRDD$.resolveTable(JDBCRDD.scala:61)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRelation$.getSchema(JDBCRelation.scala:226)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRelation$.getSchema(JDBCRelation.scala:226)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider.createRelation(JdbcRelationProvider.scala:35)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider.createRelation(JdbcRelationProvider.scala:35)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:354)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:354)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:326)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:326)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat org.apache.spark.sql.DataFrameReader.$anonfun$load$3(DataFrameReader.scala:308)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat org.apache.spark.sql.DataFrameReader.$anonfun$load$3(DataFrameReader.scala:308)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat scala.Option.getOrElse(Option.scala:189)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat scala.Option.getOrElse(Option.scala:189)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:308)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:308)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:226)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:226)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat java.lang.reflect.Method.invoke(Method.java:498)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat java.lang.reflect.Method.invoke(Method.java:498)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat py4j.Gateway.invoke(Gateway.java:282)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat py4j.Gateway.invoke(Gateway.java:282)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat py4j.commands.CallCommand.execute(CallCommand.java:79)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat py4j.commands.CallCommand.execute(CallCommand.java:79)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat py4j.GatewayConnection.run(GatewayConnection.java:238)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat py4j.GatewayConnection.run(GatewayConnection.java:238)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat java.lang.Thread.run(Thread.java:750)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat java.lang.Thread.run(Thread.java:750)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "Caused by: Error : 1841, Position : 94, Sql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, OriginalSql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, Error Msg = ORA-01841: (full) year must be between -4713 and +9999, and not be 0",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"Caused by: Error : 1841, Position : 94, Sql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, OriginalSql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, Error Msg = ORA-01841: (full) year must be between -4713 and +9999, and not be 0","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498)",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498)","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "\t... 34 more",
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"message":"\t... 34 more","time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "time": "2025-10-15T17:31:13+00:00"
+}
+
+{"time":"2025-10-15T17:31:13+00:00"}
+2025-10-15T17:31:13.738Z
+{
+    "message": "{\"level\": \"INFO\", \"@timestamp\": \"2025-10-15 12:31:13.732737\", \"message\": \"An error occurred while calling o903.load.\\n: java.sql.SQLDataException: ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:494)\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:446)\\n\\tat oracle.jdbc.driver.T4C8Oall.processError(T4C8Oall.java:1054)\\n\\tat oracle.jdbc.driver.T4CTTIfun.receive(T4CTTIfun.java:623)\\n\\tat oracle.jdbc.driver.T4CTTIfun.doRPC(T4CTTIfun.java:252)\\n\\tat oracle.jdbc.driver.T4C8Oall.doOALL(T4C8Oall.java:612)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:226)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.doOall8(T4CPreparedStatement.java:59)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeForDescribe(T4CPreparedStatement.java:747)\\n\\tat oracle.jdbc.driver.OracleStatement.executeMaybeDescribe(OracleStatement.java:904)\\n\\tat oracle.jdbc.driver.OracleStatement.doExecuteWithTimeout(OracleStatement.java:1082)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeInternal(OraclePreparedStatement.java:3780)\\n\\tat oracle.jdbc.driver.T4CPreparedStatement.executeInternal(T4CPreparedStatement.java:1343)\\n\\tat oracle.jdbc.driver.OraclePreparedStatement.executeQuery(OraclePreparedStatement.java:3822)\\n\\tat oracle.jdbc.driver.OraclePreparedStatementWrapper.executeQuery(OraclePreparedStatementWrapper.java:1165)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRDD$.resolveTable(JDBCRDD.scala:61)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JDBCRelation$.getSchema(JDBCRelation.scala:226)\\n\\tat org.apache.spark.sql.execution.datasources.jdbc.JdbcRelationProvider.createRelation(JdbcRelationProvider.scala:35)\\n\\tat org.apache.spark.sql.execution.datasources.DataSource.resolveRelation(DataSource.scala:354)\\n\\tat org.apache.spark.sql.DataFrameReader.loadV1Source(DataFrameReader.scala:326)\\n\\tat org.apache.spark.sql.DataFrameReader.$anonfun$load$3(DataFrameReader.scala:308)\\n\\tat scala.Option.getOrElse(Option.scala:189)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:308)\\n\\tat org.apache.spark.sql.DataFrameReader.load(DataFrameReader.scala:226)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)\\n\\tat sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)\\n\\tat sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)\\n\\tat java.lang.reflect.Method.invoke(Method.java:498)\\n\\tat py4j.reflection.MethodInvoker.invoke(MethodInvoker.java:244)\\n\\tat py4j.reflection.ReflectionEngine.invoke(ReflectionEngine.java:357)\\n\\tat py4j.Gateway.invoke(Gateway.java:282)\\n\\tat py4j.commands.AbstractCommand.invokeMethod(AbstractCommand.java:132)\\n\\tat py4j.commands.CallCommand.execute(CallCommand.java:79)\\n\\tat py4j.GatewayConnection.run(GatewayConnection.java:238)\\n\\tat java.lang.Thread.run(Thread.java:750)\\nCaused by: Error : 1841, Position : 94, Sql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, OriginalSql = SELECT * FROM (select count(*) from AFP_REFD.REFD_CO_LU_MVIEW where LST_UPDT_DT >to_timestamp('None', 'yyyy-mm-dd hh24:mi:ss.ff6')) SPARK_GEN_SUBQ_0 WHERE 1=0, Error Msg = ORA-01841: (full) year must be between -4713 and +9999, and not be 0\\n\\n\\tat oracle.jdbc.driver.T4CTTIoer11.processError(T4CTTIoer11.java:498)\\n\\t... 34 more\\n\", \"caller\": \"streaming_main.py::<module>\"}",
+    "time": "2025-10-15T17:31:13+00:00"
